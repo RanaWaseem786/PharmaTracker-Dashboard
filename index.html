@@ -370,6 +370,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             outline: none;
         }
         .filter-select:focus { border-color: var(--accent); }
+        .slicer-search { cursor: text; }
+        .slicer-control { display:flex; flex-direction:column; gap:6px; min-width:200px; }
+        .slicer-control .filter-select { width:100%; }
+        .slicer-status { min-height:13px; color:var(--muted); font-size:11px; }
 
         /* Empty state */
         .empty-state {
@@ -1473,10 +1477,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <!-- Customer Slicer -->
         <div class="card" style="margin-bottom:16px;padding:16px">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-                <label style="font-weight:600;font-size:13px">Select Customer:</label>
-                <select class="filter-select" id="customerSlicer" onchange="updateCustomerAnalysis()" style="min-width:200px">
+                <div class="slicer-control">
+                    <label style="font-weight:600;font-size:13px">Select Customer:</label>
+                    <input class="filter-select slicer-search" id="customerSlicerSearch" type="search" placeholder="Search customers" oninput="filterCustomerSlicer()" aria-label="Search customers">
+                    <select class="filter-select" id="customerSlicer" onchange="updateCustomerAnalysis()" style="min-width:200px">
                     <option value="">📊 View All Customers</option>
-                </select>
+                    </select>
+                    <span class="slicer-status" id="customerSlicerStatus" aria-live="polite"></span>
+                </div>
                 <button class="btn btn-ghost" onclick="resetCustomerSlicer()" style="font-size:12px;margin-left:auto"><i class="fas fa-redo"></i> Reset</button>
             </div>
         </div>
@@ -1627,10 +1635,21 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <!-- Product Slicer -->
         <div class="card" style="margin-bottom:16px;padding:16px">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-                <label style="font-weight:600;font-size:13px">Select Product:</label>
-                <select class="filter-select" id="productSlicer" onchange="updateProductAnalysis()" style="min-width:200px">
+                <div class="slicer-control">
+                    <label style="font-weight:600;font-size:13px">Select Product:</label>
+                    <input class="filter-select slicer-search" id="productSlicerSearch" type="search" placeholder="Search products" oninput="filterProductSlicer()" aria-label="Search products">
+                    <select class="filter-select" id="productSlicer" onchange="updateProductAnalysis()" style="min-width:200px">
                     <option value="">📊 View All Products</option>
-                </select>
+                    </select>
+                    <span class="slicer-status" id="productSlicerStatus" aria-live="polite"></span>
+                </div>
+                <div class="slicer-control">
+                    <label style="font-weight:600;font-size:13px">Group by Company:</label>
+                    <select class="filter-select" id="companyGroupSlicer" onchange="updateCompanyGroupSlicer()" style="min-width:200px">
+                        <option value="">All Companies</option>
+                    </select>
+                </div>
+                <button class="btn btn-ghost" onclick="resetCompanyGroupSlicer()" style="font-size:12px"><i class="fas fa-redo"></i> Reset Group</button>
                 <button class="btn btn-ghost" onclick="resetProductSlicer()" style="font-size:12px;margin-left:auto"><i class="fas fa-redo"></i> Reset</button>
             </div>
         </div>
@@ -1881,6 +1900,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 let rawData = [];
 let pendingHeaders = [];
 let pendingRows = [];
+let slicerOptions = { customers: [], products: [], companies: [] };
 
 const FIELDS = {
     srno:       { label: 'SR No',         variants: ['srno','sr no','serial no','sr.no','s.no'] },
@@ -2314,8 +2334,14 @@ function updateStats() {
     document.getElementById('c-unique').textContent = uniqueCust;
     document.getElementById('c-companies').textContent = new Set(d.map(r=>normKey(r.companyName))).size;
     document.getElementById('c-top').textContent = topCust ? topCust[0] : '—';
-    document.getElementById('p-total').textContent = uniqueProd;
-    document.getElementById('p-units').textContent = d.reduce((s,r)=>s+r.stock,0).toLocaleString();
+    updateProductPageStats();
+}
+
+function updateProductPageStats(data = getProductPageData()) {
+    const totalEl = document.getElementById('p-total');
+    const unitsEl = document.getElementById('p-units');
+    if (totalEl) totalEl.textContent = new Set(data.map(r => normKey(r.itemName))).size;
+    if (unitsEl) unitsEl.textContent = data.reduce((sum, row) => sum + row.stock, 0).toLocaleString();
 }
 
 function topByValue(data, keyField, valField) {
@@ -2420,7 +2446,7 @@ function renderCustomers() {
 function renderProducts() {
     const tbody = document.getElementById('products-table');
     const empty = document.getElementById('products-empty');
-    const data = getBaseData();
+    const data = getProductPageData();
     if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
     empty.style.display='none';
     const map = {};
@@ -2665,7 +2691,7 @@ function fmtK(val) {
     return '₨' + val.toFixed(0);
 }
 
-function populateSlicers() {
+function populateLegacySlicers() {
     const data = getBaseData();
     if (!data.length) return;
     
@@ -2696,14 +2722,126 @@ function populateSlicers() {
     }
 }
 
+function populateSlicers() {
+    const data = getBaseData();
+    const custSelect = document.getElementById('customerSlicer');
+    const prodSelect = document.getElementById('productSlicer');
+    const companySelect = document.getElementById('companyGroupSlicer');
+    const customerSearch = document.getElementById('customerSlicerSearch');
+    const productSearch = document.getElementById('productSlicerSearch');
+
+    slicerOptions.customers = getUniqueSlicerValues(data, 'customerName');
+    slicerOptions.companies = getUniqueSlicerValues(data, 'companyName');
+
+    if (companySelect) renderSlicerOptions(companySelect, slicerOptions.companies, '', 'All Companies');
+
+    const selectedCompany = companySelect ? companySelect.value : '';
+    const productData = selectedCompany ? data.filter(r => r.companyName === selectedCompany) : data;
+    slicerOptions.products = getUniqueSlicerValues(productData, 'itemName');
+
+    if (custSelect) renderSlicerOptions(custSelect, slicerOptions.customers, customerSearch ? customerSearch.value : '', '\u{1F4CA} View All Customers');
+    if (prodSelect) renderSlicerOptions(prodSelect, slicerOptions.products, productSearch ? productSearch.value : '', '\u{1F4CA} View All Products');
+}
+
+function getUniqueSlicerValues(data, field) {
+    const uniqueValues = new Map();
+    data.forEach(record => {
+        const value = String(record[field] ?? '').trim();
+        if (value && !uniqueValues.has(normKey(value))) uniqueValues.set(normKey(value), value);
+    });
+    return [...uniqueValues.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
+function renderSlicerOptions(select, values, searchText, emptyLabel) {
+    const selectedValue = select.value;
+    const search = normKey(searchText);
+    const matchedValues = search ? values.filter(value => normKey(value).includes(search)) : values;
+    const visibleValues = selectedValue && values.includes(selectedValue) && !matchedValues.includes(selectedValue)
+        ? [selectedValue, ...matchedValues]
+        : matchedValues;
+    const fragment = document.createDocumentFragment();
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = emptyLabel;
+    fragment.appendChild(emptyOption);
+    visibleValues.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        fragment.appendChild(option);
+    });
+    select.replaceChildren(fragment);
+    select.value = visibleValues.includes(selectedValue) ? selectedValue : '';
+
+    const status = document.getElementById(select.id + 'Status');
+    if (status) {
+        const itemLabel = select.id === 'customerSlicer' ? 'customer' : 'product';
+        const count = matchedValues.length;
+        status.textContent = search
+            ? `${count} matching ${itemLabel}${count === 1 ? '' : 's'} — choose one from the list`
+            : `${values.length} ${itemLabel}${values.length === 1 ? '' : 's'} available`;
+    }
+}
+
+function filterCustomerSlicer() {
+    const select = document.getElementById('customerSlicer');
+    const search = document.getElementById('customerSlicerSearch');
+    if (select && search) renderSlicerOptions(select, slicerOptions.customers, search.value, '\u{1F4CA} View All Customers');
+}
+
+function filterProductSlicer() {
+    const select = document.getElementById('productSlicer');
+    const search = document.getElementById('productSlicerSearch');
+    if (select && search) {
+        renderSlicerOptions(select, slicerOptions.products, search.value, '\u{1F4CA} View All Products');
+        updateProductPageStats();
+        renderProducts();
+    }
+}
+
 function resetCustomerSlicer() {
+    document.getElementById('customerSlicerSearch').value = '';
     document.getElementById('customerSlicer').value = '';
+    filterCustomerSlicer();
     updateCustomerAnalysis();
 }
 
 function resetProductSlicer() {
+    document.getElementById('productSlicerSearch').value = '';
     document.getElementById('productSlicer').value = '';
+    filterProductSlicer();
     updateProductAnalysis();
+}
+
+function updateCompanyGroupSlicer() {
+    populateSlicers();
+    updateProductPageStats();
+    renderProducts();
+    updateProductAnalysis();
+}
+
+function resetCompanyGroupSlicer() {
+    document.getElementById('companyGroupSlicer').value = '';
+    populateSlicers();
+    updateProductPageStats();
+    renderProducts();
+    updateProductAnalysis();
+}
+
+function getProductGroupData() {
+    const selectedCompany = document.getElementById('companyGroupSlicer')?.value || '';
+    const data = getBaseData();
+    return selectedCompany ? data.filter(r => r.companyName === selectedCompany) : data;
+}
+
+function getProductPageData() {
+    const search = normKey(document.getElementById('productSlicerSearch')?.value || '');
+    const data = getProductGroupData();
+    return search ? data.filter(row => normKey(row.itemName).includes(search)) : data;
+}
+
+function getProductAnalysisData() {
+    return getProductGroupData();
 }
 
 function updateCustomerAnalysis() {
@@ -2736,7 +2874,7 @@ function updateCustomerAnalysis() {
 
 function updateProductAnalysis() {
     const selected = document.getElementById('productSlicer').value;
-    const data = getBaseData();
+    const data = getProductAnalysisData();
     let filtered = data;
     
     if (selected) {
@@ -4045,10 +4183,10 @@ setTimeout(() => {
 (() => {
  const $=id=>document.getElementById(id), money=n=>{try{return (typeof fmt==='function'?fmt(n):'PKR '+Number(n||0).toLocaleString())}catch(e){return 'PKR '+Number(n||0).toLocaleString()}};
  const charts={}; let suiteRows=[];
- function num(v){return Number(String(v??0).replace(/[^0-9.-]/g,''))||0} function amount(r){return Number(r.netAmount||0)}
+ function num(v){return Number(String(v??0).replace(/[^0-9.-]/g,''))||0} function amount(r){return num(r.netAmount??r.grossAmount??r.amount)}
  function key(r,n){return String(r[n]??r[n.replace('Name','')]??'Unassigned').trim()||'Unassigned'} function group(rows,field){return rows.reduce((a,r)=>{let k=key(r,field);a[k]=(a[k]||0)+amount(r);return a},{})}
  function dateOf(r){let d=new Date(r.invoiceDate||r.date);return isNaN(d)?null:d} function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
- function rows(){let data=typeof getBaseData==='function'?getBaseData():((typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[]);let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
+ function rows(){let data=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
  function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>Number(v).toLocaleString()},grid:{color:'rgba(148,180,255,.1)'}}}}})}
  function sorted(g,n=6){return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,n)} function list(id,g){$(id).innerHTML=sorted(g,5).map(([n,v])=>`<li><span>${escapeHtml(n)}</span><b>${money(v)}</b></li>`).join('')||'<li>No data imported yet.</li>'} function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
  function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
