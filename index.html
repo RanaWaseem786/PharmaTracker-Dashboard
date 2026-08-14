@@ -286,6 +286,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         .stat-label { font-size: 12px; color: var(--muted); }
         .stat-change { font-size: 11px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
         .stat-change.up { color: var(--accent2); }
+        .stat-change.down { color: var(--accent3); }
         .stat-change.neutral { color: var(--muted); }
 
         /* Charts */
@@ -426,6 +427,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             body * { visibility: hidden; }
             #printReportRoot, #printReportRoot * { visibility: visible; }
             #printReportRoot { position: absolute; left: 0; top: 0; width: 100%; }
+            #printReportRoot thead { display: table-header-group; }
+            #printReportRoot tr, #printReportRoot img { break-inside: avoid; page-break-inside: avoid; }
         }
 
         /* Loading overlay */
@@ -1172,6 +1175,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 <i class="fas fa-building" style="font-size:11px;color:var(--muted)"></i>
                 <select class="filter-select" id="fCompany" onchange="onGlobalCompanyChange()"></select>
             </div>
+            <div class="global-filter-wrap" id="companyGroupFilterWrap" style="display:none">
+                <i class="fas fa-layer-group" style="font-size:11px;color:var(--muted)"></i>
+                <select class="filter-select" id="fCompanyGroup" onchange="onGlobalCompanyGroupChange()"></select>
+            </div>
             <div class="global-filter-wrap">
                 <select class="filter-select" id="periodMode" onchange="onPeriodModeChange()">
                     <option value="all">All Time</option>
@@ -1265,6 +1272,12 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 </div>
                 <div class="chart-wrap"><canvas id="chartCompanyPie" width="497" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 497px;"></canvas></div>
             </div>
+            <div class="card">
+                <div class="card-header">
+                    <div><div class="card-title">Company Group Distribution</div><div class="card-sub">Performance share by company group</div></div>
+                </div>
+                <div class="chart-wrap"><canvas id="chartCompanyGroupPie" width="497" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 497px;"></canvas></div>
+            </div>
         </div>
 
         <div class="card">
@@ -1338,9 +1351,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <div class="page" id="page-sales">
         <div class="filters-bar">
             <label>Filter:</label>
-            <select class="filter-select" id="fRegion" onchange="renderSalesTable()"><option value="">All</option><option value="East">East</option><option value="North">North</option><option value="South">South</option><option value="West">West</option></select>
-            <select class="filter-select" id="fBookingMan" onchange="renderSalesTable()"><option value="">All</option><option value="Ahmed Khan">Ahmed Khan</option><option value="Fatima Ali">Fatima Ali</option><option value="Sara Khan">Sara Khan</option><option value="Usman Malik">Usman Malik</option></select>
-            <select class="filter-select" id="fMonth" onchange="renderSalesTable()"><option value="">All</option><option value="2025-01">2025-01</option><option value="2025-02">2025-02</option><option value="2025-03">2025-03</option></select>
+            <select class="filter-select" id="fRegion" onchange="onSalesFilterChange()"><option value="">All</option><option value="East">East</option><option value="North">North</option><option value="South">South</option><option value="West">West</option></select>
+            <select class="filter-select" id="fBookingMan" onchange="onSalesFilterChange()"><option value="">All</option><option value="Ahmed Khan">Ahmed Khan</option><option value="Fatima Ali">Fatima Ali</option><option value="Sara Khan">Sara Khan</option><option value="Usman Malik">Usman Malik</option></select>
+            <select class="filter-select" id="fMonth" onchange="onSalesFilterChange()"><option value="">All</option><option value="2025-01">2025-01</option><option value="2025-02">2025-02</option><option value="2025-03">2025-03</option></select>
             <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px" onclick="clearFilters()"><i class="fas fa-times"></i> Clear</button>
             <span id="filter-count" style="font-size:12px;color:var(--muted);margin-left:auto">6 of 6 records</span>
         </div>
@@ -1480,11 +1493,13 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 <div class="slicer-control">
                     <label style="font-weight:600;font-size:13px">Select Customer:</label>
                     <input class="filter-select slicer-search" id="customerSlicerSearch" type="search" placeholder="Search customers" oninput="filterCustomerSlicer()" aria-label="Search customers">
-                    <select class="filter-select" id="customerSlicer" onchange="updateCustomerAnalysis()" style="min-width:200px">
+                    <select class="filter-select" id="customerSlicer" onchange="updateCustomerCatalogFilters()" style="min-width:200px">
                     <option value="">📊 View All Customers</option>
                     </select>
                     <span class="slicer-status" id="customerSlicerStatus" aria-live="polite"></span>
                 </div>
+                <select class="filter-select" id="customerCompanySlicer" onchange="updateCustomerCatalogFilters()" style="min-width:200px"></select>
+                <select class="filter-select" id="customerCompanyGroupSlicer" onchange="updateCustomerCatalogFilters()" style="min-width:200px"></select>
                 <button class="btn btn-ghost" onclick="resetCustomerSlicer()" style="font-size:12px;margin-left:auto"><i class="fas fa-redo"></i> Reset</button>
             </div>
         </div>
@@ -1638,17 +1653,14 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 <div class="slicer-control">
                     <label style="font-weight:600;font-size:13px">Select Product:</label>
                     <input class="filter-select slicer-search" id="productSlicerSearch" type="search" placeholder="Search products" oninput="filterProductSlicer()" aria-label="Search products">
-                    <select class="filter-select" id="productSlicer" onchange="updateProductAnalysis()" style="min-width:200px">
+                    <select class="filter-select" id="productSlicer" onchange="updateProductCatalogFilters()" style="min-width:200px">
                     <option value="">📊 View All Products</option>
                     </select>
                     <span class="slicer-status" id="productSlicerStatus" aria-live="polite"></span>
                 </div>
-                <div class="slicer-control">
-                    <label style="font-weight:600;font-size:13px">Group by Company:</label>
-                    <select class="filter-select" id="companyGroupSlicer" onchange="updateCompanyGroupSlicer()" style="min-width:200px">
-                        <option value="">All Companies</option>
-                    </select>
-                </div>
+                <select class="filter-select" id="productCompanySlicer" onchange="updateProductCatalogFilters()" style="min-width:200px"></select>
+                <select class="filter-select" id="companyGroupSlicer" onchange="updateCompanyGroupSlicer()" style="min-width:200px">
+                </select>
                 <button class="btn btn-ghost" onclick="resetCompanyGroupSlicer()" style="font-size:12px"><i class="fas fa-redo"></i> Reset Group</button>
                 <button class="btn btn-ghost" onclick="resetProductSlicer()" style="font-size:12px;margin-left:auto"><i class="fas fa-redo"></i> Reset</button>
             </div>
@@ -1900,7 +1912,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 let rawData = [];
 let pendingHeaders = [];
 let pendingRows = [];
-let slicerOptions = { customers: [], products: [], companies: [] };
+let slicerOptions = { customers: [], products: [], companies: [], companyGroups: [] };
 
 const FIELDS = {
     srno:       { label: 'SR No',         variants: ['srno','sr no','serial no','sr.no','s.no'] },
@@ -1909,6 +1921,7 @@ const FIELDS = {
     customerName:{label:'Customer Name',  variants: ['customer name','customername','customer','party name','account name'] },
     customerCode:{label:'Customer Code',  variants: ['customer code','customercode','cust code','custcode','code','party code','account code','customer id','customerid','cust id','custid'] },
     companyName:{ label: 'Company',       variants: ['company name','companyname','company','firm'] },
+    companyGroup:{label: 'Company Group', variants: ['company group','companygroup','group name','groupname','group','division','sub company','subcompany','brand group'] },
     regionName: { label: 'Region',        variants: ['region name','regionname','region','area'] },
     bookingMan: { label: 'Booking Man',   variants: ['booking man','bookingman','sales person','salesperson','rep','officer','booking officer'] },
     deliveryMan:{ label: 'Delivery Man',  variants: ['delivery man','deliveryman','delivery person'] },
@@ -1933,6 +1946,7 @@ function fmtN(n) { return Number(n||0).toLocaleString(); }
    GLOBAL FILTERS — Company / Month-Quarter / Top N
 ═══════════════════════════════════════════════ */
 let globalCompany = '';
+let globalCompanyGroup = '';
 let periodMode = 'all';   // 'all' | 'month' | 'quarter'
 let periodValue = '';     // '2026-06' for month, '2026-Q2' for quarter
 let topN = 10;
@@ -1967,19 +1981,29 @@ function normalizeDate(str) {
 }
 
 function populateGlobalFilters() {
-    const companies = [...new Set(rawData.map(r => r.companyName).filter(c => c && c !== '—'))].sort();
+    const companySelect = document.getElementById('fCompany');
+    const companyGroupSelect = document.getElementById('fCompanyGroup');
     const companyWrap = document.getElementById('companyFilterWrap');
-    if (companies.length > 1) {
-        companyWrap.style.display = 'flex';
-        const cur = document.getElementById('fCompany').value;
-        document.getElementById('fCompany').innerHTML = `<option value="">All Companies</option>` +
-            companies.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
-        if (!companies.includes(globalCompany)) globalCompany = '';
-    } else {
-        companyWrap.style.display = 'none';
-        globalCompany = '';
-        document.getElementById('fCompany').innerHTML = '';
+    const companyGroupWrap = document.getElementById('companyGroupFilterWrap');
+    const companies = getUniqueSlicerValues(rawData, 'companyName').filter(c => c !== '—');
+    const groupSource = globalCompany ? rawData.filter(r => r.companyName === globalCompany) : rawData;
+    const companyGroups = getUniqueSlicerValues(groupSource, 'companyGroup').filter(c => c !== '—');
+
+    if (!companies.includes(globalCompany)) globalCompany = '';
+    if (!companyGroups.includes(globalCompanyGroup)) globalCompanyGroup = '';
+
+    if (companySelect) {
+        companySelect.innerHTML = `<option value="">All Companies</option>` +
+            companies.map(c => `<option value="${c}">${c}</option>`).join('');
+        companySelect.value = globalCompany;
     }
+    if (companyGroupSelect) {
+        companyGroupSelect.innerHTML = `<option value="">All Company Groups</option>` +
+            companyGroups.map(c => `<option value="${c}">${c}</option>`).join('');
+        companyGroupSelect.value = globalCompanyGroup;
+    }
+    if (companyWrap) companyWrap.style.display = companies.length ? 'flex' : 'none';
+    if (companyGroupWrap) companyGroupWrap.style.display = companyGroups.length ? 'flex' : 'none';
 
     const months = [...new Set(rawData.map(r => r.invoiceDate ? r.invoiceDate.substring(0,7) : '').filter(Boolean))].sort();
     const quarters = [...new Set(months.map(m => { const [y,mo] = m.split('-'); return `${y}-Q${Math.ceil(parseInt(mo,10)/3)}`; }))].sort();
@@ -2009,15 +2033,24 @@ function renderPeriodValueOptions() {
 function onGlobalCompanyChange() {
     globalCompany = document.getElementById('fCompany').value;
     populateGlobalFilters();
+    populateFilters();
+    if (rawData.length) updateAll();
+}
+function onGlobalCompanyGroupChange() {
+    globalCompanyGroup = document.getElementById('fCompanyGroup').value;
+    populateGlobalFilters();
+    populateFilters();
     if (rawData.length) updateAll();
 }
 function onPeriodModeChange() {
     periodMode = document.getElementById('periodMode').value;
     renderPeriodValueOptions();
+    populateFilters();
     if (rawData.length) updateAll();
 }
 function onPeriodValueChange() {
     periodValue = document.getElementById('periodValue').value;
+    populateFilters();
     if (rawData.length) updateAll();
 }
 function onTopNChange() {
@@ -2027,11 +2060,30 @@ function onTopNChange() {
 }
 function applyTopN(arr) { return topN === 'all' ? arr : arr.slice(0, topN); }
 
-/* Base dataset after applying the global Company + Month/Quarter filters.
+/* Base dataset after applying the global Company Group + Month/Quarter filters.
    All page renderers should read from this instead of rawData directly. */
 function getBaseData() {
+    let data = getGlobalData();
+    const region = document.getElementById('fRegion')?.value || '';
+    const man = document.getElementById('fBookingMan')?.value || '';
+    const month = document.getElementById('fMonth')?.value || '';
+    const search = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
+    return data.filter(d => {
+        if (region && d.regionName !== region) return false;
+        if (man && d.bookingMan !== man) return false;
+        if (month && !d.invoiceDate.startsWith(month)) return false;
+        if (search) {
+            const text = [d.invoiceId, d.customerName, d.companyName, d.companyGroup, d.itemName, d.bookingMan, d.regionName].join(' ').toLowerCase();
+            if (!text.includes(search)) return false;
+        }
+        return true;
+    });
+}
+
+function getGlobalData() {
     let data = rawData;
     if (globalCompany) data = data.filter(r => r.companyName === globalCompany);
+    if (globalCompanyGroup) data = data.filter(r => r.companyGroup === globalCompanyGroup);
     if (periodMode === 'month' && periodValue) {
         data = data.filter(r => r.invoiceDate && r.invoiceDate.substring(0,7) === periodValue);
     } else if (periodMode === 'quarter' && periodValue) {
@@ -2119,7 +2171,7 @@ function openMapModal(headers, mapping) {
     const grid = document.getElementById('mapGrid');
     grid.innerHTML = '';
     const opts = headers.map((h,i) => `<option value="${i}">${h}</option>`).join('');
-    const important = ['invoiceId','invoiceDate','customerName','companyName','regionName','bookingMan','itemName','packSize','rate','stock','grossAmount','discount','netAmount'];
+    const important = ['invoiceId','invoiceDate','customerName','companyName','companyGroup','regionName','bookingMan','itemName','packSize','rate','stock','grossAmount','discount','netAmount'];
     important.forEach(field => {
         const sel = mapping[field] !== -1 ? mapping[field] : '';
         grid.innerHTML += `<div class="map-item">
@@ -2177,6 +2229,7 @@ function importData(headers, rows, mapping) {
             customerName: custName || 'Unknown',
             customerCode: custCode || custName || 'Unknown',
             companyName: String(get(row,'companyName')).trim() || '—',
+            companyGroup: String(get(row,'companyGroup')).trim() || String(get(row,'companyName')).trim() || '—',
             regionName: String(get(row,'regionName')).trim() || '—',
             bookingMan: String(get(row,'bookingMan')).trim() || '—',
             deliveryMan: String(get(row,'deliveryMan')).trim() || '—',
@@ -2198,8 +2251,8 @@ function importData(headers, rows, mapping) {
     // Save to localStorage
     saveDataToStorage();
     
-    populateFilters();
     populateGlobalFilters();
+    populateFilters();
     updateAll();
     showToast(`✅ Imported ${data.length.toLocaleString()} records! Total: ${rawData.length.toLocaleString()}`, 'success');
 }
@@ -2224,8 +2277,8 @@ function loadDataFromStorage() {
         if (stored) {
             rawData = JSON.parse(stored);
             console.log(`✅ Loaded ${rawData.length} records from storage`);
-            populateFilters();
             populateGlobalFilters();
+            populateFilters();
             updateAll();
             return true;
         }
@@ -2241,8 +2294,8 @@ function clearAllData() {
     
     rawData = [];
     localStorage.removeItem('pharmaTrackerData');
-    populateFilters();
     populateGlobalFilters();
+    populateFilters();
     updateAll();
     document.getElementById('searchInput').value = '';
     showToast('✅ All data cleared successfully!', 'success');
@@ -2256,9 +2309,10 @@ function getStoredDataCount() {
    FILTERS
 ═══════════════════════════════════════════════ */
 function populateFilters() {
-    const regions = [...new Set(rawData.map(d => d.regionName).filter(r => r && r !== '—'))].sort();
-    const men = [...new Set(rawData.map(d => d.bookingMan).filter(r => r && r !== '—'))].sort();
-    const months = [...new Set(rawData.map(d => d.invoiceDate ? d.invoiceDate.substring(0,7) : '').filter(Boolean))].sort();
+    const data = getGlobalData();
+    const regions = [...new Set(data.map(d => d.regionName).filter(r => r && r !== '—'))].sort();
+    const men = [...new Set(data.map(d => d.bookingMan).filter(r => r && r !== '—'))].sort();
+    const months = [...new Set(data.map(d => d.invoiceDate ? d.invoiceDate.substring(0,7) : '').filter(Boolean))].sort();
 
     const sel = (id, items) => {
         const el = document.getElementById(id);
@@ -2271,21 +2325,11 @@ function populateFilters() {
 }
 
 function getFiltered() {
-    const region = document.getElementById('fRegion').value;
-    const man = document.getElementById('fBookingMan').value;
-    const month = document.getElementById('fMonth').value;
-    const search = document.getElementById('searchInput').value.toLowerCase().trim();
+    return getBaseData();
+}
 
-    return getBaseData().filter(d => {
-        if (region && d.regionName !== region) return false;
-        if (man && d.bookingMan !== man) return false;
-        if (month && !d.invoiceDate.startsWith(month)) return false;
-        if (search) {
-            const text = [d.invoiceId, d.customerName, d.companyName, d.itemName, d.bookingMan, d.regionName].join(' ').toLowerCase();
-            if (!text.includes(search)) return false;
-        }
-        return true;
-    });
+function onSalesFilterChange() {
+    if (rawData.length) updateAll();
 }
 
 function clearFilters() {
@@ -2293,13 +2337,14 @@ function clearFilters() {
     document.getElementById('fBookingMan').value = '';
     document.getElementById('fMonth').value = '';
     document.getElementById('searchInput').value = '';
-    renderSalesTable();
+    onSalesFilterChange();
 }
 
 /* ═══════════════════════════════════════════════
    UPDATE ALL
 ═══════════════════════════════════════════════ */
 function updateAll() {
+    populateSlicers();
     updateStats();
     renderDashTable();
     renderSalesTable();
@@ -2307,17 +2352,16 @@ function updateAll() {
     renderProducts();
     updateCharts();
     updateInsights();
-    populateSlicers();
     document.getElementById('salesBadge').textContent = getBaseData().length.toLocaleString();
+    if (typeof window.refreshExecutiveDashboard === 'function') window.refreshExecutiveDashboard();
 }
 
 function updateStats() {
     const d = getBaseData();
-    if (!d.length) return;
     const totalRev = d.reduce((s,r) => s+r.netAmount, 0);
     const totalDisc = d.reduce((s,r) => s+r.discountAmount, 0) || d.reduce((s,r) => s+(r.grossAmount-r.netAmount), 0);
     const uniqueCust = new Set(d.map(r => normKey(r.customerCode || r.customerName))).size;
-    const avgOrder = totalRev / d.length;
+    const avgOrder = d.length ? totalRev / d.length : 0;
     const uniqueProd = new Set(d.map(r => normKey(r.itemName))).size;
 
     document.getElementById('st-sales').textContent = d.length.toLocaleString();
@@ -2329,12 +2373,37 @@ function updateStats() {
 
     const topReg = topByValue(d, 'regionName', 'netAmount')[0];
     const topCust = topByValue(d, 'customerName', 'netAmount')[0];
-    document.getElementById('st-sales-sub').innerHTML = `<i class="fas fa-map-marker-alt"></i> Top region: ${topReg ? topReg[0] : '—'}`;
-    document.getElementById('st-customers-sub').innerHTML = `<i class="fas fa-crown"></i> Top: ${topCust ? topCust[0] : '—'}`;
-    document.getElementById('c-unique').textContent = uniqueCust;
-    document.getElementById('c-companies').textContent = new Set(d.map(r=>normKey(r.companyName))).size;
-    document.getElementById('c-top').textContent = topCust ? topCust[0] : '—';
-    updateProductPageStats();
+    const revenueChange = metricChange(d, rows => rows.reduce((sum, row) => sum + row.netAmount, 0));
+    const salesChange = metricChange(d, rows => rows.length);
+    const customerChange = metricChange(d, rows => new Set(rows.map(row => normKey(row.customerCode || row.customerName))).size);
+    const productChange = metricChange(d, rows => new Set(rows.map(row => normKey(row.itemName))).size);
+    setStatChange('st-sales-sub', salesChange.text, salesChange.tone);
+    setStatChange('st-revenue-sub', revenueChange.text, revenueChange.tone);
+    setStatChange('st-customers-sub', customerChange.text, customerChange.tone);
+    setStatChange('st-avg-sub', `${d.length.toLocaleString()} selected record${d.length === 1 ? '' : 's'}`, 'neutral');
+    const gross = d.reduce((sum, row) => sum + row.grossAmount, 0);
+    setStatChange('st-discount-sub', gross ? `${(totalDisc / gross * 100).toFixed(1)}% of gross sales` : 'No discount data', 'neutral');
+    setStatChange('st-products-sub', productChange.text, productChange.tone);
+}
+
+function setStatChange(id, text, tone) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `stat-change ${tone}`;
+    el.textContent = text;
+}
+
+function metricChange(data, metric) {
+    const months = [...new Set(data.map(row => row.invoiceDate ? row.invoiceDate.substring(0,7) : '').filter(Boolean))].sort();
+    if (months.length < 2) return { text: 'No prior period', tone: 'neutral' };
+    const currentMonth = months[months.length - 1];
+    const priorMonth = months[months.length - 2];
+    const current = metric(data.filter(row => row.invoiceDate.startsWith(currentMonth)));
+    const prior = metric(data.filter(row => row.invoiceDate.startsWith(priorMonth)));
+    if (!prior) return { text: current ? `▲ New vs ${monthLabel(priorMonth)}` : 'No prior period', tone: current ? 'up' : 'neutral' };
+    const percentage = ((current - prior) / prior) * 100;
+    const arrow = percentage >= 0 ? '▲' : '▼';
+    return { text: `${arrow} ${Math.abs(percentage).toFixed(1)}% vs ${monthLabel(priorMonth)}`, tone: percentage >= 0 ? 'up' : 'down' };
 }
 
 function updateProductPageStats(data = getProductPageData()) {
@@ -2342,6 +2411,15 @@ function updateProductPageStats(data = getProductPageData()) {
     const unitsEl = document.getElementById('p-units');
     if (totalEl) totalEl.textContent = new Set(data.map(r => normKey(r.itemName))).size;
     if (unitsEl) unitsEl.textContent = data.reduce((sum, row) => sum + row.stock, 0).toLocaleString();
+}
+
+function updateCustomerPageStats(data = getCustomerCatalogData()) {
+    const uniqueCust = new Set(data.map(row => normKey(row.customerCode || row.customerName))).size;
+    const companies = new Set(data.map(row => normKey(row.companyName)).filter(Boolean)).size;
+    const topCustomer = topByValue(data, 'customerName', 'netAmount')[0];
+    document.getElementById('c-unique').textContent = uniqueCust.toLocaleString();
+    document.getElementById('c-companies').textContent = companies.toLocaleString();
+    document.getElementById('c-top').textContent = topCustomer ? topCustomer[0] : '—';
 }
 
 function topByValue(data, keyField, valField) {
@@ -2409,7 +2487,8 @@ function renderSalesTable() {
 function renderCustomers() {
     const tbody = document.getElementById('customers-table');
     const empty = document.getElementById('customers-empty');
-    const data = getBaseData();
+    const data = getCustomerCatalogData();
+    updateCustomerPageStats(data);
     if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
     empty.style.display='none';
     const map = {};
@@ -2447,7 +2526,8 @@ function renderProducts() {
     const tbody = document.getElementById('products-table');
     const empty = document.getElementById('products-empty');
     const data = getProductPageData();
-    if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+    updateProductPageStats(data);
+    if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; document.getElementById('p-bestseller').textContent = '—'; return; }
     empty.style.display='none';
     const map = {};
     data.forEach(r => {
@@ -2679,6 +2759,29 @@ function updateCharts() {
             }
         });
     }
+
+    // Company Group Distribution Pie Chart
+    const companyGroupData = {};
+    data.forEach(r => {
+        companyGroupData[r.companyGroup] = (companyGroupData[r.companyGroup] || 0) + r.netAmount;
+    });
+    const companyGroupsList = Object.keys(companyGroupData).sort();
+    const companyGroupValues = companyGroupsList.map(c => companyGroupData[c]);
+    destroyChart('chartCompanyGroupPie');
+    if (companyGroupsList.length > 0) {
+        new Chart(document.getElementById('chartCompanyGroupPie'), {
+            type: 'doughnut',
+            data: {
+                labels: companyGroupsList,
+                datasets: [{ data: companyGroupValues, backgroundColor: ['#bc8cff','#58a6ff','#3fb950','#ff7b72','#ffa657','#56d364','#f778ba','#79c0ff'], borderWidth: 0, hoverOffset: 8 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } }, tooltip: { callbacks: { label: function(ctx) { const total = ctx.dataset.data.reduce((a,b)=>a+b,0); const pct = ((ctx.parsed/total)*100).toFixed(1); return fmtK(ctx.parsed) + ' (' + pct + '%)'; } } } },
+                cutout: '65%',
+            }
+        });
+    }
 }
 
 /* ═══════════════════════════════════════════════
@@ -2724,22 +2827,26 @@ function populateLegacySlicers() {
 
 function populateSlicers() {
     const data = getBaseData();
+    const customerCompanySelect = document.getElementById('customerCompanySlicer');
+    const customerGroupSelect = document.getElementById('customerCompanyGroupSlicer');
+    const productCompanySelect = document.getElementById('productCompanySlicer');
+    const productGroupSelect = document.getElementById('companyGroupSlicer');
     const custSelect = document.getElementById('customerSlicer');
     const prodSelect = document.getElementById('productSlicer');
-    const companySelect = document.getElementById('companyGroupSlicer');
     const customerSearch = document.getElementById('customerSlicerSearch');
     const productSearch = document.getElementById('productSlicerSearch');
 
-    slicerOptions.customers = getUniqueSlicerValues(data, 'customerName');
-    slicerOptions.companies = getUniqueSlicerValues(data, 'companyName');
-
-    if (companySelect) renderSlicerOptions(companySelect, slicerOptions.companies, '', 'All Companies');
-
-    const selectedCompany = companySelect ? companySelect.value : '';
-    const productData = selectedCompany ? data.filter(r => r.companyName === selectedCompany) : data;
-    slicerOptions.products = getUniqueSlicerValues(productData, 'itemName');
-
+    renderPlainSlicerOptions(customerCompanySelect, getUniqueSlicerValues(data, 'companyName').filter(value => value !== '—'), 'All Companies');
+    const customerGroupSource = customerCompanySelect?.value ? data.filter(row => row.companyName === customerCompanySelect.value) : data;
+    renderPlainSlicerOptions(customerGroupSelect, getUniqueSlicerValues(customerGroupSource, 'companyGroup').filter(value => value !== '—'), 'All Company Groups');
+    slicerOptions.customers = getUniqueSlicerValues(getCustomerCatalogData(false), 'customerName');
     if (custSelect) renderSlicerOptions(custSelect, slicerOptions.customers, customerSearch ? customerSearch.value : '', '\u{1F4CA} View All Customers');
+
+    renderPlainSlicerOptions(productCompanySelect, getUniqueSlicerValues(data, 'companyName').filter(value => value !== '—'), 'All Companies');
+    const productGroupSource = productCompanySelect?.value ? data.filter(row => row.companyName === productCompanySelect.value) : data;
+    slicerOptions.companyGroups = getUniqueSlicerValues(productGroupSource, 'companyGroup').filter(value => value !== '—');
+    renderPlainSlicerOptions(productGroupSelect, slicerOptions.companyGroups, 'All Company Groups');
+    slicerOptions.products = getUniqueSlicerValues(getProductCatalogData(false, false), 'itemName');
     if (prodSelect) renderSlicerOptions(prodSelect, slicerOptions.products, productSearch ? productSearch.value : '', '\u{1F4CA} View All Products');
 }
 
@@ -2783,6 +2890,24 @@ function renderSlicerOptions(select, values, searchText, emptyLabel) {
     }
 }
 
+function renderPlainSlicerOptions(select, values, emptyLabel) {
+    if (!select) return;
+    const selectedValue = select.value;
+    const fragment = document.createDocumentFragment();
+    const emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = emptyLabel;
+    fragment.appendChild(emptyOption);
+    values.forEach(value => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value;
+        fragment.appendChild(option);
+    });
+    select.replaceChildren(fragment);
+    select.value = values.includes(selectedValue) ? selectedValue : '';
+}
+
 function filterCustomerSlicer() {
     const select = document.getElementById('customerSlicer');
     const search = document.getElementById('customerSlicerSearch');
@@ -2796,62 +2921,90 @@ function filterProductSlicer() {
         renderSlicerOptions(select, slicerOptions.products, search.value, '\u{1F4CA} View All Products');
         updateProductPageStats();
         renderProducts();
+        updateProductAnalysis();
     }
 }
 
 function resetCustomerSlicer() {
     document.getElementById('customerSlicerSearch').value = '';
     document.getElementById('customerSlicer').value = '';
-    filterCustomerSlicer();
-    updateCustomerAnalysis();
+    document.getElementById('customerCompanySlicer').value = '';
+    document.getElementById('customerCompanyGroupSlicer').value = '';
+    updateCustomerCatalogFilters();
 }
 
 function resetProductSlicer() {
     document.getElementById('productSlicerSearch').value = '';
     document.getElementById('productSlicer').value = '';
-    filterProductSlicer();
+    document.getElementById('productCompanySlicer').value = '';
+    document.getElementById('companyGroupSlicer').value = '';
+    updateProductCatalogFilters();
+}
+
+function updateCustomerCatalogFilters() {
+    populateSlicers();
+    renderCustomers();
+    updateCustomerAnalysis();
+}
+
+function updateProductCatalogFilters() {
+    populateSlicers();
+    updateProductPageStats();
+    renderProducts();
     updateProductAnalysis();
 }
 
 function updateCompanyGroupSlicer() {
-    populateSlicers();
-    updateProductPageStats();
-    renderProducts();
-    updateProductAnalysis();
+    updateProductCatalogFilters();
 }
 
 function resetCompanyGroupSlicer() {
     document.getElementById('companyGroupSlicer').value = '';
-    populateSlicers();
-    updateProductPageStats();
-    renderProducts();
-    updateProductAnalysis();
+    updateProductCatalogFilters();
+}
+
+function getCustomerCatalogData(includeCustomer = true) {
+    const selectedCompany = document.getElementById('customerCompanySlicer')?.value || '';
+    const selectedGroup = document.getElementById('customerCompanyGroupSlicer')?.value || '';
+    const selectedCustomer = includeCustomer ? document.getElementById('customerSlicer')?.value || '' : '';
+    const data = getBaseData();
+    return data.filter(row => {
+        if (selectedCompany && row.companyName !== selectedCompany) return false;
+        if (selectedGroup && row.companyGroup !== selectedGroup) return false;
+        if (selectedCustomer && row.customerName !== selectedCustomer) return false;
+        return true;
+    });
+}
+
+function getProductCatalogData(includeProduct = true, includeSearch = true) {
+    const selectedCompany = document.getElementById('productCompanySlicer')?.value || '';
+    const selectedGroup = document.getElementById('companyGroupSlicer')?.value || '';
+    const selectedProduct = includeProduct ? document.getElementById('productSlicer')?.value || '' : '';
+    const search = normKey(document.getElementById('productSlicerSearch')?.value || '');
+    return getBaseData().filter(row => {
+        if (selectedCompany && row.companyName !== selectedCompany) return false;
+        if (selectedGroup && row.companyGroup !== selectedGroup) return false;
+        if (selectedProduct && row.itemName !== selectedProduct) return false;
+        if (includeSearch && search && !normKey(row.itemName).includes(search)) return false;
+        return true;
+    });
 }
 
 function getProductGroupData() {
-    const selectedCompany = document.getElementById('companyGroupSlicer')?.value || '';
-    const data = getBaseData();
-    return selectedCompany ? data.filter(r => r.companyName === selectedCompany) : data;
+    return getProductCatalogData(false, false);
 }
 
 function getProductPageData() {
-    const search = normKey(document.getElementById('productSlicerSearch')?.value || '');
-    const data = getProductGroupData();
-    return search ? data.filter(row => normKey(row.itemName).includes(search)) : data;
+    return getProductCatalogData(true, true);
 }
 
 function getProductAnalysisData() {
-    return getProductGroupData();
+    return getProductCatalogData(false, false);
 }
 
 function updateCustomerAnalysis() {
     const selected = document.getElementById('customerSlicer').value;
-    const data = getBaseData();
-    let filtered = data;
-    
-    if (selected) {
-        filtered = data.filter(r => r.customerName === selected);
-    }
+    const filtered = getCustomerCatalogData();
     
     const box = document.getElementById('customerChartsBox');
     if (selected && filtered.length > 0) {
@@ -3196,7 +3349,7 @@ let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        renderSalesTable();
+        updateAll();
     }, 300); // 300ms delay for better performance
 });
 
@@ -3214,14 +3367,15 @@ updateCharts = function() {
    EXPORT & SAMPLE
 ═══════════════════════════════════════════════ */
 function exportCSV() {
-    if (!rawData.length) { showToast('No data to export!', 'error'); return; }
-    const hdrs = ['SRNO','Invoice ID','Date','Customer','Company','Region','Booking Man','Item','Pack','Qty','Rate','Gross','Discount','Net'];
-    const rows = rawData.map(r => [r.srno,r.invoiceId,r.invoiceDate,r.customerName,r.companyName,r.regionName,r.bookingMan,r.itemName,r.packSize,r.stock,r.rate,r.grossAmount,r.discountAmount||(r.grossAmount-r.netAmount),r.netAmount]);
+    const data = getBaseData();
+    if (!data.length) { showToast('No filtered data to export!', 'error'); return; }
+    const hdrs = ['SRNO','Invoice ID','Date','Customer','Company','Company Group','Region','Booking Man','Item','Pack','Qty','Rate','Gross','Discount','Net'];
+    const rows = data.map(r => [r.srno,r.invoiceId,r.invoiceDate,r.customerName,r.companyName,r.companyGroup,r.regionName,r.bookingMan,r.itemName,r.packSize,r.stock,r.rate,r.grossAmount,r.discountAmount||(r.grossAmount-r.netAmount),r.netAmount]);
     const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sales');
     XLSX.writeFile(wb, 'pharma_sales_export.xlsx');
-    showToast('Exported as Excel file!', 'success');
+    showToast(`Exported ${data.length.toLocaleString()} filtered records as Excel!`, 'success');
 }
 
 /* ═══════════════════════════════════════════════
@@ -3229,7 +3383,7 @@ function exportCSV() {
 ═══════════════════════════════════════════════ */
 async function exportPDF() {
     const data = getBaseData();
-    if (!data.length) { showToast('No data to export!', 'error'); return; }
+    if (!data.length) { showToast('No filtered data to export!', 'error'); return; }
     showLoading(true);
 
     // Temporarily reveal every page so hidden chart canvases size/render correctly for capture
@@ -3286,8 +3440,7 @@ function buildPrintReport(data, chartImgs) {
     const topReg = applyTopN(topByValue(data, 'regionName', 'netAmount'));
     const topMan = applyTopN(topByValue(data, 'bookingMan', 'netAmount'));
 
-    const RECENT_LIMIT = 50;
-    const recent = data.slice(-RECENT_LIMIT).reverse();
+    const transactions = data.slice().reverse();
 
     const statCard = (label, value) => `
         <div style="flex:1;min-width:130px;border:1px solid #e4e4e4;border-radius:8px;padding:12px 14px;margin:4px">
@@ -3312,6 +3465,9 @@ function buildPrintReport(data, chartImgs) {
                 </div>
                 <div style="text-align:right;font-size:12px;color:#555">
                     <div><strong>Company:</strong> ${globalCompany || 'All Companies'}</div>
+                    <div><strong>Company Group:</strong> ${globalCompanyGroup || 'All Company Groups'}</div>
+                    <div><strong>Region:</strong> ${document.getElementById('fRegion')?.value || 'All Regions'}</div>
+                    <div><strong>Booking Man:</strong> ${document.getElementById('fBookingMan')?.value || 'All Booking Men'}</div>
                     <div><strong>Period:</strong> ${periodLabel}</div>
                     <div><strong>Top N:</strong> ${topN === 'all' ? 'All' : topN}</div>
                 </div>
@@ -3357,7 +3513,7 @@ function buildPrintReport(data, chartImgs) {
             </div>
 
             <div style="page-break-before:always"></div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:8px">Recent Transactions ${data.length > RECENT_LIMIT ? `(last ${RECENT_LIMIT} of ${data.length.toLocaleString()})` : ''}</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:8px">All Filtered Transactions (${data.length.toLocaleString()})</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px">
                 <thead>
                     <tr style="background:#f4f4f4">
@@ -3371,7 +3527,7 @@ function buildPrintReport(data, chartImgs) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${recent.map(s => `<tr>
+                    ${transactions.map(s => `<tr>
                         <td style="padding:5px 8px;border-bottom:1px solid #eee">${s.invoiceId}</td>
                         <td style="padding:5px 8px;border-bottom:1px solid #eee;color:#888">${s.invoiceDate}</td>
                         <td style="padding:5px 8px;border-bottom:1px solid #eee">${s.customerName}</td>
@@ -3394,14 +3550,14 @@ window.addEventListener('afterprint', () => {
 });
 
 function downloadSample() {
-    const hdrs = ['SRNO','Booking Man','Region Name','Customer Name','Company Name','Item Name','Pack Size','Rate','Invoice Id','Invoice Date','Stock','Gross Amount','Discount Amount','Net Amount'];
+    const hdrs = ['SRNO','Booking Man','Region Name','Customer Name','Company Name','Company Group','Item Name','Pack Size','Rate','Invoice Id','Invoice Date','Stock','Bonus','Gross Amount','Discount Amount','Net Amount'];
     const rows = [
-        [1,'Ahmed Khan','North','Pak Pharma','Pharma Corp','Aspirin','20mg',5.50,'INV-001','2025-03-15',100,550,25,525],
-        [2,'Fatima Ali','South','MediCare','Health Ltd','Paracetamol','500mg',3.20,'INV-002','2025-03-14',200,640,30,610],
-        [3,'Usman Malik','East','City Pharma','City Corp','Amoxicillin','250mg',8.75,'INV-003','2025-03-13',150,1312,50,1262],
-        [4,'Sara Khan','West','Star Pharma','Star Corp','Ibuprofen','200mg',4.50,'INV-004','2025-02-12',180,810,40,770],
-        [5,'Ali Raza','North','Health Plus','Plus Corp','Vitamin C','1000mg',12.00,'INV-005','2025-02-11',90,1080,60,1020],
-        [6,'Ahmed Khan','North','Pak Pharma','Pharma Corp','Aspirin','20mg',5.50,'INV-006','2025-01-20',120,660,33,627],
+        [1,'Ahmed Khan','North','Pak Pharma','Pharma Corp','Group A','Aspirin','20mg',5.50,'INV-001','2025-03-15',100,5,550,25,525],
+        [2,'Fatima Ali','South','MediCare','Health Ltd','Group B','Paracetamol','500mg',3.20,'INV-002','2025-03-14',200,10,640,30,610],
+        [3,'Usman Malik','East','City Pharma','City Corp','Group A','Amoxicillin','250mg',8.75,'INV-003','2025-03-13',150,8,1312,50,1262],
+        [4,'Sara Khan','West','Star Pharma','Star Corp','Group C','Ibuprofen','200mg',4.50,'INV-004','2025-02-12',180,6,810,40,770],
+        [5,'Ali Raza','North','Health Plus','Plus Corp','Group B','Vitamin C','1000mg',12.00,'INV-005','2025-02-11',90,12,1080,60,1020],
+        [6,'Ahmed Khan','North','Pak Pharma','Pharma Corp','Group A','Aspirin','20mg',5.50,'INV-006','2025-01-20',120,4,660,33,627],
     ];
     const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows]);
     const wb = XLSX.utils.book_new();
@@ -3414,13 +3570,11 @@ function clearData() {
     if (!rawData.length) { showToast('No data to clear!', 'error'); return; }
     if (!confirm('Are you sure you want to clear all imported data?')) return;
     rawData = [];
-    globalCompany = ''; periodMode = 'all'; periodValue = '';
+    globalCompany = ''; globalCompanyGroup = ''; periodMode = 'all'; periodValue = '';
     document.getElementById('periodMode').value = 'all';
     populateGlobalFilters();
-    document.querySelectorAll('tbody').forEach(tb => tb.innerHTML='');
-    document.querySelectorAll('.empty-state').forEach(e => e.style.display='block');
-    ['chartMonthly','chartTopProducts','chartRegion','chartBookingMan','chartGrossNet'].forEach(destroyChart);
-    document.getElementById('salesBadge').textContent = '0';
+    populateFilters();
+    updateAll();
     showToast('All data cleared.', 'info');
 }
 
@@ -3456,16 +3610,16 @@ zone.addEventListener('drop', e => {
 
 // Init with sample data for demo
 const DEMO = [
-    {srno:1,invoiceId:'INV-001',invoiceDate:'2025-01-15',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:100,bonus:0,grossAmount:550,discount:0,discountAmount:25,netAmount:525},
-    {srno:2,invoiceId:'INV-002',invoiceDate:'2025-02-14',customerName:'MediCare',customerCode:'CUST-002',companyName:'Health Ltd',regionName:'South',bookingMan:'Fatima Ali',itemName:'Paracetamol',packSize:'500mg',rate:3.20,stock:200,bonus:0,grossAmount:640,discount:0,discountAmount:30,netAmount:610},
-    {srno:3,invoiceId:'INV-003',invoiceDate:'2025-02-13',customerName:'City Pharma',customerCode:'CUST-003',companyName:'City Corp',regionName:'East',bookingMan:'Usman Malik',itemName:'Amoxicillin',packSize:'250mg',rate:8.75,stock:150,bonus:0,grossAmount:1312,discount:0,discountAmount:50,netAmount:1262},
-    {srno:4,invoiceId:'INV-004',invoiceDate:'2025-03-12',customerName:'Star Pharma',customerCode:'CUST-004',companyName:'Star Corp',regionName:'West',bookingMan:'Sara Khan',itemName:'Ibuprofen',packSize:'200mg',rate:4.50,stock:180,bonus:0,grossAmount:810,discount:0,discountAmount:40,netAmount:770},
-    {srno:5,invoiceId:'INV-005',invoiceDate:'2025-03-11',customerName:'Health Plus',customerCode:'CUST-005',companyName:'Plus Corp',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Vitamin C',packSize:'1000mg',rate:12.00,stock:90,bonus:0,grossAmount:1080,discount:0,discountAmount:60,netAmount:1020},
-    {srno:6,invoiceId:'INV-006',invoiceDate:'2025-03-20',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:120,bonus:0,grossAmount:660,discount:0,discountAmount:33,netAmount:627},
+    {srno:1,invoiceId:'INV-001',invoiceDate:'2025-01-15',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:100,bonus:0,grossAmount:550,discount:0,discountAmount:25,netAmount:525},
+    {srno:2,invoiceId:'INV-002',invoiceDate:'2025-02-14',customerName:'MediCare',customerCode:'CUST-002',companyName:'Health Ltd',companyGroup:'Group B',regionName:'South',bookingMan:'Fatima Ali',itemName:'Paracetamol',packSize:'500mg',rate:3.20,stock:200,bonus:0,grossAmount:640,discount:0,discountAmount:30,netAmount:610},
+    {srno:3,invoiceId:'INV-003',invoiceDate:'2025-02-13',customerName:'City Pharma',customerCode:'CUST-003',companyName:'City Corp',companyGroup:'Group A',regionName:'East',bookingMan:'Usman Malik',itemName:'Amoxicillin',packSize:'250mg',rate:8.75,stock:150,bonus:0,grossAmount:1312,discount:0,discountAmount:50,netAmount:1262},
+    {srno:4,invoiceId:'INV-004',invoiceDate:'2025-03-12',customerName:'Star Pharma',customerCode:'CUST-004',companyName:'Star Corp',companyGroup:'Group B',regionName:'West',bookingMan:'Sara Khan',itemName:'Ibuprofen',packSize:'200mg',rate:4.50,stock:180,bonus:0,grossAmount:810,discount:0,discountAmount:40,netAmount:770},
+    {srno:5,invoiceId:'INV-005',invoiceDate:'2025-03-11',customerName:'Health Plus',customerCode:'CUST-005',companyName:'Plus Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Vitamin C',packSize:'1000mg',rate:12.00,stock:90,bonus:0,grossAmount:1080,discount:0,discountAmount:60,netAmount:1020},
+    {srno:6,invoiceId:'INV-006',invoiceDate:'2025-03-20',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:120,bonus:0,grossAmount:660,discount:0,discountAmount:33,netAmount:627},
 ];
 rawData = DEMO;
-populateFilters();
 populateGlobalFilters();
+populateFilters();
 updateAll();
 
 /* ═══════════════════════════════════════════════
@@ -4167,7 +4321,7 @@ setTimeout(() => {
 <section id="ex-suite" aria-label="Executive Analytics Dashboard">
  <div class="ex-shell">
   <div class="ex-top"><div><div class="ex-brand">Pharma<b>Tracker</b> Executive Suite</div><div class="ex-sub">Sales intelligence, performance monitoring &amp; decision-ready reporting</div></div><div class="ex-actions"><button class="ex-btn" id="ex-theme">◐ Theme</button><div class="ex-relative"><button class="ex-btn" id="ex-alerts">🔔 Alerts <span id="ex-alert-count"></span></button><div id="ex-notices" class="ex-panel"></div></div><button class="ex-btn" id="ex-print">🖨 Print</button><button class="ex-btn" id="ex-csv">CSV</button><button class="ex-btn" id="ex-xlsx">Excel</button><button class="ex-btn ex-close" id="ex-close">×</button></div></div>
-  <div class="ex-filterbar"><input id="ex-search" class="ex-search" placeholder="Search customer, product, salesman…"><select id="ex-period" class="ex-select"><option value="all">All time</option><option value="month">Current month</option><option value="quarter">Current quarter</option><option value="year">Current year</option></select><select id="ex-region" class="ex-select"><option value="">All regions</option></select><label class="ex-btn">Target <input id="ex-target" type="number" min="1" value="1000000" style="width:88px;border:0;background:transparent;color:inherit;font-weight:700;outline:0"></label><button class="ex-btn" id="ex-refresh">↻ Refresh</button></div>
+  <div class="ex-filterbar"><input id="ex-search" class="ex-search" placeholder="Search customer, product, salesman…"><select id="ex-period" class="ex-select"><option value="all">All time</option><option value="month">Current month</option><option value="quarter">Current quarter</option><option value="year">Current year</option></select><select id="ex-region" class="ex-select"><option value="">All regions</option></select><select id="ex-profit-percent" class="ex-select" style="min-width:140px"><option value="">All Profit %</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option></select><label class="ex-btn">Target <input id="ex-target" type="number" min="1" value="1000000" style="width:88px;border:0;background:transparent;color:inherit;font-weight:700;outline:0"></label><button class="ex-btn" id="ex-refresh">↻ Refresh</button></div>
   <div id="ex-kpis" class="ex-kpis"></div>
   <div class="ex-grid">
    <article class="ex-panel ex-span-8"><h3>Revenue &amp; Forecast</h3><div class="ex-chart"><canvas id="ex-revenue"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Targets vs Achievement</h3><div id="ex-target-box"></div><div class="ex-chart"><canvas id="ex-gauge"></canvas></div></article>
@@ -4184,24 +4338,252 @@ setTimeout(() => {
  const $=id=>document.getElementById(id), money=n=>{try{return (typeof fmt==='function'?fmt(n):'PKR '+Number(n||0).toLocaleString())}catch(e){return 'PKR '+Number(n||0).toLocaleString()}};
  const charts={}; let suiteRows=[];
  function num(v){return Number(String(v??0).replace(/[^0-9.-]/g,''))||0} function amount(r){return num(r.netAmount??r.grossAmount??r.amount)}
+ function profitRate(){let v=parseFloat($('ex-profit-percent')?.value);return (!v||isNaN(v)||v<=0)?.16:v/100}
  function key(r,n){return String(r[n]??r[n.replace('Name','')]??'Unassigned').trim()||'Unassigned'} function group(rows,field){return rows.reduce((a,r)=>{let k=key(r,field);a[k]=(a[k]||0)+amount(r);return a},{})}
  function dateOf(r){let d=new Date(r.invoiceDate||r.date);return isNaN(d)?null:d} function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
  function rows(){let data=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
  function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>Number(v).toLocaleString()},grid:{color:'rgba(148,180,255,.1)'}}}}})}
  function sorted(g,n=6){return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,n)} function list(id,g){$(id).innerHTML=sorted(g,5).map(([n,v])=>`<li><span>${escapeHtml(n)}</span><b>${money(v)}</b></li>`).join('')||'<li>No data imported yet.</li>'} function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
- function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
- $('ex-kpis').innerHTML=[['Total Revenue',money(total),'#6d7cff'],['Total Profit',money(total*.16),'#2ee6a6'],['Invoices',invoices.toLocaleString(),'#ffb65d'],['Customers',customers.toLocaleString(),'#a979ff'],['Products',products.toLocaleString(),'#51c8ff'],['Avg. Order',money(avg),'#ff718c']].map((x,i)=>`<div class="ex-card" style="--card-color:${x[2]}"><div class="ex-label">${x[0]}</div><div class="ex-value">${x[1]}</div><div class="ex-delta">${i<2?'▲ '+(8+i*3)+'% vs prior period':'Live from imported data'}</div></div>`).join('');
+ function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,oldProfitPct=$('ex-profit-percent').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';$('ex-profit-percent').value=oldProfitPct;suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
+ $('ex-kpis').innerHTML=[['Total Revenue',money(total),'#6d7cff'],['Total Profit',money(total*profitRate()),'#2ee6a6'],['Invoices',invoices.toLocaleString(),'#ffb65d'],['Customers',customers.toLocaleString(),'#a979ff'],['Products',products.toLocaleString(),'#51c8ff'],['Avg. Order',money(avg),'#ff718c']].map((x,i)=>`<div class="ex-card" style="--card-color:${x[2]}"><div class="ex-label">${x[0]}</div><div class="ex-value">${x[1]}</div><div class="ex-delta">${i<2?'▲ '+(8+i*3)+'% vs prior period':'Live from imported data'}</div></div>`).join('');
  let monthly={};suiteRows.forEach(r=>{let d=dateOf(r);if(d){let k=monthKey(d);monthly[k]=(monthly[k]||0)+amount(r)}});let ms=Object.keys(monthly).sort(), vals=ms.map(k=>monthly[k]);let forecast=vals.length>1?vals[vals.length-1]+(vals[vals.length-1]-vals[vals.length-2]):total;setChart('ex-revenue','line',[...ms,'Forecast'],[...vals,forecast],'#6d7cff',{label:'Revenue & Forecast'});
  let target=num($('ex-target').value)||1, pct=Math.min(100,Math.round(total/target*100));$('ex-target-box').innerHTML=`<div class="ex-value">${pct}% <span class="ex-note">achieved</span></div><div class="ex-meter"><i style="width:${pct}%"></i></div><div class="ex-note">${money(total)} of ${money(target)} target</div>`;setChart('ex-gauge','doughnut',['Achieved','Remaining'],[Math.min(total,target),Math.max(0,target-total)],'#2ee6a6',{background:['#2ee6a6','#243451'],legend:false,label:'Target'});
  let salesman=group(suiteRows,'bookingMan'), region=group(suiteRows,'regionName'), product=group(suiteRows,'itemName'), customer=group(suiteRows,'customerName');let gr=sorted(salesman), rg=sorted(region), pg=sorted(product), cg=sorted(customer);setChart('ex-salesman','bar',gr.map(x=>x[0]),gr.map(x=>x[1]),'#ae68ff');setChart('ex-region-chart','doughnut',rg.map(x=>x[0]),rg.map(x=>x[1]),'#51c8ff',{legend:true});setChart('ex-products','bar',pg.map(x=>x[0]),pg.map(x=>x[1]),'#ffb65d');setChart('ex-customers','bar',cg.map(x=>x[0]),cg.map(x=>x[1]),'#2ee6a6');
- setChart('ex-profit','line',ms,vals.map(v=>v*.16),'#2ee6a6',{label:'Estimated Profit'});setChart('ex-waterfall','bar',['Gross Sales','Discount','Net Sales'],[gross,-disc,total],'#ffb65d',{label:'Waterfall'});let quarters={};suiteRows.forEach(r=>{let d=dateOf(r);if(d){let k=d.getFullYear()+' Q'+(Math.floor(d.getMonth()/3)+1);quarters[k]=(quarters[k]||0)+amount(r)}});let qs=Object.entries(quarters).sort();setChart('ex-quarterly','line',qs.map(x=>x[0]),qs.map(x=>x[1]),'#a979ff');setChart('ex-growth','line',ms,vals.map((v,i)=>i?Math.round((v/(vals[i-1]||1)-1)*100):0),'#51c8ff',{label:'Growth %'});setChart('ex-mix','doughnut',pg.map(x=>x[0]),pg.map(x=>x[1]),'#ff718c',{legend:true});
+ setChart('ex-profit','line',ms,vals.map(v=>v*profitRate()),'#2ee6a6',{label:'Estimated Profit'});setChart('ex-waterfall','bar',['Gross Sales','Discount','Net Sales'],[gross,-disc,total],'#ffb65d',{label:'Waterfall'});let quarters={};suiteRows.forEach(r=>{let d=dateOf(r);if(d){let k=d.getFullYear()+' Q'+(Math.floor(d.getMonth()/3)+1);quarters[k]=(quarters[k]||0)+amount(r)}});let qs=Object.entries(quarters).sort();setChart('ex-quarterly','line',qs.map(x=>x[0]),qs.map(x=>x[1]),'#a979ff');setChart('ex-growth','line',ms,vals.map((v,i)=>i?Math.round((v/(vals[i-1]||1)-1)*100):0),'#51c8ff',{label:'Growth %'});setChart('ex-mix','doughnut',pg.map(x=>x[0]),pg.map(x=>x[1]),'#ff718c',{legend:true});
  $('ex-funnel').innerHTML=[['Leads',total*1.35,100],['Quotes',total*1.17,84],['Orders',total,68],['Delivered',total*.91,52]].map(x=>`<div style="width:${x[2]}%">${x[0]} · ${money(x[1])}</div>`).join('');let max=Math.max(...vals,1);$('ex-heatmap').innerHTML=Array.from({length:12},(_,i)=>{let v=vals[i]||0,l=Math.min(3,Math.floor(v/max*4));return `<i data-l="${l}" title="${ms[i]||'Month'}: ${money(v)}"></i>`}).join('');list('ex-top-products',product);list('ex-top-customers',customer);
  let latest=ms.slice(-4).reverse();$('ex-timeline').innerHTML=latest.map(m=>`<div><b>${m}</b><br><span class="ex-note">${money(monthly[m])} recorded revenue</span></div>`).join('')||'<div class="ex-note">Upload data to populate activity.</div>';let alerts=[];if(!suiteRows.length)alerts.push('Import an Excel or CSV file to activate analytics.');if(total<target)alerts.push(`Target gap: ${money(target-total)} remaining.`);if(products<3&&suiteRows.length)alerts.push('Low product diversity detected.');if(!alerts.length)alerts.push('Performance is on track.');$('ex-smart-alerts').innerHTML=alerts.map(x=>`<li><span>${x}</span></li>`).join('');$('ex-notices').innerHTML='<h3>Notifications</h3>'+alerts.map(x=>`<p class="ex-note">• ${x}</p>`).join('');$('ex-alert-count').textContent=alerts.length;
  }
  function exportRows(kind){let rowsOut=suiteRows.map(r=>({Invoice:r.invoiceId||'',Date:r.invoiceDate||'',Customer:r.customerName||'',Product:r.itemName||'',Region:r.regionName||'',Salesman:r.bookingMan||'',Amount:amount(r)}));if(kind==='xlsx'&&typeof XLSX!=='undefined'){let ws=XLSX.utils.json_to_sheet(rowsOut),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Executive Report');XLSX.writeFile(wb,'PharmaTracker_Executive_Report.xlsx');return}let keys=Object.keys(rowsOut[0]||{Message:'No data'}),csv=[keys.join(','),...rowsOut.map(r=>keys.map(k=>'"'+String(r[k]??'').replace(/"/g,'""')+'"').join(','))].join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PharmaTracker_Executive_Report.csv';a.click();URL.revokeObjectURL(a.href)}
  function open(){ $('ex-suite').style.display='block'; $('ex-launch').style.display='none';refresh() } function close(){ $('ex-suite').style.display='none'; $('ex-launch').style.display='block' }
- $('ex-launch').onclick=open;$('ex-close').onclick=close;$('ex-refresh').onclick=refresh;$('ex-theme').onclick=()=>{document.body.classList.toggle('ex-light');refresh()};$('ex-alerts').onclick=()=>{$('ex-notices').style.display=$('ex-notices').style.display==='block'?'none':'block'};$('ex-print').onclick=()=>window.print();$('ex-csv').onclick=()=>exportRows('csv');$('ex-xlsx').onclick=()=>exportRows('xlsx');['ex-search','ex-period','ex-region','ex-target'].forEach(id=>$(id).addEventListener(id==='ex-search'?'input':'change',refresh));
+ $('ex-launch').onclick=open;$('ex-close').onclick=close;$('ex-refresh').onclick=refresh;$('ex-theme').onclick=()=>{document.body.classList.toggle('ex-light');refresh()};$('ex-alerts').onclick=()=>{$('ex-notices').style.display=$('ex-notices').style.display==='block'?'none':'block'};$('ex-print').onclick=()=>window.print();$('ex-csv').onclick=()=>exportRows('csv');$('ex-xlsx').onclick=()=>exportRows('xlsx');['ex-search','ex-period','ex-region','ex-profit-percent','ex-target'].forEach(id=>$(id).addEventListener(id==='ex-search'?'input':'change',refresh));
  let existing=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let regions=[...new Set(existing.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').insertAdjacentHTML('beforeend',regions.map(x=>`<option>${escapeHtml(x)}</option>`).join(''));
+})();
+</script>
+<style id="executive-filter-sync-styles">
+  .ex-delta.negative{color:var(--ex-red)}
+  .ex-delta.neutral{color:var(--ex-muted)}
+  @media print{#ex-suite .ex-panel,#ex-suite .ex-card{break-inside:avoid;page-break-inside:avoid}}
+</style>
+<script id="executive-filter-sync">
+(() => {
+    const byId = id => document.getElementById(id);
+    const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const money = value => typeof fmt === 'function' ? fmt(value) : `PKR ${Number(value || 0).toLocaleString()}`;
+    const amount = row => Number(row?.netAmount ?? row?.grossAmount ?? row?.amount ?? 0) || 0;
+    const valueFor = (row, field) => String(row?.[field] ?? '').trim();
+    const chartColors = ['#6d7cff','#2ee6a6','#ffb65d','#a979ff','#51c8ff','#ff718c'];
+    let executiveRows = [];
+
+    const filterBar = document.querySelector('.ex-filterbar');
+    if (filterBar && !byId('ex-company')) {
+        filterBar.insertAdjacentHTML('beforeend', '<select id="ex-company" class="ex-select"><option value="">All companies</option></select><select id="ex-company-group" class="ex-select"><option value="">All company groups</option></select>');
+    }
+
+    function currentSalesData() {
+        return typeof getBaseData === 'function' ? getBaseData() : (Array.isArray(window.rawData) ? window.rawData : []);
+    }
+
+    function populateExecutiveSlicers(data) {
+        const company = byId('ex-company');
+        const group = byId('ex-company-group');
+        const region = byId('ex-region');
+        const selectedCompany = company?.value || '';
+        const selectedGroup = group?.value || '';
+        const selectedRegion = region?.value || '';
+        const companies = [...new Set(data.map(row => valueFor(row, 'companyName')).filter(Boolean))].sort();
+        const groupData = selectedCompany ? data.filter(row => valueFor(row, 'companyName') === selectedCompany) : data;
+        const groups = [...new Set(groupData.map(row => valueFor(row, 'companyGroup')).filter(Boolean))].sort();
+        const regionData = groupData.filter(row => !selectedGroup || valueFor(row, 'companyGroup') === selectedGroup);
+        const regions = [...new Set(regionData.map(row => valueFor(row, 'regionName')).filter(Boolean))].sort();
+        if (company) {
+            company.innerHTML = '<option value="">All companies</option>' + companies.map(item => `<option value="${escape(item)}">${escape(item)}</option>`).join('');
+            company.value = companies.includes(selectedCompany) ? selectedCompany : '';
+        }
+        if (group) {
+            group.innerHTML = '<option value="">All company groups</option>' + groups.map(item => `<option value="${escape(item)}">${escape(item)}</option>`).join('');
+            group.value = groups.includes(selectedGroup) ? selectedGroup : '';
+        }
+        if (region) {
+            region.innerHTML = '<option value="">All regions</option>' + regions.map(item => `<option value="${escape(item)}">${escape(item)}</option>`).join('');
+            region.value = regions.includes(selectedRegion) ? selectedRegion : '';
+        }
+    }
+
+    function executiveFilteredRows() {
+        const company = byId('ex-company')?.value || '';
+        const group = byId('ex-company-group')?.value || '';
+        const region = byId('ex-region')?.value || '';
+        const query = (byId('ex-search')?.value || '').trim().toLowerCase();
+        const period = byId('ex-period')?.value || 'all';
+        const now = new Date();
+        return currentSalesData().filter(row => {
+            if (company && valueFor(row, 'companyName') !== company) return false;
+            if (group && valueFor(row, 'companyGroup') !== group) return false;
+            if (region && valueFor(row, 'regionName') !== region) return false;
+            if (query && !Object.values(row).join(' ').toLowerCase().includes(query)) return false;
+            const date = new Date(row.invoiceDate || row.date);
+            if (period === 'all' || Number.isNaN(date.getTime())) return period === 'all';
+            if (period === 'month') return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+            if (period === 'quarter') return date.getFullYear() === now.getFullYear() && Math.floor(date.getMonth() / 3) === Math.floor(now.getMonth() / 3);
+            return date.getFullYear() === now.getFullYear();
+        });
+    }
+
+    function aggregate(rows, field) {
+        const totals = new Map();
+        rows.forEach(row => {
+            const label = valueFor(row, field) || 'Unassigned';
+            totals.set(label, (totals.get(label) || 0) + amount(row));
+        });
+        return [...totals.entries()].sort((a, b) => b[1] - a[1]);
+    }
+
+    function monthlyTotals(rows) {
+        const totals = new Map();
+        rows.forEach(row => {
+            const date = new Date(row.invoiceDate || row.date);
+            if (Number.isNaN(date.getTime())) return;
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            totals.set(key, (totals.get(key) || 0) + amount(row));
+        });
+        return [...totals.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    }
+
+    function kpiDelta(rows, metric) {
+        const months = monthlyTotals(rows).map(entry => entry[0]);
+        if (months.length < 2) return { text: 'No prior period', tone: 'neutral' };
+        const previous = months[months.length - 2];
+        const current = months[months.length - 1];
+        const previousRows = rows.filter(row => String(row.invoiceDate || '').startsWith(previous));
+        const currentRows = rows.filter(row => String(row.invoiceDate || '').startsWith(current));
+        const prior = metric(previousRows);
+        const now = metric(currentRows);
+        if (!prior) return { text: now ? `▲ New vs ${previous}` : 'No prior period', tone: now ? 'positive' : 'neutral' };
+        const pct = ((now - prior) / prior) * 100;
+        return { text: `${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}% vs ${previous}`, tone: pct >= 0 ? 'positive' : 'negative' };
+    }
+
+    function setExecutiveChart(id, type, labels, data, color, options = {}) {
+        if (!window.Chart || !byId(id)) return;
+        const existing = Chart.getChart(id);
+        if (existing) existing.destroy();
+        new Chart(byId(id), {
+            type,
+            data: { labels, datasets: [{ label: options.label || 'Revenue', data, backgroundColor: options.background || `${color}66`, borderColor: color, borderWidth: 2, fill: options.fill ?? type === 'line', tension: .35 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: options.legend ?? false, labels: { color: '#9eadd0' } }, tooltip: { callbacks: { label: context => money(context.raw) } } },
+                scales: type === 'doughnut' || type === 'pie' ? {} : { x: { ticks: { color: '#9eadd0', maxRotation: 0 }, grid: { display: false } }, y: { ticks: { color: '#9eadd0', callback: value => Number(value).toLocaleString() }, grid: { color: 'rgba(148,180,255,.1)' } } }
+            }
+        });
+    }
+
+    function renderExecutiveLists(product, customer, monthly, total, target, products) {
+        const list = (id, entries) => {
+            byId(id).innerHTML = entries.slice(0, 5).map(([name, total]) => `<li><span>${escape(name)}</span><b>${money(total)}</b></li>`).join('') || '<li>No data imported yet.</li>';
+        };
+        list('ex-top-products', product);
+        list('ex-top-customers', customer);
+        byId('ex-funnel').innerHTML = [['Leads', total * 1.35, 100], ['Quotes', total * 1.17, 84], ['Orders', total, 68], ['Delivered', total * .91, 52]].map(([label, value, width]) => `<div style="width:${width}%">${label} · ${money(value)}</div>`).join('');
+        const maximum = Math.max(...monthly.map(entry => entry[1]), 1);
+        byId('ex-heatmap').innerHTML = Array.from({ length: 12 }, (_, index) => {
+            const [month, value] = monthly[index] || ['Month', 0];
+            return `<i data-l="${Math.min(3, Math.floor(value / maximum * 4))}" title="${escape(month)}: ${money(value)}"></i>`;
+        }).join('');
+        const latest = monthly.slice(-4).reverse();
+        byId('ex-timeline').innerHTML = latest.map(([month, value]) => `<div><b>${escape(month)}</b><br><span class="ex-note">${money(value)} recorded revenue</span></div>`).join('') || '<div class="ex-note">Upload data to populate activity.</div>';
+        const alerts = [];
+        if (!executiveRows.length) alerts.push('No records match the selected filters.');
+        if (total < target) alerts.push(`Target gap: ${money(target - total)} remaining.`);
+        if (products < 3 && executiveRows.length) alerts.push('Low product diversity detected.');
+        if (!alerts.length) alerts.push('Performance is on track.');
+        byId('ex-smart-alerts').innerHTML = alerts.map(alert => `<li><span>${escape(alert)}</span></li>`).join('');
+        byId('ex-notices').innerHTML = '<h3>Notifications</h3>' + alerts.map(alert => `<p class="ex-note">• ${escape(alert)}</p>`).join('');
+        byId('ex-alert-count').textContent = alerts.length;
+    }
+
+    function refreshExecutiveDashboard() {
+        const salesData = currentSalesData();
+        populateExecutiveSlicers(salesData);
+        executiveRows = executiveFilteredRows();
+        window.executiveFilteredRows = executiveRows;
+        const total = executiveRows.reduce((sum, row) => sum + amount(row), 0);
+        const gross = executiveRows.reduce((sum, row) => sum + (Number(row.grossAmount) || 0), 0);
+        const discount = Math.max(0, gross - total);
+        const invoices = executiveRows.length;
+        const customers = new Set(executiveRows.map(row => normKey(row.customerCode || row.customerName))).size;
+        const products = new Set(executiveRows.map(row => normKey(row.itemName))).size;
+        const average = invoices ? total / invoices : 0;
+        const selectedProfitPercent = Number(byId('ex-profit-percent')?.value || 0);
+        const profitRate = selectedProfitPercent > 0 ? selectedProfitPercent / 100 : 0;
+        const kpis = [
+            ['Total Revenue', money(total), kpiDelta(executiveRows, rows => rows.reduce((sum, row) => sum + amount(row), 0)), '#6d7cff'],
+            ['Total Profit', money(total * profitRate), selectedProfitPercent ? kpiDelta(executiveRows, rows => rows.reduce((sum, row) => sum + amount(row) * profitRate, 0)) : { text: 'Select a profit %', tone: 'neutral' }, '#2ee6a6'],
+            ['Invoices', invoices.toLocaleString(), kpiDelta(executiveRows, rows => rows.length), '#ffb65d'],
+            ['Customers', customers.toLocaleString(), kpiDelta(executiveRows, rows => new Set(rows.map(row => normKey(row.customerCode || row.customerName))).size), '#a979ff'],
+            ['Products', products.toLocaleString(), kpiDelta(executiveRows, rows => new Set(rows.map(row => normKey(row.itemName))).size), '#51c8ff'],
+            ['Avg. Order', money(average), kpiDelta(executiveRows, rows => rows.length ? rows.reduce((sum, row) => sum + amount(row), 0) / rows.length : 0), '#ff718c']
+        ];
+        byId('ex-kpis').innerHTML = kpis.map(([label, value, delta, color]) => `<div class="ex-card" style="--card-color:${color}"><div class="ex-label">${label}</div><div class="ex-value">${value}</div><div class="ex-delta ${delta.tone}">${delta.text}</div></div>`).join('');
+
+        const monthly = monthlyTotals(executiveRows);
+        const months = monthly.map(entry => entry[0]);
+        const values = monthly.map(entry => entry[1]);
+        const forecast = values.length > 1 ? values.at(-1) + (values.at(-1) - values.at(-2)) : total;
+        const target = Number(byId('ex-target')?.value || 0) || 1;
+        const achieved = Math.min(100, Math.round(total / target * 100));
+        byId('ex-target-box').innerHTML = `<div class="ex-value">${achieved}% <span class="ex-note">achieved</span></div><div class="ex-meter"><i style="width:${achieved}%"></i></div><div class="ex-note">${money(total)} of ${money(target)} target</div>`;
+        setExecutiveChart('ex-revenue', 'line', [...months, 'Forecast'], [...values, forecast], '#6d7cff', { label: 'Revenue & Forecast' });
+        setExecutiveChart('ex-gauge', 'doughnut', ['Achieved', 'Remaining'], [Math.min(total, target), Math.max(0, target - total)], '#2ee6a6', { background: ['#2ee6a6','#243451'] });
+        const salesman = aggregate(executiveRows, 'bookingMan');
+        const regions = aggregate(executiveRows, 'regionName');
+        const product = aggregate(executiveRows, 'itemName');
+        const customer = aggregate(executiveRows, 'customerName');
+        const labelsAndValues = entries => [entries.slice(0, 6).map(entry => entry[0]), entries.slice(0, 6).map(entry => entry[1])];
+        let [labels, valuesForChart] = labelsAndValues(salesman); setExecutiveChart('ex-salesman', 'bar', labels, valuesForChart, '#ae68ff');
+        [labels, valuesForChart] = labelsAndValues(regions); setExecutiveChart('ex-region-chart', 'doughnut', labels, valuesForChart, '#51c8ff', { legend: true, background: chartColors });
+        [labels, valuesForChart] = labelsAndValues(product); setExecutiveChart('ex-products', 'bar', labels, valuesForChart, '#ffb65d');
+        [labels, valuesForChart] = labelsAndValues(customer); setExecutiveChart('ex-customers', 'bar', labels, valuesForChart, '#2ee6a6');
+        setExecutiveChart('ex-profit', 'line', months, values.map(value => value * profitRate), '#2ee6a6', { label: selectedProfitPercent ? `Estimated Profit (${selectedProfitPercent}%)` : 'Select a Profit %' });
+        setExecutiveChart('ex-waterfall', 'bar', ['Gross Sales','Discount','Net Sales'], [gross,-discount,total], '#ffb65d', { label: 'Waterfall' });
+        const quarters = new Map();
+        executiveRows.forEach(row => { const date = new Date(row.invoiceDate || row.date); if (!Number.isNaN(date.getTime())) { const quarter = `${date.getFullYear()} Q${Math.floor(date.getMonth() / 3) + 1}`; quarters.set(quarter, (quarters.get(quarter) || 0) + amount(row)); } });
+        const quarterRows = [...quarters.entries()].sort((a,b) => a[0].localeCompare(b[0]));
+        setExecutiveChart('ex-quarterly', 'line', quarterRows.map(entry => entry[0]), quarterRows.map(entry => entry[1]), '#a979ff');
+        setExecutiveChart('ex-growth', 'line', months, values.map((value, index) => index ? Math.round((value / (values[index - 1] || 1) - 1) * 100) : 0), '#51c8ff', { label: 'Growth %' });
+        [labels, valuesForChart] = labelsAndValues(product); setExecutiveChart('ex-mix', 'doughnut', labels, valuesForChart, '#ff718c', { legend: true, background: chartColors });
+        renderExecutiveLists(product, customer, monthly, total, target, products);
+    }
+
+    function exportExecutiveRows(kind) {
+        const rows = executiveRows.map(row => ({ Invoice: row.invoiceId || '', Date: row.invoiceDate || '', Customer: row.customerName || '', Company: row.companyName || '', 'Company Group': row.companyGroup || '', Product: row.itemName || '', Region: row.regionName || '', Salesman: row.bookingMan || '', Amount: amount(row) }));
+        if (kind === 'xlsx' && typeof XLSX !== 'undefined') {
+            const sheet = XLSX.utils.json_to_sheet(rows.length ? rows : [{ Message: 'No data matches the selected filters.' }]);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, sheet, 'Executive Report');
+            XLSX.writeFile(workbook, 'PharmaTracker_Executive_Report.xlsx');
+            return;
+        }
+        const keys = Object.keys(rows[0] || { Message: 'No data matches the selected filters.' });
+        const csv = [keys.join(','), ...rows.map(row => keys.map(key => `"${String(row[key] ?? '').replace(/"/g, '""')}"`).join(','))].join('\n');
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        link.download = 'PharmaTracker_Executive_Report.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    byId('ex-launch').onclick = () => { byId('ex-suite').style.display = 'block'; byId('ex-launch').style.display = 'none'; refreshExecutiveDashboard(); };
+    byId('ex-close').onclick = () => { byId('ex-suite').style.display = 'none'; byId('ex-launch').style.display = 'block'; };
+    byId('ex-refresh').onclick = refreshExecutiveDashboard;
+    byId('ex-theme').onclick = () => { document.body.classList.toggle('ex-light'); refreshExecutiveDashboard(); };
+    byId('ex-alerts').onclick = () => { const notices = byId('ex-notices'); notices.style.display = notices.style.display === 'block' ? 'none' : 'block'; };
+    byId('ex-print').onclick = () => { refreshExecutiveDashboard(); window.print(); };
+    byId('ex-csv').onclick = () => exportExecutiveRows('csv');
+    byId('ex-xlsx').onclick = () => exportExecutiveRows('xlsx');
+    ['ex-search','ex-period','ex-region','ex-profit-percent','ex-target','ex-company','ex-company-group'].forEach(id => byId(id)?.addEventListener(id === 'ex-search' ? 'input' : 'change', refreshExecutiveDashboard));
+    window.refreshExecutiveDashboard = refreshExecutiveDashboard;
+    refreshExecutiveDashboard();
 })();
 </script>
 </body></html>
