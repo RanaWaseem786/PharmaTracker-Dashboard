@@ -873,11 +873,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             <!-- LOGIN FORM -->
         <div class="auth-form" id="form-login">
             <div class="auth-error" id="login-error"></div>
-            <div class="auth-success show" id="login-success">Demo account ready → waseem@example.com / demo1234</div>
+            <div class="auth-success show" id="login-success">Admin account ready → wasim.rana.x@gmail.com / demo1234</div>
 
             <div class="auth-field">
                 <label>Email Address</label>
-                <input class="auth-input" type="email" id="login-email" placeholder="waseem@example.com" autocomplete="email">
+                <input class="auth-input" type="email" id="login-email" placeholder="wasim.rana.x@gmail.com" autocomplete="email">
             </div>
             <div class="auth-field">
                 <label>Password</label>
@@ -918,7 +918,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
             <div class="auth-field">
                 <label>Email Address</label>
-                <input class="auth-input" type="email" id="signup-email" placeholder="waseem@example.com">
+                <input class="auth-input" type="email" id="signup-email" placeholder="wasim.rana.x@gmail.com">
             </div>
 
             <div class="auth-field">
@@ -1044,7 +1044,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
             <div class="auth-field">
                 <label>Email Address</label>
-                <input class="auth-input" type="email" id="forgot-email" placeholder="waseem@example.com" autocomplete="email">
+                <input class="auth-input" type="email" id="forgot-email" placeholder="wasim.rana.x@gmail.com" autocomplete="email">
             </div>
 
             <button class="auth-btn" id="forgot-btn" onclick="doForgotPassword()">
@@ -1891,7 +1891,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 </div>
                 <div>
                     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Email</label>
-                    <input type="email" class="filter-select" style="width:100%;padding:9px 12px" id="settings-email" value="waseem@example.com" disabled>
+                    <input type="email" class="filter-select" style="width:100%;padding:9px 12px" id="settings-email" value="wasim.rana.x@gmail.com" disabled>
                 </div>
                 <div>
                     <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Company</label>
@@ -3845,6 +3845,8 @@ updateAll();
 ═══════════════════════════════════════════════ */
 const AUTH_KEY = 'pharmatracker_users';
 const SESSION_KEY = 'pharmatracker_session';
+const OWNER_EMAIL = 'wasim.rana.x@gmail.com';
+const LEGACY_OWNER_EMAIL = 'waseem@example.com';
 const SUBSCRIPTION_DAYS = 30;
 const REGISTRATION_FEE = 1000;
 
@@ -3924,6 +3926,18 @@ async function deleteUserByEmail(email) {
 function getSession() { return localStorage.getItem(SESSION_KEY); }
 function saveSession(email) { localStorage.setItem(SESSION_KEY, email.toLowerCase()); }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+// Move only the original seeded account to the owner's new email address.
+async function migrateLegacyOwnerAccount() {
+    const legacy = await getUserByEmail(LEGACY_OWNER_EMAIL);
+    if (!legacy || legacy.id !== 'demo-admin') return;
+    if (await getUserByEmail(OWNER_EMAIL)) return;
+
+    const migrated = { ...legacy, email: OWNER_EMAIL, role: 'admin', status: 'active', validUntil: null };
+    await saveUser(migrated);
+    await deleteUserByEmail(LEGACY_OWNER_EMAIL);
+    if (getSession() === LEGACY_OWNER_EMAIL) saveSession(OWNER_EMAIL);
+}
 
 // Simple hash (not cryptographic — suitable for this kind of internal tool)
 function hashPw(pw) {
@@ -4014,6 +4028,7 @@ const ROLE_COLORS = { admin:'#ffa657', analyst:'#58a6ff', manager:'#bc8cff', vie
 const ROLE_LABELS = { admin:'Admin', analyst:'Analyst', manager:'Manager', viewer:'Viewer' };
 
 async function initAuth() {
+    await migrateLegacyOwnerAccount();
     const sessionEmail = getSession();
     if (sessionEmail) {
         const found = await getUserByEmail(sessionEmail);
@@ -4025,23 +4040,23 @@ async function initAuth() {
     }
     document.getElementById('auth-overlay').classList.remove('hidden');
 
-    // Seed a demo admin if no users exist yet
+    // Seed the owner's admin account if no users exist yet
     const all = await getAllUsers();
     if (all.length === 0) {
         const demo = {
-            id: 'demo-admin',
+            id: 'owner-admin',
             fname: 'Muhammad', lname: 'Waseem',
-            email: 'waseem@example.com',
+            email: OWNER_EMAIL,
             company: 'Noor Distributor',
             role: 'admin',
             pw: hashPw('demo1234'),
             status: 'active',
             createdAt: new Date().toISOString(),
             approvedAt: new Date().toISOString(),
-            validUntil: null // demo admin never expires
+            validUntil: null // owner admin never expires
         };
         await saveUser(demo);
-        document.getElementById('login-success').textContent = 'Demo account ready → waseem@example.com / demo1234';
+        document.getElementById('login-success').textContent = 'Admin account ready → ' + OWNER_EMAIL + ' / demo1234';
         document.getElementById('login-success').classList.add('show');
     }
 }
@@ -4806,4 +4821,37 @@ setTimeout(() => {
     refreshExecutiveDashboard();
 })();
 </script>
+<!-- Global interface refinement: presentation only; application logic remains unchanged. -->
+<style id="global-interface-refinement">
+  :root{
+    --bg:#07111f;--surface:#0d1a2b;--surface2:#13243a;--border:rgba(173,202,235,.13);
+    --accent:#67a9ff;--accent2:#36d6a0;--accent3:#ff8091;--accent4:#ffc26b;--accent5:#9c8cff;
+    --text:#f1f6fd;--muted:#93a5bd;--sidebar-w:250px;
+  }
+  body{background:radial-gradient(circle at 84% -12%,rgba(69,106,205,.20),transparent 32%),radial-gradient(circle at 12% 92%,rgba(23,165,151,.10),transparent 34%),var(--bg);letter-spacing:.01em}
+  .sidebar{background:linear-gradient(180deg,rgba(12,27,47,.98),rgba(7,17,31,.98));border-right:1px solid var(--border);box-shadow:18px 0 45px rgba(0,0,0,.12)}
+  .logo{padding:26px 22px 22px;border-bottom-color:var(--border)}
+  .logo-icon{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#5c8dff,#9b73ee);box-shadow:0 10px 26px rgba(91,137,255,.28);font-size:18px}
+  .logo-text{font-size:16px;letter-spacing:-.45px}.logo-sub{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .nav{padding:22px 14px}.nav-label{padding:0 10px;margin:20px 0 9px;font-size:9.5px;letter-spacing:.13em}
+  .nav-item{padding:11px 12px;border-radius:11px;margin-bottom:4px;font-size:13px;gap:12px}.nav-item i{font-size:14px}
+  .nav-item:hover{background:rgba(137,177,237,.08)}.nav-item.active{color:#eff6ff;background:linear-gradient(90deg,rgba(91,141,255,.22),rgba(91,141,255,.06));border-color:rgba(122,164,255,.24);box-shadow:inset 3px 0 #7cb1ff}
+  .nav-badge{background:rgba(103,169,255,.18);color:#b9d6ff;padding:3px 7px;border:1px solid rgba(126,180,255,.2)}
+  .sidebar-footer{padding:15px;border-top-color:var(--border)}.user-card{padding:11px;background:rgba(143,184,235,.06);border-color:var(--border);border-radius:13px}.avatar{width:36px;height:36px;box-shadow:0 5px 14px rgba(95,144,255,.25)}
+  .topbar{min-height:82px;padding:16px 32px;background:rgba(8,20,35,.75);border-bottom-color:var(--border);backdrop-filter:blur(18px)}
+  .page-heading h2{font-size:21px;letter-spacing:-.55px}.page-heading p{font-size:12.5px;margin-top:4px}
+  .main{min-width:0}.content,.page-content{padding-left:32px!important;padding-right:32px!important}
+  .filter-select,.search-wrap input{background:rgba(16,35,58,.78);border-color:var(--border);border-radius:10px;color:var(--text);min-height:38px}.filter-select:focus,.search-wrap input:focus{border-color:rgba(103,169,255,.75);box-shadow:0 0 0 3px rgba(103,169,255,.12)}
+  .search-wrap input{width:220px;padding-left:36px}.btn{border-radius:10px;padding:9px 14px;font-weight:600;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}.btn:hover{transform:translateY(-1px)}.btn-primary{background:linear-gradient(135deg,#5b91ff,#826ff0);box-shadow:0 8px 20px rgba(79,126,239,.22)}.btn-ghost{background:rgba(142,182,230,.06);border-color:var(--border)}
+  .stat-card,.card{background:linear-gradient(145deg,rgba(19,39,64,.94),rgba(12,28,48,.94));border-color:var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.13)}
+  .stat-card{padding:18px}.stat-card:hover,.card:hover{border-color:rgba(130,178,239,.27);box-shadow:0 18px 38px rgba(0,0,0,.19)}.stat-card::before{opacity:.85}
+  .card{overflow:hidden}.card-header{padding:18px 20px;border-bottom:1px solid rgba(173,202,235,.10)}.card-title{font-size:14px;letter-spacing:-.12px}.card-sub{font-size:11.5px}
+  table{border-collapse:separate;border-spacing:0}th{background:rgba(107,151,203,.08)!important;color:#aebfda!important;font-size:10px!important;letter-spacing:.08em;text-transform:uppercase}td,th{border-color:rgba(173,202,235,.09)!important}tbody tr:hover{background:rgba(112,164,234,.06)!important}
+  .modal{background:linear-gradient(145deg,#122743,#0c1d33);border:1px solid rgba(162,199,241,.2);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.5)}
+  .auth-overlay{background:radial-gradient(circle at 8% 8%,rgba(87,135,255,.22),transparent 29%),radial-gradient(circle at 96% 92%,rgba(38,198,165,.13),transparent 30%),#07111f}.auth-card{border-radius:20px;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,.35)}
+  .auth-btn{border-radius:11px;background:linear-gradient(135deg,#5b91ff,#8d71ee);box-shadow:0 10px 22px rgba(77,123,237,.22)}.auth-input{background:rgba(13,30,51,.75);border-color:var(--border);border-radius:10px}.auth-tab.active{background:rgba(103,169,255,.18);color:#dfeeff}
+  .toast{border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.28)}
+  @media (max-width:900px){:root{--sidebar-w:68px}.topbar{padding:14px 18px}.content,.page-content{padding-left:18px!important;padding-right:18px!important}.search-wrap input{width:170px}}
+  @media (max-width:640px){.topbar{position:relative}.topbar-actions{width:100%;gap:8px}.global-filter-wrap{max-width:100%}.search-wrap{flex:1}.search-wrap input{width:100%}.content,.page-content{padding-left:14px!important;padding-right:14px!important}.stat-card,.card{border-radius:13px}.card-header{padding:15px}.auth-name-row{grid-template-columns:1fr}}
+</style>
 </body></html>
