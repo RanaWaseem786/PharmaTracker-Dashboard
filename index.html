@@ -1576,7 +1576,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             <div class="card-header"><div class="card-title" id="customers-table-title">Customer Leaderboard</div></div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Rank</th><th>Code</th><th>Customer</th><th>Company</th><th>Region</th><th>Orders</th><th>Total Revenue</th><th>Avg Order</th><th>Share</th></tr></thead>
+                    <thead><tr><th>Rank</th><th>Code</th><th>Customer</th><th>Company</th><th>Region</th><th>Orders</th><th id="customers-measure-head">Total Revenue</th><th id="customers-average-head">Avg Order</th><th>Share</th></tr></thead>
                     <tbody id="customers-table"><tr>
             <td><span class="badge badge-orange">#1</span></td>
             <td style="font-weight:600">City Pharma</td>
@@ -1745,7 +1745,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             <div class="card-header"><div class="card-title" id="products-table-title">Product Performance</div></div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Rank</th><th>Product</th><th>Pack Size</th><th>Units Sold</th><th>Avg Rate</th><th>Total Revenue</th><th>Revenue Share</th></tr></thead>
+                    <thead><tr><th>Rank</th><th>Product</th><th>Pack Size</th><th>Units Sold</th><th>Avg Rate</th><th id="products-measure-head">Total Revenue</th><th id="products-share-head">Revenue Share</th></tr></thead>
                     <tbody id="products-table"><tr>
             <td><span class="badge badge-blue">#1</span></td>
             <td style="font-weight:600">Amoxicillin</td>
@@ -1847,6 +1847,19 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <div class="insight-text"><strong>Top Booking Man: Ahmed Khan</strong><span>Revenue: ₨2,172.00</span></div>
     </div></div>
             </div>
+        </div>
+        <!-- YTD Data Catalogue: follows the existing cards and table styling. -->
+        <div class="card" style="margin-top:16px">
+            <div class="card-header"><div><div class="card-title">YTD Data Catalogue</div><div class="card-sub" id="ytd-subtitle">Year-to-year comparison</div></div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <select class="filter-select" id="ytdYears" multiple size="1" onchange="renderYTDCatalogue()" title="Select years to compare"></select>
+                    <select class="filter-select" id="ytdRank" onchange="renderYTDCatalogue()">
+                        <option value="all">All</option><option value="top-200">Top 200</option><option value="top-100">Top 100</option><option value="top-50">Top 50</option><option value="top-20">Top 20</option><option value="top-10">Top 10</option><option value="top-5">Top 5</option><option value="bottom-200">Bottom 200</option><option value="bottom-100">Bottom 100</option><option value="bottom-50">Bottom 50</option><option value="bottom-20">Bottom 20</option><option value="bottom-10">Bottom 10</option><option value="bottom-5">Bottom 5</option>
+                    </select>
+                    <button class="btn btn-ghost" style="font-size:12px" onclick="exportYTDCustomerData()"><i class="fas fa-file-export"></i> Export</button>
+                </div>
+            </div>
+            <div id="ytd-catalogue" style="display:grid;gap:16px"></div>
         </div>
     </div>
 
@@ -2085,7 +2098,7 @@ function applyTopN(arr) { return topN === 'all' ? arr : arr.slice(0, topN); }
 function onMeasureModeChange() {
     const el = document.getElementById('measureMode');
     measureMode = el ? el.value : 'value';
-    if (rawData.length) updateCharts();
+    if (rawData.length) updateAll();
 }
 function measureField() { return measureMode === 'units' ? 'stock' : 'netAmount'; }
 function measureAxisTicks() { return measureMode === 'units' ? { callback: v => Number(v).toLocaleString() } : { callback: v => '₨'+v.toLocaleString() }; }
@@ -2384,6 +2397,8 @@ function updateAll() {
     renderProductRegionChart(getProductPageData());
     updateCharts();
     updateInsights();
+    populateYTDCatalogueYears();
+    renderYTDCatalogue();
     document.getElementById('salesBadge').textContent = getBaseData().length.toLocaleString();
     if (typeof window.refreshExecutiveDashboard === 'function') window.refreshExecutiveDashboard();
 }
@@ -2524,19 +2539,23 @@ function renderCustomers() {
     if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
     empty.style.display='none';
     const map = {};
+    const mField = measureField();
+    const isUnits = measureMode === 'units';
     data.forEach(r => {
         const code = r.customerCode || r.customerName;
         if (!map[code]) map[code] = { code:code, name:r.customerName, company:r.companyName, region:r.regionName, orders:0, total:0 };
         map[code].orders++;
-        map[code].total += r.netAmount;
+        map[code].total += Number(r[mField] || 0);
     });
-    const totalRev = data.reduce((s,r)=>s+r.netAmount,0);
+    const total = data.reduce((s,r)=>s+Number(r[mField] || 0),0);
     const sorted = applyTopN(Object.values(map).sort((a,b)=>b.total-a.total));
     document.getElementById('c-top').textContent = sorted[0]?.name || '—';
+    document.getElementById('customers-measure-head').textContent = isUnits ? 'Total Units' : 'Total Revenue';
+    document.getElementById('customers-average-head').textContent = isUnits ? 'Avg Units / Order' : 'Avg Order';
     const titleEl = document.getElementById('customers-table-title');
     if (titleEl) titleEl.textContent = `Top ${topN === 'all' ? '' : topN} Customers${topN === 'all' ? ' (All)' : ''}`.replace('  ',' ');
     tbody.innerHTML = sorted.map((c,i) => {
-        const share = totalRev > 0 ? (c.total/totalRev*100).toFixed(1) : 0;
+        const share = total > 0 ? (c.total/total*100).toFixed(1) : 0;
         return `<tr>
             <td><span class="badge badge-orange">#${i+1}</span></td>
             <td class="mono" style="color:var(--muted)">${c.code}</td>
@@ -2544,8 +2563,8 @@ function renderCustomers() {
             <td style="color:var(--muted);font-size:12px">${c.company}</td>
             <td>${regionBadge(c.region)}</td>
             <td class="mono">${c.orders}</td>
-            <td class="mono" style="color:var(--accent2);font-weight:600">${fmt(c.total)}</td>
-            <td class="mono">${fmt(c.total/c.orders)}</td>
+            <td class="mono" style="color:var(--accent2);font-weight:600">${isUnits ? fmtN(c.total) : fmt(c.total)}</td>
+            <td class="mono">${isUnits ? fmtN(c.total/c.orders) : fmt(c.total/c.orders)}</td>
             <td><div style="display:flex;align-items:center;gap:8px">
                 <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${Math.min(share,100)}%"></div></div>
                 <span style="font-size:11px;color:var(--muted)">${share}%</span>
@@ -2562,28 +2581,32 @@ function renderProducts() {
     if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; document.getElementById('p-bestseller').textContent = '—'; return; }
     empty.style.display='none';
     const map = {};
+    const mField = measureField();
+    const isUnits = measureMode === 'units';
     data.forEach(r => {
         const k = r.itemName + '|' + r.packSize;
         if (!map[k]) map[k] = { name:r.itemName, pack:r.packSize, units:0, revenue:0, rates:[] };
         map[k].units += r.stock;
-        map[k].revenue += r.netAmount;
+        map[k].revenue += Number(r[mField] || 0);
         map[k].rates.push(r.rate);
     });
-    const totalRev = data.reduce((s,r)=>s+r.netAmount,0);
+    const total = data.reduce((s,r)=>s+Number(r[mField] || 0),0);
     const sorted = applyTopN(Object.values(map).sort((a,b)=>b.revenue-a.revenue));
     document.getElementById('p-bestseller').textContent = sorted[0]?.name || '—';
+    document.getElementById('products-measure-head').textContent = isUnits ? 'Total Units' : 'Total Revenue';
+    document.getElementById('products-share-head').textContent = isUnits ? 'Unit Share' : 'Revenue Share';
     const pTitleEl = document.getElementById('products-table-title');
     if (pTitleEl) pTitleEl.textContent = topN === 'all' ? 'Product Performance (All)' : `Top ${topN} Products`;
     tbody.innerHTML = sorted.map((p,i) => {
         const avg = p.rates.reduce((s,v)=>s+v,0)/p.rates.length;
-        const share = totalRev > 0 ? (p.revenue/totalRev*100).toFixed(1) : 0;
+        const share = total > 0 ? (p.revenue/total*100).toFixed(1) : 0;
         return `<tr>
             <td><span class="badge badge-blue">#${i+1}</span></td>
             <td style="font-weight:600">${p.name}</td>
             <td><span class="badge badge-purple">${p.pack}</span></td>
             <td class="mono">${fmtN(p.units)}</td>
             <td class="mono">${fmt(avg)}</td>
-            <td class="mono" style="color:var(--accent2);font-weight:600">${fmt(p.revenue)}</td>
+            <td class="mono" style="color:var(--accent2);font-weight:600">${isUnits ? fmtN(p.revenue) : fmt(p.revenue)}</td>
             <td><div style="display:flex;align-items:center;gap:8px">
                 <div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:${Math.min(share,100)}%"></div></div>
                 <span style="font-size:11px;color:var(--muted)">${share}%</span>
@@ -2987,22 +3010,23 @@ function resetProductSlicer() {
 function renderCustomerRegionChart(data) {
     const canvas = document.getElementById('chartCustRegion');
     if (!canvas) return;
-    const topRegions = topByValue(data, 'regionName', 'netAmount');
+    const isUnits = measureMode === 'units';
+    const topRegions = topByValue(data, 'regionName', measureField());
     const titleEl = document.getElementById('customerRegionChartTitle');
-    if (titleEl) titleEl.textContent = 'Revenue by Region';
+    if (titleEl) titleEl.textContent = isUnits ? 'Units by Region' : 'Revenue by Region';
     destroyChart('chartCustRegion');
     new Chart(canvas, {
         type: 'bar',
         data: {
             labels: topRegions.map(r=>r[0]),
-            datasets: [{ label:'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(188,140,255,0.7)', borderRadius: 6 }]
+            datasets: [{ label:isUnits ? 'Units Sold' : 'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(188,140,255,0.7)', borderRadius: 6 }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
-                y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => '₨'+v.toLocaleString() } }
+                y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: measureAxisTicks() }
             }
         }
     });
@@ -3011,22 +3035,23 @@ function renderCustomerRegionChart(data) {
 function renderProductRegionChart(data) {
     const canvas = document.getElementById('chartProdRegion');
     if (!canvas) return;
-    const topRegions = topByValue(data, 'regionName', 'netAmount');
+    const isUnits = measureMode === 'units';
+    const topRegions = topByValue(data, 'regionName', measureField());
     const titleEl = document.getElementById('productRegionChartTitle');
-    if (titleEl) titleEl.textContent = 'Revenue by Region';
+    if (titleEl) titleEl.textContent = isUnits ? 'Units by Region' : 'Revenue by Region';
     destroyChart('chartProdRegion');
     new Chart(canvas, {
         type: 'bar',
         data: {
             labels: topRegions.map(r=>r[0]),
-            datasets: [{ label:'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(255,166,87,0.7)', borderRadius: 6 }]
+            datasets: [{ label:isUnits ? 'Units Sold' : 'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(255,166,87,0.7)', borderRadius: 6 }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
                 x: { grid: { display: false } },
-                y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => '₨'+v.toLocaleString() } }
+                y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: measureAxisTicks() }
             }
         }
     });
@@ -3416,6 +3441,101 @@ function updateInsights() {
 /* ═══════════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   YTD DATA CATALOGUE
+═══════════════════════════════════════════════ */
+function ytdSelectedYears() {
+    const select = document.getElementById('ytdYears');
+    const available = [...new Set(getBaseData().map(row => String(row.invoiceDate || '').slice(0, 4)).filter(year => /^\d{4}$/.test(year)))].sort();
+    const selected = select ? [...select.selectedOptions].map(option => option.value).filter(year => available.includes(year)) : [];
+    return selected.length ? selected.sort() : available.slice(-2);
+}
+
+function populateYTDCatalogueYears() {
+    const select = document.getElementById('ytdYears');
+    if (!select) return;
+    const years = [...new Set(getBaseData().map(row => String(row.invoiceDate || '').slice(0, 4)).filter(year => /^\d{4}$/.test(year)))].sort();
+    const existing = [...select.selectedOptions].map(option => option.value);
+    select.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join('');
+    const requested = existing.filter(year => years.includes(year));
+    const selected = requested.length ? requested : years.slice(-2);
+    [...select.options].forEach(option => { option.selected = selected.includes(option.value); });
+    select.title = years.length > 2 ? 'Use Ctrl/Cmd-click to compare multiple years' : 'Select years to compare';
+}
+
+function ytdMeasureLabel() { return measureMode === 'units' ? 'Units' : 'Value'; }
+function ytdValue(row) { return Number(row[measureField()] || 0); }
+function ytdGrowth(current, previous) {
+    if (!previous) return current ? 'New' : '—';
+    const percentage = ((current - previous) / Math.abs(previous)) * 100;
+    return `${percentage >= 0 ? '▲' : '▼'} ${Math.abs(percentage).toFixed(1)}%`;
+}
+function ytdRank(rows) {
+    const ranking = document.getElementById('ytdRank')?.value || 'all';
+    if (ranking === 'all') return rows;
+    const [direction, amount] = ranking.split('-');
+    const n = Number(amount);
+    const sorted = [...rows].sort((a, b) => (b.latest - a.latest) || a.label.localeCompare(b.label));
+    return direction === 'bottom' ? sorted.slice(-n).reverse() : sorted.slice(0, n);
+}
+function ytdTable(title, field, data, years, monthWise = false) {
+    const grouped = new Map();
+    data.forEach(row => {
+        const year = String(row.invoiceDate || '').slice(0, 4);
+        if (!years.includes(year)) return;
+        const raw = monthWise ? String(row.invoiceDate || '').slice(5, 7) : String(row[field] || '').trim();
+        const key = raw || '—';
+        if (!grouped.has(key)) grouped.set(key, { label: monthWise ? (MONTH_NAMES[Number(key) - 1] || 'Unknown') : key, values: Object.fromEntries(years.map(y => [y, 0])) });
+        grouped.get(key).values[year] += ytdValue(row);
+    });
+    const rows = [...grouped.entries()].map(([key, row]) => ({ ...row, key, latest: row.values[years[years.length - 1]] || 0 }));
+    rows.sort(monthWise ? (a, b) => Number(a.key) - Number(b.key) : (a, b) => b.latest - a.latest || a.label.localeCompare(b.label));
+    const displayed = monthWise ? rows : ytdRank(rows);
+    const headings = years.flatMap((year, index) => index ? [`<th>${year}</th><th>Growth %</th>`] : [`<th>${year}</th>`]).join('');
+    const body = displayed.length ? displayed.map(row => {
+        let values = `<td style="font-weight:600">${row.label}</td>`;
+        years.forEach((year, index) => {
+            values += `<td class="mono">${measureMode === 'units' ? fmtN(row.values[year]) : fmt(row.values[year])}</td>`;
+            if (index) values += `<td class="mono" style="color:${row.values[year] >= row.values[years[index - 1]] ? 'var(--accent2)' : 'var(--accent3)'}">${ytdGrowth(row.values[year], row.values[years[index - 1]])}</td>`;
+        });
+        return `<tr>${values}</tr>`;
+    }).join('') : `<tr><td colspan="${years.length * 2}" style="color:var(--muted)">No data for the selected filters and years.</td></tr>`;
+    return `<div class="card" style="margin:0"><div class="card-header"><div class="card-title">${title}</div><div class="card-sub">${ytdMeasureLabel()} Wise</div></div><div class="table-wrap"><table><thead><tr><th>${monthWise ? 'Month' : title.replace(' Sales', '')}</th>${headings}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+}
+function renderYTDCatalogue() {
+    const host = document.getElementById('ytd-catalogue');
+    if (!host) return;
+    const years = ytdSelectedYears();
+    const subtitle = document.getElementById('ytd-subtitle');
+    if (!years.length) { host.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><h3>No dated data available</h3><p>Upload dated sales records to build year-to-year comparisons.</p></div>'; return; }
+    if (subtitle) subtitle.textContent = `${ytdMeasureLabel()} wise: ${years.join(' vs ')}. Ranking uses ${years[years.length - 1]}.`;
+    const data = getBaseData().filter(row => years.includes(String(row.invoiceDate || '').slice(0, 4)));
+    host.innerHTML = [
+        ytdTable('Region-wise Sales', 'regionName', data, years),
+        ytdTable('Booking Man-wise Sales', 'bookingMan', data, years),
+        ytdTable('Month-wise Sales', 'invoiceDate', data, years, true),
+        ytdTable('Product-wise Sales', 'itemName', data, years),
+        ytdTable('Customer-wise Sales', 'customerName', data, years)
+    ].join('');
+}
+function exportYTDCustomerData() {
+    const selectedCustomer = document.getElementById('customerSlicer')?.value || '';
+    const years = ytdSelectedYears();
+    const rows = getBaseData().filter(row => (!selectedCustomer || row.customerName === selectedCustomer) && years.includes(String(row.invoiceDate || '').slice(0, 4)));
+    if (!rows.length) { showToast('No customer data available to export.', 'error'); return; }
+    const output = rows.map(row => ({
+        Date: row.invoiceDate, Customer: row.customerName, 'Customer Code': row.customerCode || '', Company: row.companyName, 'Company Group': row.companyGroup,
+        Region: row.regionName, 'Booking Man': row.bookingMan, Product: row.itemName, 'Pack Size': row.packSize,
+        Units: Number(row.stock || 0), Value: Number(row.netAmount || 0)
+    }));
+    if (typeof XLSX !== 'undefined') {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(output), 'Customer YTD Data');
+        XLSX.writeFile(workbook, `${selectedCustomer || 'All_Customers'}_YTD_Data.xlsx`);
+        showToast(`Exported ${output.length.toLocaleString()} ${selectedCustomer ? 'selected-customer' : 'all-customer'} records.`, 'success');
+    }
+}
+
 const pageInfo = {
     dashboard: { title:'Sales Dashboard', desc:'Pharmaceutical sales overview and key metrics' },
     sales: { title:'Sales Transactions', desc:'View, filter and export all sales records' },
