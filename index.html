@@ -2336,7 +2336,7 @@ function clearAllData() {
     if (!confirm('🗑️ Remove ALL data? This cannot be undone!')) return;
     
     rawData = [];
-    localStorage.removeItem('pharmaTrackerData');
+    saveDataToStorage();
     populateGlobalFilters();
     populateFilters();
     updateAll();
@@ -3787,6 +3787,7 @@ function clearData() {
     if (!rawData.length) { showToast('No data to clear!', 'error'); return; }
     if (!confirm('Are you sure you want to clear all imported data?')) return;
     rawData = [];
+    saveDataToStorage();
     globalCompany = ''; globalCompanyGroup = ''; periodMode = 'all'; periodValue = '';
     document.getElementById('periodMode').value = 'all';
     populateGlobalFilters();
@@ -3834,7 +3835,13 @@ const DEMO = [
     {srno:5,invoiceId:'INV-005',invoiceDate:'2025-03-11',customerName:'Health Plus',customerCode:'CUST-005',companyName:'Plus Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Vitamin C',packSize:'1000mg',rate:12.00,stock:90,bonus:0,grossAmount:1080,discount:0,discountAmount:60,netAmount:1020},
     {srno:6,invoiceId:'INV-006',invoiceDate:'2025-03-20',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:120,bonus:0,grossAmount:660,discount:0,discountAmount:33,netAmount:627},
 ];
-rawData = DEMO;
+// Only seed demo data the very first time (i.e. no saved data key exists yet).
+// Once the user has uploaded or cleared data, that saved state (including "empty") persists.
+if (localStorage.getItem('pharmaTrackerData') === null) {
+    rawData = DEMO;
+} else {
+    try { rawData = JSON.parse(localStorage.getItem('pharmaTrackerData')) || []; } catch(err) { rawData = []; }
+}
 populateGlobalFilters();
 populateFilters();
 updateAll();
