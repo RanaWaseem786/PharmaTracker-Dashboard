@@ -4861,4 +4861,264 @@ setTimeout(() => {
   @media (max-width:900px){:root{--sidebar-w:68px}.topbar{padding:14px 18px}.content,.page-content{padding-left:18px!important;padding-right:18px!important}.search-wrap input{width:170px}}
   @media (max-width:640px){.topbar{position:relative}.topbar-actions{width:100%;gap:8px}.global-filter-wrap{max-width:100%}.search-wrap{flex:1}.search-wrap input{width:100%}.content,.page-content{padding-left:14px!important;padding-right:14px!important}.stat-card,.card{border-radius:13px}.card-header{padding:15px}.auth-name-row{grid-template-columns:1fr}}
 </style>
+
+<!-- ═══════════════════════════════════════════════
+     AI CHAT ASSISTANT WIDGET (added — does not modify
+     any existing markup, styles, or scripts above)
+═══════════════════════════════════════════════ -->
+<style id="pt-ai-widget-styles">
+  #pt-ai-launcher{position:fixed;right:24px;bottom:24px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#5b91ff,#8d71ee);box-shadow:0 10px 28px rgba(77,123,237,.4);border:none;cursor:pointer;z-index:99999;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;transition:transform .18s ease,box-shadow .18s ease;}
+  #pt-ai-launcher:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 14px 34px rgba(77,123,237,.5);}
+  #pt-ai-launcher .pt-ai-dot{position:absolute;top:4px;right:4px;width:11px;height:11px;border-radius:50%;background:#3fb950;border:2px solid #0d1b2a;}
+  #pt-ai-panel{position:fixed;right:24px;bottom:94px;width:380px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 140px);background:linear-gradient(145deg,#122743,#0c1d33);border:1px solid rgba(162,199,241,.2);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;z-index:99999;font-family:'DM Sans',sans-serif;}
+  #pt-ai-panel.open{display:flex;}
+  #pt-ai-head{display:flex;align-items:center;gap:10px;padding:16px 16px;background:rgba(91,141,255,.12);border-bottom:1px solid rgba(173,202,235,.12);flex-shrink:0;}
+  #pt-ai-head .pt-ai-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#5b91ff,#8d71ee);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  #pt-ai-head .pt-ai-title{font-size:13.5px;font-weight:700;color:#eff6ff;}
+  #pt-ai-head .pt-ai-sub{font-size:10.5px;color:#8fa3bf;margin-top:1px;}
+  #pt-ai-head-actions{margin-left:auto;display:flex;gap:6px;}
+  #pt-ai-head-actions button{background:rgba(255,255,255,.06);border:1px solid rgba(173,202,235,.15);color:#c8d6ea;width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  #pt-ai-head-actions button:hover{background:rgba(255,255,255,.12);color:#fff;}
+  #pt-ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+  #pt-ai-messages::-webkit-scrollbar{width:6px;}
+  #pt-ai-messages::-webkit-scrollbar-thumb{background:rgba(173,202,235,.2);border-radius:6px;}
+  .pt-ai-msg{max-width:86%;font-size:13px;line-height:1.55;padding:10px 13px;border-radius:13px;white-space:pre-wrap;word-wrap:break-word;}
+  .pt-ai-msg.bot{align-self:flex-start;background:rgba(255,255,255,.06);color:#e6edf7;border:1px solid rgba(173,202,235,.1);border-bottom-left-radius:4px;}
+  .pt-ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#5b91ff,#8d71ee);color:#fff;border-bottom-right-radius:4px;}
+  .pt-ai-msg.typing{display:flex;gap:4px;align-items:center;padding:12px 15px;}
+  .pt-ai-msg.typing span{width:6px;height:6px;border-radius:50%;background:#8fa3bf;animation:pt-ai-blink 1.2s infinite ease-in-out;}
+  .pt-ai-msg.typing span:nth-child(2){animation-delay:.2s;}
+  .pt-ai-msg.typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes pt-ai-blink{0%,80%,100%{opacity:.3;transform:scale(.85);}40%{opacity:1;transform:scale(1);}}
+  #pt-ai-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px;flex-shrink:0;}
+  .pt-ai-chip{font-size:11px;padding:6px 10px;border-radius:20px;background:rgba(103,169,255,.1);border:1px solid rgba(103,169,255,.25);color:#bcd6ff;cursor:pointer;transition:background .15s;}
+  .pt-ai-chip:hover{background:rgba(103,169,255,.2);}
+  #pt-ai-inputbar{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(173,202,235,.12);flex-shrink:0;}
+  #pt-ai-input{flex:1;background:rgba(13,30,51,.75);border:1px solid rgba(173,202,235,.18);border-radius:10px;color:#e6edf7;padding:10px 12px;font-size:13px;font-family:inherit;resize:none;outline:none;max-height:90px;}
+  #pt-ai-input:focus{border-color:rgba(103,169,255,.75);box-shadow:0 0 0 3px rgba(103,169,255,.12);}
+  #pt-ai-send{width:38px;height:38px;border-radius:10px;border:none;background:linear-gradient(135deg,#5b91ff,#8d71ee);color:#fff;cursor:pointer;flex-shrink:0;font-size:14px;display:flex;align-items:center;justify-content:center;}
+  #pt-ai-send:disabled{opacity:.5;cursor:not-allowed;}
+  #pt-ai-keybar{padding:10px 14px 12px;border-top:1px solid rgba(173,202,235,.1);flex-shrink:0;}
+  #pt-ai-keybar.hidden{display:none;}
+  #pt-ai-keybar label{font-size:10.5px;color:#8fa3bf;display:block;margin-bottom:6px;line-height:1.5;}
+  #pt-ai-keyrow{display:flex;gap:6px;}
+  #pt-ai-keyinput{flex:1;background:rgba(13,30,51,.75);border:1px solid rgba(173,202,235,.18);border-radius:8px;color:#e6edf7;padding:8px 10px;font-size:12px;font-family:'DM Mono',monospace;outline:none;}
+  #pt-ai-keysave{background:rgba(103,169,255,.18);border:1px solid rgba(103,169,255,.3);color:#dfeeff;border-radius:8px;padding:0 12px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  #pt-ai-keysave:hover{background:rgba(103,169,255,.28);}
+  @media (max-width:480px){#pt-ai-panel{right:12px;left:12px;width:auto;bottom:88px;height:70vh;}#pt-ai-launcher{right:16px;bottom:16px;}}
+</style>
+
+<button id="pt-ai-launcher" aria-label="Open AI Assistant" onclick="ptAiToggle()">
+  <i class="fas fa-comment-dots" id="pt-ai-launcher-icon"></i>
+  <span class="pt-ai-dot"></span>
+</button>
+
+<div id="pt-ai-panel">
+  <div id="pt-ai-head">
+    <div class="pt-ai-avatar">💊</div>
+    <div>
+      <div class="pt-ai-title">PharmaTracker Assistant</div>
+      <div class="pt-ai-sub">AI-powered · here to help</div>
+    </div>
+    <div id="pt-ai-head-actions">
+      <button title="AI settings" onclick="ptAiToggleKeybar()"><i class="fas fa-key"></i></button>
+      <button title="Close" onclick="ptAiToggle()"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  <div id="pt-ai-messages"></div>
+
+  <div id="pt-ai-suggestions">
+    <div class="pt-ai-chip" onclick="ptAiAsk(this)">How do I sign in?</div>
+    <div class="pt-ai-chip" onclick="ptAiAsk(this)">How do I create an account?</div>
+    <div class="pt-ai-chip" onclick="ptAiAsk(this)">What features does this app have?</div>
+    <div class="pt-ai-chip" onclick="ptAiAsk(this)">I forgot my password</div>
+  </div>
+
+  <div id="pt-ai-keybar" class="hidden">
+    <label>PharmaTracker Assistant is powered by the Anthropic Claude API. This is a static, front-end-only file with no server, so it needs your own Anthropic API key (stored only in this browser) to generate real AI answers. Get one at console.anthropic.com.</label>
+    <div id="pt-ai-keyrow">
+      <input type="password" id="pt-ai-keyinput" placeholder="sk-ant-...">
+      <button id="pt-ai-keysave" onclick="ptAiSaveKey()">Save</button>
+    </div>
+  </div>
+
+  <div id="pt-ai-inputbar">
+    <textarea id="pt-ai-input" rows="1" placeholder="Ask about PharmaTracker…" onkeydown="ptAiHandleKey(event)"></textarea>
+    <button id="pt-ai-send" onclick="ptAiSend()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Isolated namespace — does not touch any existing app variables/functions.
+  var PT_AI_STORAGE_KEY = 'ptAiApiKey';
+  var PT_AI_HISTORY = [];
+  var PT_AI_MODEL = 'claude-sonnet-4-6';
+
+  // Knowledge base describing PharmaTracker — grounds every AI answer in real facts
+  // about this specific application so responses stay accurate instead of generic.
+  var PT_AI_SYSTEM_PROMPT = [
+    "You are the in-app AI Assistant for \"PharmaTracker — Smart Sales Dashboard\" (tagline: Sales Intelligence Platform), a sales analytics and CRM-style web app built for pharmaceutical distributors.",
+    "Your job: answer user questions ONLY about this application — what it does, how to use its features, and how to sign in / sign up / recover an account. Be warm, concise, and practical. Use short paragraphs or bullet points. If asked something totally unrelated to the app, gently redirect back to what you can help with.",
+    "",
+    "=== SIGN IN / ACCOUNT PROCEDURE ===",
+    "The app opens on an Auth screen with two tabs: 'Sign In' and 'Create Account'.",
+    "SIGN IN: Enter your registered Email Address and Password, then click 'Sign In'. There's a 'Forgot password?' link above the button.",
+    "A ready-to-use demo admin login is shown on the sign-in screen: email wasim.rana.x@gmail.com / password demo1234 — mention this if someone just wants to explore the app.",
+    "FORGOT PASSWORD: Click 'Forgot password?', and a 6-digit reset code is sent to the user's email (valid for 30 minutes). Enter the code plus a new password (and confirm it) on the reset screen, then submit. If the code doesn't arrive, there's a 'Dobara bhejein' (resend) option, or the user can go back to Sign In.",
+    "CREATE ACCOUNT (Sign Up): Fill in First Name, Last Name, Email Address, and Company / Distributor Name. Choose a Role: Admin (full access), Analyst (view & upload), Manager (view reports), or Viewer (read only). Set a Password (min. 6 characters) and confirm it.",
+    "REGISTRATION PAYMENT: New accounts require a subscription fee of Rs. 1,000 per month. Pick JazzCash or EasyPaisa, send payment to the displayed mobile number, then enter the Transaction ID / TID from that payment into the form and click 'Submit Registration'.",
+    "APPROVAL: After submitting, the user sees a 'Registration Submitted!' pending screen. An admin reviews the payment on the Approvals page and verifies the Transaction ID; once approved, the account is activated (valid for 1 month) and the user gets an email confirmation and can then sign in.",
+    "",
+    "=== MAIN FEATURES / NAVIGATION (left sidebar) ===",
+    "- Dashboard: The home/overview page with key stats and a snapshot of overall sales performance.",
+    "- Sales: View and manage sales/invoice records; a badge shows a live count of recent items. Users upload an Excel (.xlsx) or CSV file of sales data to populate this — if column headers aren't auto-detected, a 'Map Your Columns' dialog lets the user match spreadsheet columns to the right fields before importing.",
+    "- Customers: A breakdown of customers derived from the uploaded sales data (who's buying, how much, etc.).",
+    "- Products: Product-level performance derived from the uploaded sales data (best/worst performing medicines & items).",
+    "- Analytics: Deeper insights and charts — key insights cards and year-to-year comparisons of dated sales records (requires uploaded data with dates).",
+    "- Approvals (admin-only, appears in the sidebar only for admin accounts): Pending new-registration and subscription-renewal requests whose payment needs to be verified before the account/renewal is activated.",
+    "- Settings: Account & subscription management — shows subscription status (Active / Expiring / Expired) and, for admins, a team/user management list with role badges (Admin, Analyst, Viewer).",
+    "",
+    "=== DATA IMPORT ===",
+    "Most pages (Sales, Customers, Products, Analytics) are populated by uploading an Excel (.xlsx) or CSV file of sales records. Until data is uploaded, these pages show empty-state messages prompting the user to upload a file.",
+    "",
+    "=== ROLES ===",
+    "Admin: full access, including Approvals and user management. Analyst: can view data and upload files. Manager: can view reports. Viewer: read-only access.",
+    "",
+    "Keep answers focused on these facts. If you don't know something specific (e.g. exact numbers currently on someone's dashboard), say so honestly rather than inventing data — you can't see the user's live data, only how the app works."
+  ].join("\n");
+
+  function $(id){ return document.getElementById(id); }
+
+  function ptAiGetKey(){
+    try { return localStorage.getItem(PT_AI_STORAGE_KEY) || ''; } catch(e){ return ''; }
+  }
+
+  window.ptAiToggle = function(){
+    var panel = $('pt-ai-panel');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+      if (!PT_AI_HISTORY.length) {
+        ptAiRenderBot("Hi! 👋 I'm the PharmaTracker AI Assistant. Ask me anything about signing in, creating an account, or any feature of this app — Dashboard, Sales, Customers, Products, Analytics, Approvals, or Settings.");
+      }
+      if (!ptAiGetKey()) $('pt-ai-keybar').classList.remove('hidden');
+      $('pt-ai-input').focus();
+    }
+  };
+
+  window.ptAiToggleKeybar = function(){
+    $('pt-ai-keybar').classList.toggle('hidden');
+  };
+
+  window.ptAiSaveKey = function(){
+    var val = $('pt-ai-keyinput').value.trim();
+    if (!val) return;
+    try { localStorage.setItem(PT_AI_STORAGE_KEY, val); } catch(e){}
+    $('pt-ai-keyinput').value = '';
+    $('pt-ai-keybar').classList.add('hidden');
+    ptAiRenderBot("Got it — your API key is saved locally in this browser only. Go ahead and ask me anything about PharmaTracker!");
+  };
+
+  window.ptAiAsk = function(el){
+    $('pt-ai-input').value = el.textContent;
+    ptAiSend();
+  };
+
+  window.ptAiHandleKey = function(ev){
+    if (ev.key === 'Enter' && !ev.shiftKey) {
+      ev.preventDefault();
+      ptAiSend();
+    }
+  };
+
+  function ptAiRenderBot(text){
+    var wrap = $('pt-ai-messages');
+    var div = document.createElement('div');
+    div.className = 'pt-ai-msg bot';
+    div.textContent = text;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    PT_AI_HISTORY.push({ role: 'assistant', content: text });
+  }
+
+  function ptAiRenderUser(text){
+    var wrap = $('pt-ai-messages');
+    var div = document.createElement('div');
+    div.className = 'pt-ai-msg user';
+    div.textContent = text;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    PT_AI_HISTORY.push({ role: 'user', content: text });
+  }
+
+  function ptAiShowTyping(){
+    var wrap = $('pt-ai-messages');
+    var div = document.createElement('div');
+    div.className = 'pt-ai-msg bot typing';
+    div.id = 'pt-ai-typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function ptAiHideTyping(){
+    var t = $('pt-ai-typing');
+    if (t) t.remove();
+  }
+
+  window.ptAiSend = function(){
+    var input = $('pt-ai-input');
+    var text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    ptAiRenderUser(text);
+
+    var apiKey = ptAiGetKey();
+    if (!apiKey) {
+      $('pt-ai-keybar').classList.remove('hidden');
+      ptAiRenderBot("I need an Anthropic API key to think — this is a standalone HTML file with no server behind it, so please add your key using the 🔑 button above, then ask me again.");
+      return;
+    }
+
+    var sendBtn = $('pt-ai-send');
+    sendBtn.disabled = true;
+    ptAiShowTyping();
+
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: PT_AI_MODEL,
+        max_tokens: 700,
+        system: PT_AI_SYSTEM_PROMPT,
+        messages: PT_AI_HISTORY.map(function(m){ return { role: m.role, content: m.content }; })
+      })
+    })
+    .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+    .then(function(result){
+      ptAiHideTyping();
+      sendBtn.disabled = false;
+      if (!result.ok) {
+        var msg = (result.data && result.data.error && result.data.error.message) || 'Request failed.';
+        ptAiRenderBot("⚠️ AI request failed: " + msg + "\n\nDouble-check your API key via the 🔑 button, or that this file is being served over http(s) rather than opened as a local file, since some browsers block API calls from file:// pages.");
+        return;
+      }
+      var reply = (result.data.content || []).map(function(block){ return block.type === 'text' ? block.text : ''; }).filter(Boolean).join('\n');
+      ptAiRenderBot(reply || "Sorry, I didn't get a response — please try asking again.");
+    })
+    .catch(function(err){
+      ptAiHideTyping();
+      sendBtn.disabled = false;
+      ptAiRenderBot("⚠️ Couldn't reach the AI service (" + (err && err.message ? err.message : 'network error') + "). Please check your internet connection and API key, then try again.");
+    });
+  };
+})();
+</script>
+
 </body></html>
