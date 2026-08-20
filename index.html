@@ -1185,7 +1185,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                     <option value="month">Month</option>
                     <option value="quarter">Quarter</option>
                 </select>
-                <select class="filter-select" id="periodValue" onchange="onPeriodValueChange()" style="display:none"></select>
+                <select class="filter-select" id="periodValue" multiple size="1" onchange="onPeriodValueChange()" style="display:none" title="Use Ctrl/Cmd-click to select more than one"></select>
             </div>
             <div class="global-filter-wrap" id="measureModeWrap">
                 <i class="fas fa-balance-scale" style="font-size:11px;color:var(--muted)"></i>
@@ -1867,6 +1867,27 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             </div>
             <div id="ytd-catalogue" style="display:grid;gap:16px"></div>
         </div>
+        <!-- Month-wise Comparison: pick any Group, Product or Booking Man and compare two independently selected month/year periods. -->
+        <div class="card" style="margin-top:16px">
+            <div class="card-header"><div><div class="card-title">Month-wise Comparison</div><div class="card-sub" id="mc-subtitle">Compare sales between any two months/years</div></div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <select class="filter-select" id="mcDimension" onchange="onMCDimensionChange()" title="Compare by">
+                        <option value="companyGroup">Group</option>
+                        <option value="itemName">Product</option>
+                        <option value="bookingMan">Booking Man</option>
+                    </select>
+                    <select class="filter-select" id="mcValue" onchange="renderMonthComparison()" title="Select a value"></select>
+                    <select class="filter-select" id="mcMonthA" onchange="renderMonthComparison()" title="First period — month"></select>
+                    <select class="filter-select" id="mcYearA" onchange="renderMonthComparison()" title="First period — year"></select>
+                    <span style="font-size:11px;color:var(--muted)">vs</span>
+                    <select class="filter-select" id="mcMonthB" onchange="renderMonthComparison()" title="Second period — month"></select>
+                    <select class="filter-select" id="mcYearB" onchange="renderMonthComparison()" title="Second period — year"></select>
+                    <button class="btn btn-ghost" style="font-size:12px" onclick="exportMonthComparison()"><i class="fas fa-file-export"></i> Export</button>
+                </div>
+            </div>
+            <div id="mc-summary" class="stats-grid" style="padding:16px 20px 0"></div>
+            <div id="mc-table" class="table-wrap" style="padding:16px 20px 20px"></div>
+        </div>
     </div>
 
     <!-- ═══ SETTINGS PAGE ═══ -->
@@ -1988,7 +2009,7 @@ function fmtN(n) { return Number(n||0).toLocaleString(); }
 let globalCompany = '';
 let globalCompanyGroup = '';
 let periodMode = 'all';   // 'all' | 'month' | 'quarter'
-let periodValue = '';     // '2026-06' for month, '2026-Q2' for quarter
+let periodValue = [];     // e.g. ['2026-06','2026-07'] for month, ['2026-Q2'] for quarter — one or more
 let measureMode = 'value'; // 'value' | 'units' — Value-wise vs Unit-wise slicer
 let topN = 10;
 let _monthOptions = [];
@@ -2058,17 +2079,21 @@ function renderPeriodValueOptions() {
     if (periodMode === 'month') {
         sel.style.display = '';
         sel.innerHTML = _monthOptions.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
-        if (!_monthOptions.includes(periodValue)) periodValue = _monthOptions[_monthOptions.length-1] || '';
+        periodValue = periodValue.filter(v => _monthOptions.includes(v));
+        if (!periodValue.length && _monthOptions.length) periodValue = [_monthOptions[_monthOptions.length-1]];
+        sel.title = 'Use Ctrl/Cmd-click to select more than one month';
     } else if (periodMode === 'quarter') {
         sel.style.display = '';
         sel.innerHTML = _quarterOptions.map(q => `<option value="${q}">${quarterLabel(q)}</option>`).join('');
-        if (!_quarterOptions.includes(periodValue)) periodValue = _quarterOptions[_quarterOptions.length-1] || '';
+        periodValue = periodValue.filter(v => _quarterOptions.includes(v));
+        if (!periodValue.length && _quarterOptions.length) periodValue = [_quarterOptions[_quarterOptions.length-1]];
+        sel.title = 'Use Ctrl/Cmd-click to select more than one quarter';
     } else {
         sel.style.display = 'none';
         sel.innerHTML = '';
-        periodValue = '';
+        periodValue = [];
     }
-    sel.value = periodValue;
+    [...sel.options].forEach(opt => { opt.selected = periodValue.includes(opt.value); });
 }
 
 function onGlobalCompanyChange() {
@@ -2090,7 +2115,7 @@ function onPeriodModeChange() {
     if (rawData.length) updateAll();
 }
 function onPeriodValueChange() {
-    periodValue = document.getElementById('periodValue').value;
+    periodValue = [...document.getElementById('periodValue').selectedOptions].map(o => o.value);
     populateFilters();
     if (rawData.length) updateAll();
 }
@@ -2133,17 +2158,20 @@ function getGlobalData() {
     let data = rawData;
     if (globalCompany) data = data.filter(r => r.companyName === globalCompany);
     if (globalCompanyGroup) data = data.filter(r => r.companyGroup === globalCompanyGroup);
-    if (periodMode === 'month' && periodValue) {
-        data = data.filter(r => r.invoiceDate && r.invoiceDate.substring(0,7) === periodValue);
-    } else if (periodMode === 'quarter' && periodValue) {
-        const [y, qs] = periodValue.split('-Q');
-        const q = parseInt(qs, 10);
-        const startMonth = (q - 1) * 3 + 1, endMonth = startMonth + 2;
+    if (periodMode === 'month' && periodValue.length) {
+        data = data.filter(r => r.invoiceDate && periodValue.includes(r.invoiceDate.substring(0,7)));
+    } else if (periodMode === 'quarter' && periodValue.length) {
+        const ranges = periodValue.map(pv => {
+            const [y, qs] = pv.split('-Q');
+            const q = parseInt(qs, 10);
+            const startMonth = (q - 1) * 3 + 1, endMonth = startMonth + 2;
+            return { y, startMonth, endMonth };
+        });
         data = data.filter(r => {
             if (!r.invoiceDate) return false;
             const parts = r.invoiceDate.split('-');
             const mm = parseInt(parts[1], 10);
-            return parts[0] === y && mm >= startMonth && mm <= endMonth;
+            return ranges.some(rg => parts[0] === rg.y && mm >= rg.startMonth && mm <= rg.endMonth);
         });
     }
     return data;
@@ -2405,6 +2433,8 @@ function updateAll() {
     updateInsights();
     populateYTDCatalogueYears();
     renderYTDCatalogue();
+    populateMonthComparison();
+    renderMonthComparison();
     document.getElementById('salesBadge').textContent = getBaseData().length.toLocaleString();
     if (typeof window.refreshExecutiveDashboard === 'function') window.refreshExecutiveDashboard();
 }
@@ -2637,9 +2667,9 @@ function destroyChart(id) {
 function buildTrendSeries(data) {
     const mField = measureField();
     const isUnits = measureMode === 'units';
-    if (periodMode === 'month' && periodValue) {
-        // Full day-by-day trend for every day of the selected month (missing days = 0)
-        const [y, mo] = periodValue.split('-').map(Number);
+    if (periodMode === 'month' && periodValue.length === 1) {
+        // Full day-by-day trend for the single selected month (missing days = 0)
+        const [y, mo] = periodValue[0].split('-').map(Number);
         const daysInMonth = new Date(y, mo, 0).getDate();
         const byDay = {};
         data.forEach(r => { if (r.invoiceDate) byDay[r.invoiceDate] = (byDay[r.invoiceDate]||0) + r[mField]; });
@@ -2649,10 +2679,10 @@ function buildTrendSeries(data) {
             labels.push(String(d));
             vals.push(byDay[key] || 0);
         }
-        return { labels, vals, sub: `Daily ${isUnits ? 'units sold' : 'net revenue'} — ${monthLabel(periodValue)}` };
+        return { labels, vals, sub: `Daily ${isUnits ? 'units sold' : 'net revenue'} — ${monthLabel(periodValue[0])}` };
     }
-    if (periodMode === 'quarter' && periodValue) {
-        const [y, qs] = periodValue.split('-Q');
+    if (periodMode === 'quarter' && periodValue.length === 1) {
+        const [y, qs] = periodValue[0].split('-Q');
         const q = parseInt(qs, 10);
         const startMonth = (q - 1) * 3 + 1;
         const labels = [], vals = [];
@@ -2662,16 +2692,18 @@ function buildTrendSeries(data) {
             labels.push(monthLabel(key));
             vals.push(data.filter(r => r.invoiceDate && r.invoiceDate.substring(0,7) === key).reduce((s,r)=>s+r[mField],0));
         }
-        return { labels, vals, sub: `Monthly ${isUnits ? 'units sold' : 'net revenue'} — ${quarterLabel(periodValue)}` };
+        return { labels, vals, sub: `Monthly ${isUnits ? 'units sold' : 'net revenue'} — ${quarterLabel(periodValue[0])}` };
     }
-    // All time: monthly totals, last 12 months
+    // All time, or more than one month/quarter selected: monthly totals across whatever is selected
     const monthly = {};
     data.forEach(r => {
         const m = r.invoiceDate ? r.invoiceDate.substring(0,7) : 'Unknown';
         if (m !== 'Unknown') monthly[m] = (monthly[m]||0) + r[mField];
     });
-    const mKeys = Object.keys(monthly).sort().slice(-12);
-    return { labels: mKeys.map(monthLabel), vals: mKeys.map(k => monthly[k]), sub: isUnits ? 'Units sold by month' : 'Net revenue by month' };
+    const mKeys = Object.keys(monthly).sort().slice(periodMode === 'all' ? -12 : 0);
+    const periodSub = periodMode === 'month' && periodValue.length > 1 ? ` — ${periodValue.map(monthLabel).join(', ')}`
+        : periodMode === 'quarter' && periodValue.length > 1 ? ` — ${periodValue.map(quarterLabel).join(', ')}` : '';
+    return { labels: mKeys.map(monthLabel), vals: mKeys.map(k => monthly[k]), sub: (isUnits ? 'Units sold by month' : 'Net revenue by month') + periodSub };
 }
 
 function updateCharts() {
@@ -2680,7 +2712,7 @@ function updateCharts() {
     // Monthly / daily trend
     const trend = buildTrendSeries(data);
     const trendTitleEl = document.getElementById('trendTitle');
-    if (trendTitleEl) trendTitleEl.textContent = periodMode === 'month' ? 'Daily Revenue Trend' : (periodMode === 'quarter' ? 'Quarterly Revenue Trend' : 'Monthly Revenue Trend');
+    if (trendTitleEl) trendTitleEl.textContent = (periodMode === 'month' && periodValue.length === 1) ? 'Daily Revenue Trend' : ((periodMode === 'quarter' && periodValue.length === 1) ? 'Quarterly Revenue Trend' : 'Monthly Revenue Trend');
     const subEl = document.querySelector('#chartMonthly').closest('.card').querySelector('.card-sub');
     if (subEl) subEl.textContent = trend.sub;
 
@@ -3518,6 +3550,7 @@ function renderYTDCatalogue() {
     if (subtitle) subtitle.textContent = `${ytdMeasureLabel()} wise: ${years.join(' vs ')}. Ranking uses ${years[years.length - 1]}.`;
     const data = getBaseData().filter(row => years.includes(String(row.invoiceDate || '').slice(0, 4)));
     host.innerHTML = [
+        ytdTable('Company Group-wise Sales', 'companyGroup', data, years),
         ytdTable('Region-wise Sales', 'regionName', data, years),
         ytdTable('Booking Man-wise Sales', 'bookingMan', data, years),
         ytdTable('Month-wise Sales', 'invoiceDate', data, years, true),
@@ -3540,6 +3573,194 @@ function exportYTDCustomerData() {
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(output), 'Customer YTD Data');
         XLSX.writeFile(workbook, `${selectedCustomer || 'All_Customers'}_YTD_Data.xlsx`);
         showToast(`Exported ${output.length.toLocaleString()} ${selectedCustomer ? 'selected-customer' : 'all-customer'} records.`, 'success');
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   MONTH-WISE COMPARISON (Group / Product / Booking Man,
+   any two independently selected month+year periods)
+═══════════════════════════════════════════════ */
+const MC_DIMENSIONS = { companyGroup: 'Group', itemName: 'Product', bookingMan: 'Booking Man' };
+
+function mcField() { return document.getElementById('mcDimension')?.value || 'companyGroup'; }
+function mcSelectedValue() { return document.getElementById('mcValue')?.value || ''; }
+
+/* Years come from the data itself, extended a couple of years into the future
+   so periods like "July 2026" can be selected ahead of the data arriving. */
+function mcAvailableYears() {
+    const dataYears = getBaseData().map(row => parseInt(String(row.invoiceDate || '').slice(0, 4), 10)).filter(y => !isNaN(y));
+    const thisYear = new Date().getFullYear();
+    const minYear = dataYears.length ? Math.min(...dataYears, thisYear) : thisYear - 1;
+    const maxYear = Math.max(...(dataYears.length ? dataYears : [thisYear]), thisYear) + 2;
+    const years = [];
+    for (let y = minYear; y <= maxYear; y++) years.push(y);
+    return years;
+}
+
+function populateMonthComparison() {
+    const dimSel = document.getElementById('mcDimension');
+    if (!dimSel) return;
+    const field = mcField();
+    const valSel = document.getElementById('mcValue');
+    const curVal = valSel.value;
+    const values = [...new Set(getBaseData().map(row => row[field]).filter(v => v && v !== '—'))].sort();
+    valSel.innerHTML = `<option value="">All ${MC_DIMENSIONS[field]}s</option>` + values.map(v => `<option value="${v}" ${v === curVal ? 'selected' : ''}>${v}</option>`).join('');
+
+    const monthAEl = document.getElementById('mcMonthA'), monthBEl = document.getElementById('mcMonthB');
+    const yearAEl = document.getElementById('mcYearA'), yearBEl = document.getElementById('mcYearB');
+    const monthOpts = MONTH_NAMES.map((name, i) => `<option value="${String(i + 1).padStart(2, '0')}">${name}</option>`).join('');
+    if (!monthAEl.options.length) monthAEl.innerHTML = monthOpts;
+    if (!monthBEl.options.length) monthBEl.innerHTML = monthOpts;
+
+    const years = mcAvailableYears();
+    const curYA = yearAEl.value, curYB = yearBEl.value;
+    const yearOpts = years.map(y => `<option value="${y}">${y}</option>`).join('');
+    yearAEl.innerHTML = yearOpts;
+    yearBEl.innerHTML = yearOpts;
+
+    const dataMonths = [...new Set(getBaseData().map(row => String(row.invoiceDate || '').slice(0, 7)).filter(m => /^\d{4}-\d{2}$/.test(m)))].sort();
+    const defaultA = dataMonths[dataMonths.length - 13] || dataMonths[0] || '';
+    const defaultB = dataMonths[dataMonths.length - 1] || '';
+
+    yearAEl.value = years.includes(Number(curYA)) ? curYA : (defaultA ? defaultA.slice(0, 4) : String(years[0]));
+    yearBEl.value = years.includes(Number(curYB)) ? curYB : (defaultB ? defaultB.slice(0, 4) : String(years[years.length - 1]));
+    if (!monthAEl.value) monthAEl.value = defaultA ? defaultA.slice(5, 7) : '01';
+    if (!monthBEl.value) monthBEl.value = defaultB ? defaultB.slice(5, 7) : '01';
+}
+
+function mcPeriodKey(prefix) {
+    const month = document.getElementById('mcMonth' + prefix)?.value || '';
+    const year = document.getElementById('mcYear' + prefix)?.value || '';
+    return month && year ? `${year}-${month}` : '';
+}
+
+function mcPeriodRows(month) {
+    const field = mcField(), value = mcSelectedValue();
+    return getBaseData().filter(row => {
+        if (!String(row.invoiceDate || '').startsWith(month)) return false;
+        if (value && row[field] !== value) return false;
+        return true;
+    });
+}
+
+function mcAggregate(rows) {
+    return { value: rows.reduce((s, r) => s + Number(r.netAmount || 0), 0), units: rows.reduce((s, r) => s + Number(r.stock || 0), 0) };
+}
+
+function mcGrowth(curr, prev) {
+    if (!prev) return { text: curr ? 'New' : '—', cls: curr ? 'up' : 'neutral' };
+    const pct = ((curr - prev) / Math.abs(prev)) * 100;
+    return { text: `${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(1)}%`, cls: pct >= 0 ? 'up' : 'down' };
+}
+function mcGrowthColor(cls) { return cls === 'up' ? 'var(--accent2)' : cls === 'down' ? 'var(--accent3)' : 'var(--muted)'; }
+
+function renderMonthComparison() {
+    const summaryEl = document.getElementById('mc-summary'), tableEl = document.getElementById('mc-table'), subtitleEl = document.getElementById('mc-subtitle');
+    if (!summaryEl || !tableEl) return;
+
+    const monthA = mcPeriodKey('A'), monthB = mcPeriodKey('B');
+    const field = mcField(), value = mcSelectedValue(), label = value || `All ${MC_DIMENSIONS[field]}s`;
+
+    if (!monthA || !monthB) {
+        summaryEl.innerHTML = '';
+        tableEl.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>No dated data available</h3><p>Upload dated sales records to build month-wise comparisons.</p></div>';
+        return;
+    }
+    if (subtitleEl) subtitleEl.textContent = `${MC_DIMENSIONS[field]}: ${label} — ${monthLabel(monthA)} vs ${monthLabel(monthB)}`;
+
+    const rowsA = mcPeriodRows(monthA), rowsB = mcPeriodRows(monthB);
+    const aggA = mcAggregate(rowsA), aggB = mcAggregate(rowsB);
+    const valueDiff = aggB.value - aggA.value, unitsDiff = aggB.units - aggA.units;
+    const valueGrowth = mcGrowth(aggB.value, aggA.value), unitsGrowth = mcGrowth(aggB.units, aggA.units);
+
+    summaryEl.innerHTML = `
+        <div class="stat-card" style="--card-accent: var(--accent)">
+            <div class="stat-icon-wrap"><i class="fas fa-calendar"></i></div>
+            <div class="stat-value" style="font-size:16px">${fmt(aggA.value)}</div>
+            <div class="stat-label">${monthLabel(monthA)} · Value</div>
+            <div class="stat-change neutral"><i class="fas fa-boxes"></i> ${fmtN(aggA.units)} units</div>
+        </div>
+        <div class="stat-card" style="--card-accent: var(--accent5)">
+            <div class="stat-icon-wrap" style="background:rgba(188,140,255,0.1);color:var(--accent5)"><i class="fas fa-calendar-check"></i></div>
+            <div class="stat-value" style="font-size:16px">${fmt(aggB.value)}</div>
+            <div class="stat-label">${monthLabel(monthB)} · Value</div>
+            <div class="stat-change neutral"><i class="fas fa-boxes"></i> ${fmtN(aggB.units)} units</div>
+        </div>
+        <div class="stat-card" style="--card-accent: ${mcGrowthColor(valueGrowth.cls)}">
+            <div class="stat-icon-wrap" style="background:rgba(${valueDiff >= 0 ? '63,185,80' : '255,123,114'},0.1);color:${mcGrowthColor(valueGrowth.cls)}"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-value" style="font-size:16px">${valueDiff >= 0 ? '+' : '−'}${fmt(Math.abs(valueDiff))}</div>
+            <div class="stat-label">Value Difference</div>
+            <div class="stat-change ${valueGrowth.cls}">${valueGrowth.text} growth</div>
+        </div>
+        <div class="stat-card" style="--card-accent: ${mcGrowthColor(unitsGrowth.cls)}">
+            <div class="stat-icon-wrap" style="background:rgba(${unitsDiff >= 0 ? '63,185,80' : '255,123,114'},0.1);color:${mcGrowthColor(unitsGrowth.cls)}"><i class="fas fa-boxes"></i></div>
+            <div class="stat-value" style="font-size:16px">${unitsDiff >= 0 ? '+' : '−'}${fmtN(Math.abs(unitsDiff))}</div>
+            <div class="stat-label">Units Difference</div>
+            <div class="stat-change ${unitsGrowth.cls}">${unitsGrowth.text} growth</div>
+        </div>`;
+
+    const breakdownKeys = value ? [value] : [...new Set([...rowsA, ...rowsB].map(r => r[field]).filter(v => v && v !== '—'))];
+    const breakdown = breakdownKeys.map(v => {
+        const a = mcAggregate(rowsA.filter(r => r[field] === v)), b = mcAggregate(rowsB.filter(r => r[field] === v));
+        return { v, a, b, vDiff: b.value - a.value, uDiff: b.units - a.units, vg: mcGrowth(b.value, a.value), ug: mcGrowth(b.units, a.units) };
+    }).sort((x, y) => y.b.value - x.b.value);
+
+    tableEl.innerHTML = breakdown.length ? `<table>
+        <thead><tr>
+            <th>${MC_DIMENSIONS[field]}</th>
+            <th>${monthLabel(monthA)} Value</th>
+            <th>${monthLabel(monthB)} Value</th>
+            <th>Value Diff.</th>
+            <th>Value Growth %</th>
+            <th>${monthLabel(monthA)} Units</th>
+            <th>${monthLabel(monthB)} Units</th>
+            <th>Units Diff.</th>
+            <th>Units Growth %</th>
+        </tr></thead>
+        <tbody>${breakdown.map(r => `<tr>
+            <td style="font-weight:600">${r.v}</td>
+            <td class="mono">${fmt(r.a.value)}</td>
+            <td class="mono">${fmt(r.b.value)}</td>
+            <td class="mono" style="color:${r.vDiff >= 0 ? 'var(--accent2)' : 'var(--accent3)'}">${r.vDiff >= 0 ? '+' : ''}${fmt(r.vDiff)}</td>
+            <td class="mono" style="color:${mcGrowthColor(r.vg.cls)}">${r.vg.text}</td>
+            <td class="mono">${fmtN(r.a.units)}</td>
+            <td class="mono">${fmtN(r.b.units)}</td>
+            <td class="mono" style="color:${r.uDiff >= 0 ? 'var(--accent2)' : 'var(--accent3)'}">${r.uDiff >= 0 ? '+' : ''}${fmtN(r.uDiff)}</td>
+            <td class="mono" style="color:${mcGrowthColor(r.ug.cls)}">${r.ug.text}</td>
+        </tr>`).join('')}</tbody>
+    </table>` : `<div class="empty-state"><i class="fas fa-inbox"></i><h3>No data</h3><p>No records found for the selected filters and months.</p></div>`;
+}
+
+function onMCDimensionChange() {
+    const valSel = document.getElementById('mcValue');
+    if (valSel) valSel.value = '';
+    populateMonthComparison();
+    renderMonthComparison();
+}
+
+function exportMonthComparison() {
+    const monthA = mcPeriodKey('A'), monthB = mcPeriodKey('B');
+    if (!monthA || !monthB) { showToast('No months available to export.', 'error'); return; }
+    const field = mcField(), value = mcSelectedValue();
+    const rowsA = mcPeriodRows(monthA), rowsB = mcPeriodRows(monthB);
+    const breakdownKeys = value ? [value] : [...new Set([...rowsA, ...rowsB].map(r => r[field]).filter(v => v && v !== '—'))];
+    if (!breakdownKeys.length) { showToast('No data available to export.', 'error'); return; }
+    const output = breakdownKeys.map(v => {
+        const a = mcAggregate(rowsA.filter(r => r[field] === v)), b = mcAggregate(rowsB.filter(r => r[field] === v));
+        const vg = mcGrowth(b.value, a.value), ug = mcGrowth(b.units, a.units);
+        return {
+            [MC_DIMENSIONS[field]]: v,
+            [`${monthLabel(monthA)} Value`]: a.value, [`${monthLabel(monthB)} Value`]: b.value,
+            'Value Difference': b.value - a.value, 'Value Growth %': vg.text,
+            [`${monthLabel(monthA)} Units`]: a.units, [`${monthLabel(monthB)} Units`]: b.units,
+            'Units Difference': b.units - a.units, 'Units Growth %': ug.text
+        };
+    });
+    if (typeof XLSX !== 'undefined') {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(output), 'Month Comparison');
+        XLSX.writeFile(workbook, `Month_Comparison_${monthA}_vs_${monthB}.xlsx`);
+        showToast(`Exported comparison for ${monthLabel(monthA)} vs ${monthLabel(monthB)}.`, 'success');
     }
 }
 
@@ -3656,8 +3877,8 @@ function buildPrintReport(data, chartImgs) {
     const avgOrder = totalRev / data.length;
 
     let periodLabel = 'All Time';
-    if (periodMode === 'month' && periodValue) periodLabel = monthLabel(periodValue);
-    else if (periodMode === 'quarter' && periodValue) periodLabel = quarterLabel(periodValue);
+    if (periodMode === 'month' && periodValue.length) periodLabel = periodValue.map(monthLabel).join(', ');
+    else if (periodMode === 'quarter' && periodValue.length) periodLabel = periodValue.map(quarterLabel).join(', ');
 
     const topCust = applyTopN(topByValue(data, 'customerName', 'netAmount'));
     const topProd = applyTopN(topByValue(data, 'itemName', 'netAmount'));
@@ -3795,7 +4016,7 @@ function clearData() {
     if (!confirm('Are you sure you want to clear all imported data?')) return;
     rawData = [];
     saveDataToStorage();
-    globalCompany = ''; globalCompanyGroup = ''; periodMode = 'all'; periodValue = '';
+    globalCompany = ''; globalCompanyGroup = ''; periodMode = 'all'; periodValue = [];
     document.getElementById('periodMode').value = 'all';
     populateGlobalFilters();
     populateFilters();
