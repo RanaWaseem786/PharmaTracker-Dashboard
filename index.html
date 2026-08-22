@@ -1536,10 +1536,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 </div>
                 <div class="bank-details-box" id="pay-bank-block" style="display:none">
                     <div class="pay-intl-badge"><i class="fas fa-globe"></i> Only $5 / month for international users</div>
-                    <div class="bank-details-row"><span>Bank Name</span><span>[Your Bank Name]</span></div>
-                    <div class="bank-details-row"><span>Account Title</span><span>[Account Title]</span></div>
-                    <div class="bank-details-row"><span>Account / IBAN</span><span id="bank-iban-display">[Account Number / IBAN]</span></div>
-                    <div class="bank-details-row"><span>SWIFT / BIC</span><span>[SWIFT Code]</span></div>
+                    <div class="bank-details-row"><span>Bank Name</span><span>MCB Bank</span></div>
+                    <div class="bank-details-row"><span>Account Title</span><span>Muhammad Waseem</span></div>
+                    <div class="bank-details-row"><span>Account Number</span><span>0872598761011170</span></div>
+                    <div class="bank-details-row"><span>IBAN</span><span id="bank-iban-display">PK32MUCB0872598761011170</span></div>
                     <button type="button" class="pay-copy-btn" style="width:fit-content" onclick="copyPayNumber()"><i class="fas fa-copy"></i> Copy IBAN</button>
                 </div>
                 <div class="auth-field" style="margin-bottom:0">
@@ -1587,10 +1587,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 </div>
                 <div class="bank-details-box" id="pay-bank-block-renew" style="display:none">
                     <div class="pay-intl-badge"><i class="fas fa-globe"></i> Only $5 / month for international users</div>
-                    <div class="bank-details-row"><span>Bank Name</span><span>[Your Bank Name]</span></div>
-                    <div class="bank-details-row"><span>Account Title</span><span>[Account Title]</span></div>
-                    <div class="bank-details-row"><span>Account / IBAN</span><span id="bank-iban-display-renew">[Account Number / IBAN]</span></div>
-                    <div class="bank-details-row"><span>SWIFT / BIC</span><span>[SWIFT Code]</span></div>
+                    <div class="bank-details-row"><span>Bank Name</span><span>MCB Bank</span></div>
+                    <div class="bank-details-row"><span>Account Title</span><span>Muhammad Waseem</span></div>
+                    <div class="bank-details-row"><span>Account Number</span><span>0872598761011170</span></div>
+                    <div class="bank-details-row"><span>IBAN</span><span id="bank-iban-display-renew">PK32MUCB0872598761011170</span></div>
                     <button type="button" class="pay-copy-btn" style="width:fit-content" onclick="copyPayNumber('renew')"><i class="fas fa-copy"></i> Copy IBAN</button>
                 </div>
                 <div class="auth-field" style="margin-bottom:0">
@@ -4956,7 +4956,7 @@ function sendResetCodeEmail(user, code) {
 
 /* ── JazzCash / EasyPaisa / Bank payment box ── */
 const PAY_NUMBERS = { jazzcash: '0332 7282070', easypaisa: '0332 7282070' };
-const BANK_IBAN = '[Account Number / IBAN]'; // TODO: replace with your real business bank account / IBAN before going live
+const BANK_IBAN = 'PK32MUCB0872598761011170';
 const INTL_FEE_USD = 5;
 let selectedPay = { signup: 'jazzcash', renew: 'jazzcash' };
 function selectPayMethod(method, ctx) {
