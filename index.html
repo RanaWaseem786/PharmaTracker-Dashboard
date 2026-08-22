@@ -2883,11 +2883,21 @@ self.onmessage = function(e) {
     }
 }
 
+let _loadingUpdateScheduled = false;
+let _pendingPct = 0;
+let _pendingLabel = '';
 function setLoadingProgress(pct, label) {
-    const fill = document.getElementById('loading-progress-fill');
-    const text = document.getElementById('loading-status-text');
-    if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
-    if (text && label) text.textContent = label;
+    _pendingPct = pct;
+    _pendingLabel = label;
+    if (_loadingUpdateScheduled) return;
+    _loadingUpdateScheduled = true;
+    requestAnimationFrame(() => {
+        const fill = document.getElementById('loading-progress-fill');
+        const text = document.getElementById('loading-status-text');
+        if (fill) fill.style.width = Math.max(0, Math.min(100, _pendingPct)) + '%';
+        if (text && _pendingLabel) text.textContent = _pendingLabel;
+        _loadingUpdateScheduled = false;
+    });
 }
 
 function handleFile(input) {
@@ -2899,8 +2909,15 @@ function handleFile(input) {
     setLoadingProgress(2, 'Reading file…');
 
     const reader = new FileReader();
+    let lastProgressUpdate = 0;
     reader.onprogress = e => {
-        if (e.lengthComputable) setLoadingProgress(2 + (e.loaded / e.total) * 10, 'Reading file…');
+        if (e.lengthComputable) {
+            const now = performance.now();
+            if (now - lastProgressUpdate > 150) { // Throttle to 150ms to reduce DOM reflows
+                setLoadingProgress(2 + (e.loaded / e.total) * 10, 'Reading file…');
+                lastProgressUpdate = now;
+            }
+        }
     };
     reader.onload = e => {
         const fileData = e.target.result;
@@ -2909,7 +2926,17 @@ function handleFile(input) {
         const handleRaw = (raw) => {
             if (!raw || raw.length < 2) { showToast('File appears empty!', 'error'); showLoading(false); return; }
             const headers = raw[0].map(h => String(h).trim());
-            const rows = raw.slice(1).filter(r => r.some(c => c !== ''));
+            // Filter out empty rows in a single pass
+            const rows = [];
+            for (let j = 1; j < raw.length; j++) {
+                const r = raw[j];
+                for (let k = 0; k < r.length; k++) {
+                    if (r[k] !== '') {
+                        rows.push(r);
+                        break;
+                    }
+                }
+            }
 
             const mapping = autoMap(headers);
             const unresolved = Object.keys(FIELDS).filter(f => ['invoiceId','customerName','itemName','netAmount'].includes(f) && mapping[f] === -1);
@@ -2925,10 +2952,15 @@ function handleFile(input) {
         };
 
         if (worker) {
+            let lastProgressUpdate = 0;
             const onMsg = (msg) => {
                 const data = msg.data;
                 if (data.type === 'progress') {
-                    setLoadingProgress(data.pct, data.label);
+                    const now = performance.now();
+                    if (now - lastProgressUpdate > 150) { // Throttle progress updates
+                        setLoadingProgress(data.pct, data.label);
+                        lastProgressUpdate = now;
+                    }
                 } else if (data.type === 'done') {
                     worker.removeEventListener('message', onMsg);
                     setLoadingProgress(95, 'Importing records…');
@@ -2963,12 +2995,17 @@ function normalize(s) { return String(s).toLowerCase().replace(/[^a-z0-9]/g, '')
 
 function autoMap(headers) {
     const mapping = {};
+    const normalizedHeaders = headers.map(h => normalize(h)); // Memoize header normalization
+    const normalizedVariants = {}; // Cache normalized variants per field
     Object.keys(FIELDS).forEach(field => {
         const variants = FIELDS[field].variants;
+        normalizedVariants[field] = variants.map(v => normalize(v));
+    });
+    Object.keys(FIELDS).forEach(field => {
+        const variants = normalizedVariants[field];
         mapping[field] = -1;
-        for (let i = 0; i < headers.length; i++) {
-            const h = normalize(headers[i]);
-            if (variants.some(v => normalize(v) === h)) {
+        for (let i = 0; i < normalizedHeaders.length; i++) {
+            if (variants.includes(normalizedHeaders[i])) {
                 mapping[field] = i; break;
             }
         }
@@ -3017,8 +3054,9 @@ function importData(headers, rows, mapping) {
 
     const data = [];
     const total = rows.length;
-    const CHUNK_SIZE = 4000; // rows processed per animation frame — keeps the tab responsive on huge files
+    const CHUNK_SIZE = 8000; // Increased from 4000 for faster processing
     let i = 0;
+    let lastProgressUpdate = 0;
 
     function processChunk() {
         const end = Math.min(i + CHUNK_SIZE, total);
@@ -3062,7 +3100,13 @@ function importData(headers, rows, mapping) {
             });
         }
 
-        setLoadingProgress(90 + (i / total) * 8, `Importing records… ${i.toLocaleString()} / ${total.toLocaleString()}`);
+        // Throttle progress updates to every 200ms to reduce DOM reflows
+        const now = performance.now();
+        if (now - lastProgressUpdate > 200) {
+            const progressPct = 90 + (i / total) * 8;
+            setLoadingProgress(progressPct, `Importing records… ${i} / ${total}`);
+            lastProgressUpdate = now;
+        }
 
         if (i < total) {
             // Yield to the browser so scrolling/painting/input stay responsive, then continue
@@ -3076,8 +3120,8 @@ function importData(headers, rows, mapping) {
         // Append new data to existing data (don't replace)
         rawData = [...rawData, ...data];
 
-        setLoadingProgress(99, 'Saving…');
-        // Save to localStorage
+        // Persist in the background (IndexedDB) — this never blocks the UI or shows
+        // a "Saving…" step; the data below renders immediately regardless of it.
         saveDataToStorage();
 
         populateGlobalFilters();
