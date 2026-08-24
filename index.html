@@ -962,6 +962,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 .mkt-nav-links a{ color:var(--muted); text-decoration:none; font-size:13.5px; font-weight:600; transition:color .15s; cursor:pointer; }
 .mkt-nav-links a:hover{ color:var(--text); }
 .mkt-nav-cta{ display:flex; align-items:center; gap:12px; }
+.mkt-language-select{appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font:600 12px/1 'DM Sans',sans-serif;padding:10px 30px 10px 12px;min-width:142px;cursor:pointer;outline:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 13px) 15px,calc(100% - 9px) 15px;background-size:4px 4px,4px 4px;background-repeat:no-repeat}.mkt-language-select:focus{border-color:var(--accent)}#google_translate_element{display:none}.goog-te-banner-frame.skiptranslate{display:none!important}body{top:0!important}
 .mkt-btn{
     padding:10px 20px; border-radius:10px; font-size:13.5px; font-weight:700;
     cursor:pointer; border:1px solid transparent; transition:all .18s; white-space:nowrap;
@@ -1319,6 +1320,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     .prem-form-header{ padding-right:0; }
 }
 
+/* ── Projection & Target (isolated feature) ── */
+.projection-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:16px}
+.projection-control{display:flex;flex-direction:column;gap:6px;min-width:190px}.projection-control label{font-size:11px;color:var(--muted);font-weight:600}
+.projection-summary{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:14px;margin-bottom:16px}
+.projection-kpi{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px}.projection-kpi span{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.projection-kpi strong{font-size:18px;letter-spacing:-.3px}
+.projection-time{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;align-items:center}.projection-time .badge{padding:7px 10px}
+.projection-workdays{width:125px!important;min-width:125px!important}.projection-multi{position:relative;min-width:250px}.projection-multi-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left}.projection-multi-panel{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:30;width:100%;max-height:245px;overflow:auto;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.28)}.projection-multi.open .projection-multi-panel{display:block}.projection-multi-option{display:flex;align-items:center;gap:8px;padding:7px 6px;font-size:12px;cursor:pointer}.projection-multi-option input{accent-color:var(--accent)}
+.projection-table input,.projection-assignment input{width:100%;min-width:92px;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:7px 8px;font:inherit;outline:none}.projection-table input:focus,.projection-assignment input:focus{border-color:var(--accent)}
+.projection-table td{white-space:nowrap}.projection-table .readonly{color:var(--muted)}.projection-assignment{display:grid;grid-template-columns:1fr 1fr 130px 120px auto;gap:10px;align-items:end}.projection-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}.projection-toolbar,.projection-summary,.projection-assignment,.projection-table table{font-size:13px}.projection-control label,.projection-kpi span{font-size:12px}.projection-kpi strong{font-size:20px}.projection-target-upload{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0}
+@media(max-width:900px){.projection-summary{grid-template-columns:repeat(2,minmax(150px,1fr))}.projection-assignment{grid-template-columns:1fr 1fr}}
+
     </style>
 </head>
 <body>
@@ -1343,6 +1355,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 <a onclick="mktScrollTo('mkt-pricing')">Pricing</a>
             </div>
             <div class="mkt-nav-cta">
+                <select id="siteLanguageSelect" class="mkt-language-select" aria-label="Select website language" onchange="changeSiteLanguage(this.value)">
+                    <option value="en">English</option><option value="ar">العربية — Arabic</option><option value="bn">বাংলা — Bengali</option><option value="zh-CN">中文（简体）— Chinese</option><option value="zh-TW">中文（繁體）— Chinese Traditional</option><option value="nl">Nederlands — Dutch</option><option value="fr">Français — French</option><option value="de">Deutsch — German</option><option value="hi">हिन्दी — Hindi</option><option value="id">Bahasa Indonesia — Indonesian</option><option value="it">Italiano — Italian</option><option value="ja">日本語 — Japanese</option><option value="ko">한국어 — Korean</option><option value="ms">Bahasa Melayu — Malay</option><option value="pl">Polski — Polish</option><option value="pt">Português — Portuguese</option><option value="ru">Русский — Russian</option><option value="es">Español — Spanish</option><option value="sw">Kiswahili — Swahili</option><option value="tl">Filipino — Tagalog</option><option value="th">ไทย — Thai</option><option value="tr">Türkçe — Turkish</option><option value="uk">Українська — Ukrainian</option><option value="ur">اردو — Urdu</option><option value="vi">Tiếng Việt — Vietnamese</option>
+                </select>
                 <div class="mkt-btn mkt-btn-ghost" onclick="enterAuth('login')">Sign In</div>
                 <div class="mkt-btn mkt-btn-gold" onclick="enterAuth('signup')"><i class="fas fa-arrow-right"></i> Get Started</div>
             </div>
@@ -1582,6 +1597,37 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         </div>
     </footer>
 </div>
+
+<div id="google_translate_element" aria-hidden="true"></div>
+<script>
+const SITE_LANGUAGE_STORAGE_KEY='pharmaTrackerPreferredLanguage';
+function googleTranslateElementInit(){
+    new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,ar,bn,zh-CN,zh-TW,nl,fr,de,hi,id,it,ja,ko,ms,pl,pt,ru,es,sw,tl,th,tr,uk,ur,vi',autoDisplay:false},'google_translate_element');
+    const language=localStorage.getItem(SITE_LANGUAGE_STORAGE_KEY)||'en';
+    const select=document.getElementById('siteLanguageSelect');if(select)select.value=language;
+    if(language!=='en')setSiteLanguage(language);
+}
+function setSiteLanguage(language){
+    let attempts=0;
+    const timer=setInterval(function(){
+        const translateSelect=document.querySelector('.goog-te-combo');
+        if(translateSelect){translateSelect.value=language;translateSelect.dispatchEvent(new Event('change'));clearInterval(timer)}
+        else if(++attempts>40)clearInterval(timer);
+    },100);
+}
+function changeSiteLanguage(language){
+    localStorage.setItem(SITE_LANGUAGE_STORAGE_KEY,language);
+    document.documentElement.lang=language;
+    if(language==='en'){
+        document.cookie='googtrans=/en/en;path=/';
+        document.cookie='googtrans=/en/en;path=/;domain='+location.hostname;
+        location.reload();
+        return;
+    }
+    setSiteLanguage(language);
+}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 
 <!-- ═══════════════════════════════════════════════
@@ -1968,6 +2014,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         <div class="nav-item" data-page="customers"><i class="fas fa-users"></i><span>Customers</span></div>
         <div class="nav-item" data-page="products"><i class="fas fa-pills"></i><span>Products</span></div>
         <div class="nav-item" data-page="analytics"><i class="fas fa-chart-pie"></i><span>Analytics</span></div>
+        <div class="nav-label">Planning</div>
+        <div class="nav-item" data-page="projection"><i class="fas fa-bullseye"></i><span>Projection &amp; Target</span></div>
         <div class="nav-label">Account</div>
         <div class="nav-item" data-page="approvals" id="nav-approvals" style="display:none"><i class="fas fa-user-check"></i><span>Approvals</span><span class="nav-badge" id="approvalsBadge" style="display:none">0</span></div>
         <div class="nav-item" data-page="settings"><i class="fas fa-cog"></i><span>Settings</span></div>
@@ -2657,6 +2705,54 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
                 </table>
                 <div id="products-empty" class="empty-state" style="display: none;"><i class="fas fa-pills"></i><h3>No products yet</h3><p>Upload data to see product performance</p></div>
             </div>
+        </div>
+    </div>
+
+    <!-- ═══ PROJECTION & TARGET PAGE ═══ -->
+    <div class="page" id="page-projection">
+        <div class="projection-toolbar">
+            <div class="projection-control"><label for="projectionBooker">Booker Slicer</label><select class="filter-select" id="projectionBooker" onchange="syncProjectionAssignment('projectionBooker')"></select></div>
+            <div class="projection-control projection-multi" id="projectionProductMulti"><label>Product Slicer</label><button type="button" class="filter-select projection-multi-toggle" onclick="toggleProjectionProducts(event)"><span id="projectionProductLabel">All Products</span><i class="fas fa-chevron-down" style="font-size:10px"></i></button><div class="projection-multi-panel" id="projectionProductPanel"></div></div>
+            <div class="projection-time"><div class="projection-control"><label for="projectionWorkingDays">Working Days</label><input class="projection-workdays" id="projectionWorkingDays" type="number" min="1" max="31" step="1" onchange="saveProjectionWorkingDays(this.value)"></div><span class="badge badge-blue" id="projectionTimeGone">Time Gone: —</span><span class="badge badge-purple" id="projectionTimePending">Time Pending: —</span></div>
+        </div>
+        <div class="projection-summary" id="projectionSummary"></div>
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div><div class="card-title">Booker / Product Breakdown</div><div class="card-sub">All products assigned to the selected Booker, with TGT, Achievement / Sale, and Remaining.</div></div></div>
+            <div class="table-wrap projection-table">
+                <table>
+                    <thead><tr><th>Sr. No.</th><th>Product Name</th><th>TGT</th><th>Achievement / Sale</th><th>Achievement %</th><th>Remaining</th></tr></thead>
+                    <tbody id="projectionBookerBreakdownBody"></tbody>
+                    <tfoot id="projectionBookerBreakdownFoot"></tfoot>
+                </table>
+            </div>
+            <div id="projectionBookerBreakdownEmpty" class="empty-state"><i class="fas fa-users"></i><h3>Select a Booker</h3><p>Choose a Booker from the slicer above to see the product-wise breakdown.</p></div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div><div class="card-title">Booker &amp; Product Target Assignment</div><div class="card-sub">Enter a Total Target, then pick a Booker and a percentage (1%–100%) — the total target is divided automatically. No individual product targets needed.</div></div></div>
+            <div class="projection-control" style="max-width:220px;margin-bottom:14px"><label for="assignmentTotalTarget">Total Target</label><input id="assignmentTotalTarget" type="number" min="0" step="0.01" placeholder="Enter total target" onchange="projectionSaveTotalTargetFromAssignment(this)"></div>
+            <div class="projection-assignment">
+                <div class="projection-control"><label for="assignmentBooker">Booker</label><select class="filter-select" id="assignmentBooker" onchange="syncProjectionAssignment('assignmentBooker')"></select></div>
+                <div class="projection-control"><label for="assignmentProduct">Product</label><select class="filter-select" id="assignmentProduct" onchange="renderProjectionPage()"></select></div>
+                <div class="projection-control"><label for="projectionMeasure">View</label><select class="filter-select" id="projectionMeasure" onchange="renderProjectionPage()"><option value="value">Value-wise</option><option value="units">Unit-wise</option></select></div>
+                <div class="projection-control"><label for="assignmentPercent">Booker %</label><input id="assignmentPercent" type="number" min="1" max="100" step="1" value="100"></div>
+                <button class="btn btn-primary" type="button" onclick="saveProjectionAssignment()"><i class="fas fa-save"></i> Save Assignment</button>
+            </div>
+            <p class="projection-note">The Booker's share of the Total Target above is calculated automatically from the percentage above and split evenly across the Booker's products — see the Booker / Product Breakdown table above, in Unit-wise or Value-wise view.</p>
+            <div class="projection-target-upload"><div class="upload-zone"><button class="btn btn-primary" type="button"><i class="fas fa-cloud-upload-alt"></i> Upload TGT Excel</button><input type="file" id="projectionTargetFileInput" accept=".xlsx,.xls,.csv" onchange="handleProjectionTargetFile(this)"></div><button class="btn btn-ghost" type="button" onclick="downloadProjectionTargetSample()"><i class="fas fa-download"></i> TGT Sample File</button></div>
+            <div class="projection-control" style="max-width:280px;margin-top:14px" id="assignmentProductUnitTargetWrap"><label for="assignmentProductUnitTarget">Total Unit TGT <span id="assignmentProductUnitTargetLabel" style="color:var(--muted);font-weight:400"></span></label><input id="assignmentProductUnitTarget" type="number" min="0" step="1" placeholder="Select a Product above first" onchange="projectionSaveProductUnitTarget(this)"></div>
+            <p class="projection-note">Enter a product's Total Unit Target above (after selecting it from the Product dropdown), then assign Booker % as usual — each Booker's Unit Target is that product's unit target multiplied by their percentage (e.g. 1,000 units at 25% = 250 units). Switch the View dropdown to Unit-wise to see Unit Target, Sale, Achievement % and Remaining in units.</p>
+            <div class="projection-assignment-clear" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+                <button class="btn btn-ghost" type="button" onclick="projectionRemoveTargetData()" title="Clears only manually entered target and Booker allocation data" style="font-size:12px;color:var(--accent3)"><i class="fas fa-eraser"></i> Remove Target Data</button>
+                <button class="btn btn-ghost" type="button" onclick="projectionRemoveExcelData()" title="Clears only the uploaded Excel/CSV data" style="font-size:12px;color:var(--accent3)"><i class="fas fa-file-excel"></i> Remove Excel/CSV Data</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><div><div class="card-title">Create Projection</div><div class="card-sub">Sales values refresh from uploaded Excel / CSV data. Target and Last Month Sale are manual saved values. Independent of the Booker/Product slicers and Target Assignment above.</div></div></div>
+            <div class="table-wrap projection-table"><table>
+                <thead><tr><th>Date</th><th>Total Target</th><th>Company</th><th>Total Today Sale</th><th>Total To-Date Sale</th><th>Total Last Month Sale</th><th>Target Achieved %</th><th>Projection</th></tr></thead>
+                <tbody id="projectionTableBody"></tbody>
+            </table></div>
+            <div id="projectionEmpty" class="empty-state" style="display:none"><i class="fas fa-bullseye"></i><h3>No sales data yet</h3><p>Upload an Excel or CSV file to create projections.</p></div>
         </div>
     </div>
 
@@ -3468,6 +3564,309 @@ function clearAllData() {
     showToast('✅ All data cleared successfully!', 'success');
 }
 
+/* ═══════════════════════════════════════════════
+   PROJECTION & TARGET — stored independently from uploaded sales.
+═══════════════════════════════════════════════ */
+const PROJECTION_STORAGE_KEY = 'pharmaTrackerProjectionTargetsV1';
+let projectionState = { rowTargets:{}, lastMonthSales:{}, productTargets:{}, bookerPercentages:{}, productUnitTargets:{} };
+
+function projectionLoadState() {
+    try { projectionState = { ...projectionState, ...(JSON.parse(localStorage.getItem(PROJECTION_STORAGE_KEY)) || {}) }; } catch (e) { /* use defaults */ }
+}
+function projectionSaveState() {
+    try { localStorage.setItem(PROJECTION_STORAGE_KEY, JSON.stringify(projectionState)); } catch (e) { showToast('Could not save projection settings locally.', 'warning'); }
+}
+function projectionNumber(value) { return Number(String(value ?? 0).replace(/[^0-9.-]/g, '')) || 0; }
+function projectionMoney(value) { return (typeof fmt === 'function' ? fmt(value) : '₨' + projectionNumber(value).toLocaleString(undefined,{maximumFractionDigits:2})); }
+function projectionEscape(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function projectionKey(...parts) { return parts.map(v => String(v ?? '').trim()).join('¦'); }
+function projectionMonthKey(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`; }
+function projectionDateString(row) { return String(row.invoiceDate || '').slice(0,10); }
+function projectionCurrentRows() {
+    const month = projectionMonthKey();
+    return rawData.filter(r => String(r.invoiceDate || '').slice(0,7) === month);
+}
+function projectionUnique(field) {
+    return [...new Set(rawData.map(r => String(r[field] || '').trim()).filter(v => v && v !== '—'))].sort((a,b) => a.localeCompare(b));
+}
+function projectionSetOptions(id, values, allLabel, keepValue = true) {
+    const el = document.getElementById(id); if (!el) return;
+    const old = el.value;
+    el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${projectionEscape(v)}">${projectionEscape(v)}</option>`).join('');
+    if (keepValue && values.includes(old)) el.value = old;
+}
+function projectionTime() {
+    const now = new Date(), days = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    return { gone: now.getDate(), pending: days - now.getDate(), days, ratio: now.getDate() / days };
+}
+function projectionRows() {
+    const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`, monthRows = projectionCurrentRows(), groups = new Map();
+    monthRows.forEach(r => {
+        const distributor = String(r.customerName || 'Unknown').trim(), company = String(r.companyName || '—').trim();
+        const key = projectionKey(distributor, company);
+        if (!groups.has(key)) groups.set(key, { key, distributor, company, today:0, toDate:0 });
+        const group = groups.get(key), amount = projectionNumber(r.netAmount);
+        group.toDate += amount;
+        if (projectionDateString(r) === today) group.today += amount;
+    });
+    return [...groups.values()].sort((a,b) => a.distributor.localeCompare(b.distributor) || a.company.localeCompare(b.company));
+}
+function renderProjectionPage() {
+    projectionLoadState();
+    const bookers = projectionUnique('bookingMan'), products = projectionUnique('itemName');
+    projectionSetOptions('projectionBooker', bookers, 'All Bookers');
+    projectionSetOptions('projectionProduct', products, 'All Products');
+    projectionSetOptions('assignmentBooker', bookers, 'Select Booker');
+    projectionSetOptions('assignmentProduct', products, 'Select Product');
+    const time = projectionTime();
+    const gone = document.getElementById('projectionTimeGone'), pending = document.getElementById('projectionTimePending');
+    if (gone) gone.textContent = `Time Gone: ${time.gone} of ${time.days} days (${Math.round(time.ratio*100)}%)`;
+    if (pending) pending.textContent = `Time Pending: ${time.pending} days`;
+
+    const selectedBooker = document.getElementById('projectionBooker')?.value || '';
+    const selectedProduct = document.getElementById('projectionProduct')?.value || '';
+    const visibleSales = projectionCurrentRows().filter(r => (!selectedBooker || r.bookingMan === selectedBooker) && (!selectedProduct || r.itemName === selectedProduct)).reduce((sum,r) => sum + projectionNumber(r.netAmount), 0);
+    const totalTarget = Object.values(projectionState.rowTargets).reduce((sum,v) => sum + projectionNumber(v), 0);
+    const allocated = Object.entries(projectionState.bookerPercentages).filter(([key]) => !selectedBooker || key.split('¦')[0] === selectedBooker).filter(([key]) => !selectedProduct || key.split('¦')[1] === selectedProduct).reduce((sum,[key,pct]) => {
+        const product = key.split('¦')[1]; return sum + projectionNumber(projectionState.productTargets[product]) * projectionNumber(pct) / 100;
+    }, 0);
+    const baseForAchievement = allocated || totalTarget;
+    const achieved = baseForAchievement ? visibleSales / baseForAchievement * 100 : 0;
+    const forecast = time.ratio ? visibleSales / time.ratio : 0;
+    const summary = document.getElementById('projectionSummary');
+    if (summary) summary.innerHTML = [
+        ['Total Target', projectionMoney(totalTarget)], ['Booker Target', projectionMoney(allocated)], ['Sales', projectionMoney(visibleSales)], ['Target Achieved %', `${achieved.toFixed(1)}%`], ['Projection', projectionMoney(forecast)]
+    ].map(([label,value]) => `<div class="projection-kpi"><span>${label}</span><strong>${value}</strong></div>`).join('');
+
+    const rows = projectionRows(), body = document.getElementById('projectionTableBody'), empty = document.getElementById('projectionEmpty');
+    if (!body) return;
+    body.innerHTML = rows.map(row => {
+        const target = projectionNumber(projectionState.rowTargets[row.key]), lastMonth = projectionNumber(projectionState.lastMonthSales[row.key]);
+        const percent = target ? row.toDate / target * 100 : 0, forecastValue = time.ratio ? row.toDate / time.ratio : 0, encoded = encodeURIComponent(row.key);
+        return `<tr><td class="readonly">${projectionMonthKey()}</td><td>${projectionEscape(row.distributor)}</td><td><input type="number" min="0" step="0.01" value="${target || ''}" placeholder="Enter target" data-projection-field="target" data-projection-key="${encoded}" onchange="projectionSaveTableField(this)"></td><td>${projectionEscape(row.company)}</td><td class="mono">${projectionMoney(row.today)}</td><td class="mono">${projectionMoney(row.toDate)}</td><td><input type="number" min="0" step="0.01" value="${lastMonth || ''}" placeholder="Enter last month" data-projection-field="lastMonth" data-projection-key="${encoded}" onchange="projectionSaveTableField(this)"></td><td class="mono">${percent.toFixed(1)}%</td><td class="mono" style="color:var(--accent2);font-weight:600">${projectionMoney(forecastValue)}</td></tr>`;
+    }).join('');
+    empty.style.display = rows.length ? 'none' : 'block';
+}
+function projectionSaveTableField(input) {
+    const key = decodeURIComponent(input.dataset.projectionKey), value = Math.max(0, projectionNumber(input.value));
+    if (input.dataset.projectionField === 'lastMonth') projectionState.lastMonthSales[key] = value;
+    else projectionState.rowTargets[key] = value;
+    projectionSaveState(); renderProjectionPage();
+}
+function syncProjectionAssignment() {
+    const booker = document.getElementById('assignmentBooker')?.value, product = document.getElementById('assignmentProduct')?.value;
+    if (!booker || !product) return;
+    document.getElementById('assignmentProductTarget').value = projectionState.productTargets[product] ?? '';
+    document.getElementById('assignmentPercent').value = projectionState.bookerPercentages[projectionKey(booker, product)] ?? 100;
+}
+function saveProjectionAssignment() {
+    const booker = document.getElementById('assignmentBooker').value, product = document.getElementById('assignmentProduct').value;
+    const productTarget = Math.max(0, projectionNumber(document.getElementById('assignmentProductTarget').value));
+    const percent = Math.min(100, Math.max(1, projectionNumber(document.getElementById('assignmentPercent').value)));
+    if (!booker || !product) { showToast('Select both a Booker and Product first.', 'error'); return; }
+    projectionState.productTargets[product] = productTarget;
+    projectionState.bookerPercentages[projectionKey(booker, product)] = percent;
+    projectionSaveState(); renderProjectionPage(); showToast('Booker and product target assignment saved.', 'success');
+}
+
+/* Overall-total projection view: overrides the earlier row renderer while retaining its saved settings. */
+function projectionSelectedProducts(){return [...document.querySelectorAll('#projectionProductPanel input[data-product]:checked')].map(el=>el.dataset.product)}
+function toggleProjectionProducts(e){e.stopPropagation();document.getElementById('projectionProductMulti').classList.toggle('open')}
+function projectionSelectAllProducts(){document.querySelectorAll('#projectionProductPanel input[data-product]').forEach(el=>el.checked=false);renderProjectionPage()}
+function renderProjectionProducts(products){const panel=document.getElementById('projectionProductPanel');if(!panel)return;const selected=projectionSelectedProducts();panel.innerHTML=`<label class="projection-multi-option"><input type="checkbox" data-product-all ${!selected.length?'checked':''} onchange="projectionSelectAllProducts()"><strong>All Products</strong></label>`+products.map(p=>`<label class="projection-multi-option"><input type="checkbox" data-product="${projectionEscape(p)}" ${selected.includes(p)?'checked':''} onchange="renderProjectionPage()">${projectionEscape(p)}</label>`).join('');const label=document.getElementById('projectionProductLabel');if(label)label.textContent=!selected.length?'All Products':selected.length===1?selected[0]:`${selected.length} Products Selected`}
+function saveProjectionWorkingDays(value){projectionState.workingDays=Math.max(1,Math.min(31,projectionNumber(value)||26));projectionSaveState();renderProjectionPage()}
+function projectionOverallTime(){const now=new Date(),total=Math.max(1,projectionNumber(projectionState.workingDays)||26);let gone=0;for(let d=1;d<=now.getDate();d++){const day=new Date(now.getFullYear(),now.getMonth(),d).getDay();if(day!==0)gone++}gone=Math.min(total,gone);return{total,gone,pending:Math.max(0,total-gone),ratio:gone/total}}
+function projectionBookerProducts(booker){if(!booker)return[];return[...new Set(rawData.filter(r=>String(r.bookingMan||'').trim()===booker).map(r=>String(r.itemName||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b))}
+function projectionIsUnitsMeasure(){return(document.getElementById('projectionMeasure')?.value||'value')==='units'}
+function projectionAmountFor(row,unitsMode){return unitsMode?(Number(row.units??row.stock??row.qty??row.quantity??0)||0):(Number(row.netAmount??row.grossAmount??row.amount??0)||0)}
+function renderProjectionBookerBreakdown(booker,unitsMode){
+    const body=document.getElementById('projectionBookerBreakdownBody'),empty=document.getElementById('projectionBookerBreakdownEmpty'),foot=document.getElementById('projectionBookerBreakdownFoot');
+    if(!body)return;
+    if(!booker){body.innerHTML='';if(foot)foot.innerHTML='';if(empty)empty.style.display='block';return}
+    if(empty)empty.style.display='none';
+    const monthRows=projectionCurrentRows().filter(r=>String(r.bookingMan||'').trim()===booker);
+    let products=projectionBookerProducts(booker);
+    const focusProduct=document.getElementById('assignmentProduct')?.value||'';
+    const sliced=projectionSelectedProducts();
+    if(focusProduct)products=products.filter(p=>p===focusProduct);
+    else if(sliced.length)products=products.filter(p=>sliced.includes(p));
+    const bookerPercent=Math.min(100,Math.max(0,projectionNumber(projectionState.bookerPercentages[booker])||0));
+    const bookerTarget=projectionNumber(projectionState.totalTarget)*bookerPercent/100;
+    const perProductTarget=products.length?bookerTarget/products.length:0;
+    let totalTgt=0,totalSale=0,totalBtg=0;
+    body.innerHTML=products.map((product,index)=>{
+        const productRows=monthRows.filter(r=>String(r.itemName||'').trim()===product);
+        const valueSale=productRows.reduce((sum,r)=>sum+projectionAmountFor(r,false),0);
+        const unitSale=productRows.reduce((sum,r)=>sum+projectionAmountFor(r,true),0);
+        const displaySale=unitsMode?unitSale:valueSale;
+        /* Unit-wise: each product's own manually entered Total Unit Target, split by this Booker's %.
+           Value-wise (unchanged): the overall Total Target split evenly across the Booker's products. */
+        const productUnitTarget=projectionNumber(projectionState.productUnitTargets?.[product]);
+        const target=unitsMode?(productUnitTarget*bookerPercent/100):perProductTarget;
+        const saleForAchievement=unitsMode?unitSale:valueSale;
+        const achievement=target?(saleForAchievement/target*100):0;
+        const btg=target-saleForAchievement;
+        const saleText=unitsMode?Math.round(displaySale).toLocaleString():projectionMoney(displaySale);
+        const tgtText=unitsMode?Math.round(target).toLocaleString():projectionMoney(target);
+        const btgText=(btg>0?'':'+')+(unitsMode?Math.round(Math.abs(btg)).toLocaleString():projectionMoney(Math.abs(btg)));
+        totalTgt+=target;totalSale+=displaySale;totalBtg+=btg;
+        return `<tr><td>${index+1}</td><td>${projectionEscape(product)}</td><td class="mono">${tgtText}</td><td class="mono">${saleText}</td><td class="mono">${achievement.toFixed(1)}%</td><td class="mono" style="color:${btg>0?'var(--accent3)':'var(--accent2)'}">${btgText}</td></tr>`;
+    }).join('')||`<tr><td colspan="6" style="text-align:center;color:var(--muted)">No products found for this Booker.</td></tr>`;
+    if(foot){
+        if(!products.length){foot.innerHTML='';}
+        else{
+            const totalAchievement=totalTgt?(totalSale/totalTgt*100):0;
+            const totalTgtText=unitsMode?Math.round(totalTgt).toLocaleString():projectionMoney(totalTgt);
+            const totalSaleText=unitsMode?Math.round(totalSale).toLocaleString():projectionMoney(totalSale);
+            const totalBtgText=(totalBtg>0?'':'+')+(unitsMode?Math.round(Math.abs(totalBtg)).toLocaleString():projectionMoney(Math.abs(totalBtg)));
+            foot.innerHTML=`<tr style="font-weight:600;border-top:2px solid var(--border)"><td colspan="2">Total</td><td class="mono">${totalTgtText}</td><td class="mono">${totalSaleText}</td><td class="mono">${totalAchievement.toFixed(1)}%</td><td class="mono" style="color:${totalBtg>0?'var(--accent3)':'var(--accent2)'}">${totalBtgText}</td></tr>`;
+        }
+    }
+}
+function renderProjectionPage(){
+    projectionLoadState();
+    const bookers=projectionUnique('bookingMan');
+    projectionSetOptions('projectionBooker',bookers,'All Bookers');
+    projectionSetOptions('assignmentBooker',bookers,'Select Booker');
+    const booker=document.getElementById('projectionBooker')?.value||'';
+    const scopedProducts=booker?projectionBookerProducts(booker):projectionUnique('itemName');
+    renderProjectionProducts(scopedProducts);
+    projectionSetOptions('assignmentProduct',projectionUnique('itemName'),'Select Product');
+    const workdays=document.getElementById('projectionWorkingDays');if(workdays)workdays.value=projectionState.workingDays||26;
+    const time=projectionOverallTime(),gone=document.getElementById('projectionTimeGone'),pending=document.getElementById('projectionTimePending');
+    if(gone)gone.textContent=`Time Gone: ${time.gone} of ${time.total} working days (${(time.ratio*100).toFixed(1)}%)`;
+    if(pending)pending.textContent=`Time Pending: ${time.pending} working days (${((1-time.ratio)*100).toFixed(1)}%)`;
+
+    /* --- Booker/Product Slicer + Target Assignment: scoped to the selected Booker/Product only --- */
+    const selected=projectionSelectedProducts();
+    const scopedRows=projectionCurrentRows().filter(r=>(!booker||r.bookingMan===booker)&&(!selected.length||selected.includes(r.itemName)));
+    const visibleSales=scopedRows.reduce((s,r)=>s+projectionNumber(r.netAmount),0);
+    const totalTarget=projectionNumber(projectionState.totalTarget);
+    const bookerPercent=booker?projectionNumber(projectionState.bookerPercentages[booker])||0:0;
+    const bookerTarget=booker?totalTarget*bookerPercent/100:totalTarget;
+    const activeTarget=booker?bookerTarget:totalTarget;
+    const achieved=activeTarget?visibleSales/activeTarget*100:0;
+    const summary=document.getElementById('projectionSummary');
+    if(summary)summary.innerHTML=[['Total Target',projectionMoney(totalTarget)],['Booker Target',projectionMoney(bookerTarget)],['Sales',projectionMoney(visibleSales)],['Target Achieved %',`${achieved.toFixed(1)}%`],['Booker %',booker?`${bookerPercent}%`:'—']].map(([l,v])=>`<div class="projection-kpi"><span>${l}</span><strong>${v}</strong></div>`).join('');
+    const unitsMode=projectionIsUnitsMeasure();
+    renderProjectionBookerBreakdown(booker,unitsMode);
+
+    /* --- Create Projection: fully independent of the Booker/Product slicers and Target Assignment above --- */
+    const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const allRows=projectionCurrentRows();
+    const todaySale=allRows.filter(r=>projectionDateString(r)===today).reduce((s,r)=>s+projectionNumber(r.netAmount),0);
+    const toDate=allRows.reduce((s,r)=>s+projectionNumber(r.netAmount),0);
+    const projTarget=projectionNumber(projectionState.totalTarget);
+    const projAchieved=projTarget?toDate/projTarget*100:0;
+    const projForecast=toDate+todaySale*time.pending;
+    const body=document.getElementById('projectionTableBody'),empty=document.getElementById('projectionEmpty');
+    if(!body)return;
+    body.innerHTML=`<tr><td class="readonly">${projectionMonthKey()}</td><td><input type="number" min="0" step="0.01" value="${projectionState.totalTarget||''}" placeholder="Enter total target" data-projection-field="totalTarget" onchange="projectionSaveTableField(this)"></td><td>${projectionEscape(globalCompany||'All Companies')}</td><td class="mono">${projectionMoney(todaySale)}</td><td class="mono">${projectionMoney(toDate)}</td><td><input type="number" min="0" step="0.01" value="${projectionState.lastMonthSale||''}" placeholder="Enter last month" data-projection-field="lastMonthSale" onchange="projectionSaveTableField(this)"></td><td class="mono">${projAchieved.toFixed(1)}%</td><td class="mono" style="color:var(--accent2);font-weight:600">${projectionMoney(projForecast)}</td></tr>`;
+    empty.style.display=rawData.length?'none':'block';
+    const assignmentTotalTargetInput=document.getElementById('assignmentTotalTarget');
+    if(assignmentTotalTargetInput&&document.activeElement!==assignmentTotalTargetInput)assignmentTotalTargetInput.value=projectionState.totalTarget||'';
+    const assignmentProduct=document.getElementById('assignmentProduct')?.value||'';
+    const unitTargetInput=document.getElementById('assignmentProductUnitTarget'),unitTargetLabel=document.getElementById('assignmentProductUnitTargetLabel');
+    if(unitTargetInput){
+        unitTargetInput.disabled=!assignmentProduct;
+        unitTargetInput.placeholder=assignmentProduct?'Enter total unit target':'Select a Product above first';
+        if(document.activeElement!==unitTargetInput)unitTargetInput.value=assignmentProduct?(projectionState.productUnitTargets?.[assignmentProduct]||''):'';
+    }
+    if(unitTargetLabel)unitTargetLabel.textContent=assignmentProduct?`(for: ${assignmentProduct})`:'';
+}
+function projectionSaveTableField(input){projectionState[input.dataset.projectionField]=Math.max(0,projectionNumber(input.value));projectionSaveState();renderProjectionPage()}
+function projectionSaveTotalTargetFromAssignment(input){projectionState.totalTarget=Math.max(0,projectionNumber(input.value));projectionSaveState();renderProjectionPage()}
+function projectionSaveProductUnitTarget(input){
+    const product=document.getElementById('assignmentProduct')?.value||'';
+    if(!product){showToast('Select a Product first.','error');input.value='';return}
+    if(!projectionState.productUnitTargets)projectionState.productUnitTargets={};
+    projectionState.productUnitTargets[product]=Math.max(0,projectionNumber(input.value));
+    projectionSaveState();
+    renderProjectionPage();
+    showToast(`Unit target saved for ${product}.`,'success');
+}
+function projectionTargetColumnKey(value){return String(value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'')}
+function downloadProjectionTargetSample(){
+    const products=projectionUnique('itemName');
+    const rows=products.length?products.map((name,index)=>({'Sr. No':index+1,'Product Name':name,'Unit TGT':''})):[{'Sr. No':1,'Product Name':'','Unit TGT':''}];
+    if(typeof XLSX==='undefined'){showToast('Excel support is unavailable.','error');return}
+    const workbook=XLSX.utils.book_new(),sheet=XLSX.utils.json_to_sheet(rows,{header:['Sr. No','Product Name','Unit TGT']});
+    XLSX.utils.book_append_sheet(workbook,sheet,'TGT');
+    XLSX.writeFile(workbook,'PharmaTracker_TGT_Sample.xlsx');
+}
+function handleProjectionTargetFile(input){
+    const file=input.files&&input.files[0];
+    if(!file)return;
+    if(typeof XLSX==='undefined'){showToast('Excel support is unavailable.','error');input.value='';return}
+    const reader=new FileReader();
+    reader.onload=function(event){
+        try{
+            const workbook=XLSX.read(event.target.result,{type:'array'}),sheet=workbook.Sheets[workbook.SheetNames[0]];
+            const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
+            const headers=(rows[0]||[]).map(projectionTargetColumnKey);
+            const expected=['srno','productname','unittgt'];
+            if(headers.length!==3||expected.some((key,index)=>headers[index]!==key))throw new Error('Use the TGT Sample File: Sr. No, Product Name, Unit TGT.');
+            const validProducts=new Set(projectionUnique('itemName'));
+            const targets={}; let imported=0,skipped=0;
+            rows.slice(1).forEach(row=>{
+                const product=String(row[1]||'').trim(),target=projectionNumber(row[2]);
+                if(!product)return;
+                if(!validProducts.has(product)){skipped++;return}
+                targets[product]=Math.max(0,target); imported++;
+            });
+            if(!imported)throw new Error('No matching product targets were found in the file.');
+            projectionState.productUnitTargets={...(projectionState.productUnitTargets||{}),...targets};
+            projectionSaveState(); renderProjectionPage();
+            showToast(`${imported} unit target${imported===1?'':'s'} imported${skipped?`; ${skipped} unmatched product${skipped===1?' was':'s were'} skipped`:''}.`,'success');
+        }catch(error){showToast(error.message||'Could not read the TGT file.','error')}
+        input.value='';
+    };
+    reader.readAsArrayBuffer(file);
+}
+function projectionRemoveTargetData(){
+    if(!confirm('🗑️ Remove all manually entered Target and Booker allocation data? This cannot be undone!'))return;
+    projectionState.rowTargets={};
+    projectionState.lastMonthSales={};
+    projectionState.productTargets={};
+    projectionState.bookerPercentages={};
+    projectionState.productUnitTargets={};
+    delete projectionState.totalTarget;
+    delete projectionState.lastMonthSale;
+    projectionSaveState();
+    renderProjectionPage();
+    showToast('✅ Target and Booker allocation data cleared.','success');
+}
+function projectionRemoveExcelData(){
+    if(!confirm('🗑️ Remove all uploaded Excel/CSV data? This cannot be undone!'))return;
+    rawData=[];
+    saveDataToStorage();
+    populateGlobalFilters();
+    populateFilters();
+    updateAll();
+    const search=document.getElementById('searchInput');if(search)search.value='';
+    showToast('✅ Excel/CSV data cleared successfully!','success');
+}
+function syncProjectionAssignment(source){
+    const projectionBookerSelect=document.getElementById('projectionBooker'),assignmentBookerSelect=document.getElementById('assignmentBooker');
+    const booker=(source==='projectionBooker'?projectionBookerSelect?.value:assignmentBookerSelect?.value)||'';
+    if(projectionBookerSelect)projectionBookerSelect.value=booker;
+    if(assignmentBookerSelect)assignmentBookerSelect.value=booker;
+    const percentInput=document.getElementById('assignmentPercent');
+    if(percentInput)percentInput.value=projectionState.bookerPercentages[booker]??100;
+    renderProjectionPage();
+}
+function saveProjectionAssignment(){
+    const booker=document.getElementById('assignmentBooker').value;
+    const percent=Math.min(100,Math.max(1,projectionNumber(document.getElementById('assignmentPercent').value)));
+    if(!booker){showToast('Select a Booker first.','error');return}
+    projectionState.bookerPercentages[booker]=percent;
+    projectionSaveState();
+    const projectionBookerSelect=document.getElementById('projectionBooker');
+    if(projectionBookerSelect)projectionBookerSelect.value=booker;
+    renderProjectionPage();
+    showToast('Booker target percentage saved.','success');
+}
+
 function getStoredDataCount() {
     return rawData.length;
 }
@@ -3526,6 +3925,7 @@ function updateAll() {
     renderYTDCatalogue();
     populateMonthComparison();
     renderMonthComparison();
+    renderProjectionPage();
     document.getElementById('salesBadge').textContent = getBaseData().length.toLocaleString();
     if (typeof window.refreshExecutiveDashboard === 'function') window.refreshExecutiveDashboard();
 }
@@ -4893,6 +5293,7 @@ const pageInfo = {
     customers: { title:'Customer Management', desc:'Track customers and their purchase history' },
     products: { title:'Product Catalog', desc:'Monitor product performance and units sold' },
     analytics: { title:'Analytics & Insights', desc:'Deep dive into your business metrics' },
+    projection: { title:'Projection & Target', desc:'Set targets and monitor current-month sales projections' },
     settings: { title:'Settings', desc:'Configure your account and preferences' },
     approvals: { title:'Pending Approvals', desc:'Review and approve new registrations & renewals' },
 };
