@@ -897,6 +897,39 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
         .sub-status-badge.expiring { background: rgba(255,166,87,0.15); color: var(--accent4); }
         .sub-status-badge.expired { background: rgba(255,123,114,0.15); color: var(--accent3); }
 
+        /* Plan selector chips (signup / renew / recharge) */
+        .plan-select-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .plan-chip {
+            flex: 1 1 auto; min-width: 110px; border: 1.5px solid var(--border); border-radius: 9px;
+            padding: 9px 10px; text-align: center; cursor: pointer; transition: all 0.15s;
+        }
+        .plan-chip.selected { border-color: var(--accent); background: rgba(88,166,255,0.08); }
+        .plan-chip .pc-name { font-size: 12px; font-weight: 700; display: block; }
+        .plan-chip .pc-price { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+        .plan-chip.selected .pc-price { color: var(--accent); }
+
+        /* Subscription Plans section (auth overlay) */
+        .subplans-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+        .subplan-card-auth {
+            border: 1.5px solid var(--border); border-radius: 12px; padding: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .subplan-card-auth .spc-name { font-size: 14px; font-weight: 700; }
+        .subplan-card-auth .spc-desc { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+        .subplan-card-auth .spc-price { font-size: 15px; font-weight: 700; color: var(--accent4); font-family: 'DM Mono', monospace; text-align: right; white-space: nowrap; }
+        .subplan-card-auth .spc-price small { display: block; font-size: 10px; color: var(--muted); font-weight: 500; font-family: 'DM Sans', sans-serif; }
+
+        /* Admin subscription settings (Settings page) */
+        .admin-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .admin-plan-row {
+            display: flex; align-items: center; gap: 10px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; margin-bottom: 8px;
+        }
+        .admin-plan-row .apr-info { flex: 1; min-width: 0; }
+        .admin-plan-row .apr-name { font-size: 13px; font-weight: 700; }
+        .admin-plan-row .apr-meta { font-size: 11px; color: var(--muted); }
+        .admin-plan-row .apr-inactive { opacity: 0.5; }
+
 
 /* ═══════════════════════════════════════════════════════════
    PREMIUM SAAS LAYER — Landing / Features / Sign-in redesign
@@ -1689,6 +1722,12 @@ function changeSiteLanguage(language){
             <div class="auth-terms">
                 No account? <span onclick="switchAuthTab(&#39;signup&#39;)">Create one free →</span>
             </div>
+            <div class="auth-terms">
+                Subscription expired? <span onclick="showRechargeTab()">Account Recharge →</span>
+            </div>
+            <div class="auth-terms">
+                <span onclick="showPlansTab()">View Subscription Plans</span>
+            </div>
         </div>
 
         <!-- SIGNUP FORM -->
@@ -1772,9 +1811,10 @@ function changeSiteLanguage(language){
                 </div>
             </div>
 
-            <!-- PAYMENT STEP — Rs. 1000 / month local, $5 / month international -->
+            <!-- PAYMENT STEP — plan price is set by the Admin in Settings -->
             <div class="payment-box">
-                <div class="payment-box-title"><i class="fas fa-gem"></i> Premium Plan <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
+                <div class="payment-box-title"><i class="fas fa-gem"></i> <span id="signup-plan-name">Premium Plan</span> <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
+                <div class="plan-select-row" id="signup-plan-row"></div>
                 <div class="pay-method-row pay-method-row-3">
                     <div class="pay-method selected" id="pm-jazzcash" onclick="selectPayMethod('jazzcash')"><i class="fas fa-mobile-alt"></i> JazzCash</div>
                     <div class="pay-method" id="pm-easypaisa" onclick="selectPayMethod('easypaisa')"><i class="fas fa-mobile-alt"></i> EasyPaisa</div>
@@ -1786,9 +1826,9 @@ function changeSiteLanguage(language){
                 </div>
                 <div class="bank-details-box" id="pay-bank-block" style="display:none">
                     <div class="pay-intl-badge"><i class="fas fa-globe"></i> Only $5 / month for international users</div>
-                    <div class="bank-details-row"><span>Bank Name</span><span>MCB Bank</span></div>
-                    <div class="bank-details-row"><span>Account Title</span><span>Muhammad Waseem</span></div>
-                    <div class="bank-details-row"><span>Account Number</span><span>0872598761011170</span></div>
+                    <div class="bank-details-row"><span>Bank Name</span><span id="bank-name-display">MCB Bank</span></div>
+                    <div class="bank-details-row"><span>Account Title</span><span id="bank-title-display">Muhammad Waseem</span></div>
+                    <div class="bank-details-row"><span>Account Number</span><span id="bank-acct-display">0872598761011170</span></div>
                     <div class="bank-details-row"><span>IBAN</span><span id="bank-iban-display">PK32MUCB0872598761011170</span></div>
                     <button type="button" class="pay-copy-btn" style="width:fit-content" onclick="copyPayNumber()"><i class="fas fa-copy"></i> Copy IBAN</button>
                 </div>
@@ -1825,7 +1865,8 @@ function changeSiteLanguage(language){
             <div class="auth-error show" style="margin-bottom:16px" id="renew-notice">Aapki subscription khatam ho chuki hai. Renew karne ke liye payment karein.</div>
 
             <div class="payment-box">
-                <div class="payment-box-title"><i class="fas fa-wallet"></i> Renew Subscription <span class="amt" id="pay-amt-display-renew">Rs. 1,000 / month</span></div>
+                <div class="payment-box-title"><i class="fas fa-wallet"></i> <span id="renew-plan-name">Renew Subscription</span> <span class="amt" id="pay-amt-display-renew">Rs. 1,000 / month</span></div>
+                <div class="plan-select-row" id="renew-plan-row"></div>
                 <div class="pay-method-row pay-method-row-3">
                     <div class="pay-method selected" id="pm-jazzcash-renew" onclick="selectPayMethod('jazzcash','renew')"><i class="fas fa-mobile-alt"></i> JazzCash</div>
                     <div class="pay-method" id="pm-easypaisa-renew" onclick="selectPayMethod('easypaisa','renew')"><i class="fas fa-mobile-alt"></i> EasyPaisa</div>
@@ -1837,9 +1878,9 @@ function changeSiteLanguage(language){
                 </div>
                 <div class="bank-details-box" id="pay-bank-block-renew" style="display:none">
                     <div class="pay-intl-badge"><i class="fas fa-globe"></i> Only $5 / month for international users</div>
-                    <div class="bank-details-row"><span>Bank Name</span><span>MCB Bank</span></div>
-                    <div class="bank-details-row"><span>Account Title</span><span>Muhammad Waseem</span></div>
-                    <div class="bank-details-row"><span>Account Number</span><span>0872598761011170</span></div>
+                    <div class="bank-details-row"><span>Bank Name</span><span id="bank-name-display-renew">MCB Bank</span></div>
+                    <div class="bank-details-row"><span>Account Title</span><span id="bank-title-display-renew">Muhammad Waseem</span></div>
+                    <div class="bank-details-row"><span>Account Number</span><span id="bank-acct-display-renew">0872598761011170</span></div>
                     <div class="bank-details-row"><span>IBAN</span><span id="bank-iban-display-renew">PK32MUCB0872598761011170</span></div>
                     <button type="button" class="pay-copy-btn" style="width:fit-content" onclick="copyPayNumber('renew')"><i class="fas fa-copy"></i> Copy IBAN</button>
                 </div>
@@ -1853,6 +1894,67 @@ function changeSiteLanguage(language){
             <button class="auth-btn" onclick="doRenew()">
                 <i class="fas fa-paper-plane"></i> Submit Renewal
             </button>
+            <div class="auth-terms">
+                <span onclick="backToLogin()">← Back to Sign In</span>
+            </div>
+        </div>
+
+        <!-- ACCOUNT RECHARGE: reachable directly from the Sign In page, without needing
+             a failed login attempt first. Same approval flow as a renewal. -->
+        <div class="auth-form" id="form-recharge">
+            <div class="auth-error" id="recharge-error"></div>
+
+            <div class="auth-field" id="recharge-email-field">
+                <label>Registered Email Address</label>
+                <div class="auth-input-wrap">
+                    <i class="fas fa-envelope auth-ico"></i>
+                    <input class="auth-input" type="email" id="recharge-email" placeholder="wasim.rana.x@gmail.com">
+                </div>
+            </div>
+
+            <div class="payment-box">
+                <div class="payment-box-title"><i class="fas fa-bolt"></i> <span id="recharge-plan-name">Account Recharge</span> <span class="amt" id="pay-amt-display-recharge">Rs. 1,000 / month</span></div>
+                <div class="plan-select-row" id="recharge-plan-row"></div>
+                <div class="pay-method-row pay-method-row-3">
+                    <div class="pay-method selected" id="pm-jazzcash-recharge" onclick="selectPayMethod('jazzcash','recharge')"><i class="fas fa-mobile-alt"></i> JazzCash</div>
+                    <div class="pay-method" id="pm-easypaisa-recharge" onclick="selectPayMethod('easypaisa','recharge')"><i class="fas fa-mobile-alt"></i> EasyPaisa</div>
+                    <div class="pay-method" id="pm-bank-recharge" onclick="selectPayMethod('bank','recharge')"><i class="fas fa-building-columns"></i> Bank <small>(International)</small></div>
+                </div>
+                <div class="pay-method-number" id="pay-mobile-block-recharge">
+                    <span><small>Send payment to</small><span id="pay-number-display-recharge">0332 7282070</span></span>
+                    <button type="button" class="pay-copy-btn" onclick="copyPayNumber('recharge')"><i class="fas fa-copy"></i> Copy</button>
+                </div>
+                <div class="bank-details-box" id="pay-bank-block-recharge" style="display:none">
+                    <div class="pay-intl-badge"><i class="fas fa-globe"></i> International accounts</div>
+                    <div class="bank-details-row"><span>Bank Name</span><span id="bank-name-display-recharge">MCB Bank</span></div>
+                    <div class="bank-details-row"><span>Account Title</span><span id="bank-title-display-recharge">Muhammad Waseem</span></div>
+                    <div class="bank-details-row"><span>Account Number</span><span id="bank-acct-display-recharge">0872598761011170</span></div>
+                    <div class="bank-details-row"><span>IBAN</span><span id="bank-iban-display-recharge">PK32MUCB0872598761011170</span></div>
+                    <button type="button" class="pay-copy-btn" style="width:fit-content" onclick="copyPayNumber('recharge')"><i class="fas fa-copy"></i> Copy IBAN</button>
+                </div>
+                <div class="auth-field" style="margin-bottom:0">
+                    <label>Transaction ID / Reference No.</label>
+                    <input class="auth-input" type="text" id="recharge-txnid" placeholder="e.g. 123456789012">
+                </div>
+                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text-recharge">Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account dobara activate ho jayega.</span></div>
+            </div>
+
+            <button class="auth-btn" onclick="doAccountRecharge()">
+                <i class="fas fa-paper-plane"></i> Submit Recharge Request
+            </button>
+            <div class="auth-terms">
+                <span onclick="backToLogin()">← Back to Sign In</span>
+            </div>
+        </div>
+
+        <!-- SUBSCRIPTION PLANS section — populated from whatever plans the Admin
+             configures in Settings, so it always reflects the current offering. -->
+        <div class="auth-form" id="form-plans">
+            <div class="auth-field" style="margin-bottom:14px">
+                <label style="text-transform:none;font-size:13px;color:var(--text);font-weight:700">Subscription Plans</label>
+                <p style="font-size:11.5px;color:var(--muted);margin-top:4px">Choose the plan that fits your team — set by the Admin and always up to date.</p>
+            </div>
+            <div class="subplans-grid" id="subplans-list-container"></div>
             <div class="auth-terms">
                 <span onclick="backToLogin()">← Back to Sign In</span>
             </div>
@@ -2893,6 +2995,82 @@ function changeSiteLanguage(language){
                     <input type="password" class="filter-select" style="width:100%;padding:9px 12px" id="pw-confirm" placeholder="Repeat new password">
                 </div>
                 <button class="btn btn-primary" style="width:fit-content" onclick="changePassword()"><i class="fas fa-key"></i> Update Password</button>
+            </div>
+        </div>
+        <div class="card" style="max-width:480px;margin-top:16px;display:none" id="admin-subscription-settings-card">
+            <div class="card-header"><div class="card-title">Subscription &amp; Recharge Settings</div></div>
+            <div style="display:flex;flex-direction:column;gap:16px;padding-top:4px">
+                <p style="font-size:12px;color:var(--muted);margin:0">Controls the payment details and plans shown to users on the Sign In page (Create Account, Account Recharge, and Subscription Plans).</p>
+
+                <div>
+                    <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">Local Payment Numbers</div>
+                    <div class="admin-sub-grid">
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">JazzCash Number</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-jazzcash-number">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">EasyPaisa Number</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-easypaisa-number">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size:12.5px;font-weight:700;margin-bottom:8px">International Bank Details</div>
+                    <div class="admin-sub-grid">
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Bank Name</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-bank-name">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Account Title</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-bank-title">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Account Number</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-bank-account">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">IBAN</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="as-bank-iban">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" style="width:fit-content" onclick="saveAdminPaymentSettings()"><i class="fas fa-save"></i> Save Payment Settings</button>
+
+                <div style="border-top:1px solid var(--border);padding-top:14px">
+                    <div style="font-size:12.5px;font-weight:700;margin-bottom:10px">Subscription Plans</div>
+                    <div id="admin-plans-list-container"></div>
+
+                    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;margin-top:10px">
+                        <div style="font-size:11.5px;font-weight:700;margin-bottom:10px;color:var(--muted)">Add New Plan</div>
+                        <div class="admin-sub-grid" style="margin-bottom:10px">
+                            <div>
+                                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Plan Name</label>
+                                <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="ap-name" placeholder="e.g. Premium Plan">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Duration (days)</label>
+                                <input type="number" class="filter-select" style="width:100%;padding:8px 10px" id="ap-duration" placeholder="30" min="1">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Local Price (Rs.)</label>
+                                <input type="number" class="filter-select" style="width:100%;padding:8px 10px" id="ap-price-local" placeholder="1000" min="0">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">International Price ($)</label>
+                                <input type="number" class="filter-select" style="width:100%;padding:8px 10px" id="ap-price-intl" placeholder="5" min="0">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:10px">
+                            <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Description</label>
+                            <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="ap-description" placeholder="Short description shown to users">
+                        </div>
+                        <button class="btn btn-ghost" onclick="addAdminPlan()"><i class="fas fa-plus"></i> Add Plan</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="card" style="max-width:480px;margin-top:16px">
@@ -5623,6 +5801,7 @@ const OWNER_EMAIL = 'wasim.rana.x@gmail.com';
 const LEGACY_OWNER_EMAIL = 'waseem@example.com';
 const SUBSCRIPTION_DAYS = 30;
 const REGISTRATION_FEE = 1000;
+const INTL_FEE_USD_LEGACY = 5; // fallback only, used for accounts created before Subscription Plans existed
 
 /* ── Firebase: makes registrations/approvals visible from ANY device ──
    1. Go to https://console.firebase.google.com → "Add project" (free)
@@ -5701,6 +5880,72 @@ function getSession() { return localStorage.getItem(SESSION_KEY); }
 function saveSession(email) { localStorage.setItem(SESSION_KEY, email.toLowerCase()); }
 function clearSession() { localStorage.removeItem(SESSION_KEY); }
 
+/* ═══════════════════════════════════════════════
+   SUBSCRIPTION / RECHARGE SETTINGS — Admin-configurable payment details
+   and plans. Stored in its own Firestore doc (appSettings/subscription),
+   with the same automatic localStorage fallback used for users above.
+   This is an additive collection only — it does not touch the existing
+   `users` collection/data or the Firebase config in any way.
+═══════════════════════════════════════════════ */
+const SUB_SETTINGS_KEY = 'pharmatracker_subscription_settings';
+const DEFAULT_SUBSCRIPTION_SETTINGS = {
+    jazzcashNumber: '0332 7282070',
+    easypaisaNumber: '0332 7282070',
+    bankName: 'MCB Bank',
+    bankAccountTitle: 'Muhammad Waseem',
+    bankAccountNumber: '0872598761011170',
+    bankIban: 'PK32MUCB0872598761011170',
+    plans: [
+        { id: 'plan_default', name: 'Premium Plan', priceLocal: REGISTRATION_FEE, priceIntl: 5, durationDays: SUBSCRIPTION_DAYS, description: 'Full access to every feature.', active: true }
+    ]
+};
+
+let subSettings = null;
+
+async function getSubscriptionSettings() {
+    let data = null;
+    if (useFirestore) {
+        try {
+            const doc = await db.collection('appSettings').doc('subscription').get();
+            if (doc.exists) data = doc.data();
+        } catch (e) { console.warn('Firestore settings read failed, falling back to local:', e); }
+    }
+    if (!data) {
+        try { data = JSON.parse(localStorage.getItem(SUB_SETTINGS_KEY) || 'null'); } catch (e) { data = null; }
+    }
+    if (!data) return { ...DEFAULT_SUBSCRIPTION_SETTINGS, plans: DEFAULT_SUBSCRIPTION_SETTINGS.plans.map(p => ({...p})) };
+    return {
+        ...DEFAULT_SUBSCRIPTION_SETTINGS,
+        ...data,
+        plans: (Array.isArray(data.plans) && data.plans.length) ? data.plans : DEFAULT_SUBSCRIPTION_SETTINGS.plans
+    };
+}
+async function saveSubscriptionSettingsData(settings) {
+    localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(settings));
+    if (useFirestore) {
+        try { await db.collection('appSettings').doc('subscription').set(settings); }
+        catch (e) { console.warn('Firestore settings write failed, kept locally only:', e); }
+    }
+}
+async function loadSubscriptionSettings() {
+    subSettings = await getSubscriptionSettings();
+    renderSubplansList();
+    renderSignupPlanRow();
+    if (currentUser && currentUser.role === 'admin') renderAdminSubscriptionSettings();
+    return subSettings;
+}
+function getActivePlans() {
+    const plans = (subSettings && subSettings.plans && subSettings.plans.length) ? subSettings.plans : DEFAULT_SUBSCRIPTION_SETTINGS.plans;
+    return plans.filter(p => p.active !== false);
+}
+function getAllConfiguredPlans() {
+    return (subSettings && subSettings.plans && subSettings.plans.length) ? subSettings.plans : DEFAULT_SUBSCRIPTION_SETTINGS.plans;
+}
+function getPlanById(id) {
+    const all = getAllConfiguredPlans();
+    return all.find(p => p.id === id) || getActivePlans()[0] || all[0];
+}
+
 // Move only the original seeded account to the owner's new email address.
 async function migrateLegacyOwnerAccount() {
     const legacy = await getUserByEmail(LEGACY_OWNER_EMAIL);
@@ -5746,12 +5991,13 @@ function sendAdminNotification(user, isRenewal) {
         console.warn('EmailJS not configured yet — check the Approvals tab in the dashboard instead.');
         return;
     }
+    const plan = user.planId ? getPlanById(user.planId) : null;
     const params = {
         to_email: EMAILJS_CONFIG.adminEmail,
         user_name: (user.fname||'') + ' ' + (user.lname||''),
         user_email: user.email,
         company: user.company || '—',
-        amount: REGISTRATION_FEE,
+        amount: user.paymentMethod === 'bank' ? (plan ? plan.priceIntl : INTL_FEE_USD_LEGACY) : (plan ? plan.priceLocal : REGISTRATION_FEE),
         method: user.paymentMethod,
         txn_id: user.transactionId,
         type: isRenewal ? 'Renewal' : 'New Registration'
@@ -5775,11 +6021,18 @@ function sendResetCodeEmail(user, code) {
     return true;
 }
 
-/* ── JazzCash / EasyPaisa / Bank payment box ── */
-const PAY_NUMBERS = { jazzcash: '0332 7282070', easypaisa: '0332 7282070' };
-const BANK_IBAN = 'PK32MUCB0872598761011170';
-const INTL_FEE_USD = 5;
-let selectedPay = { signup: 'jazzcash', renew: 'jazzcash' };
+/* ── JazzCash / EasyPaisa / Bank payment box ──
+   Numbers/IBAN/plan prices now come from subSettings (Admin Settings),
+   with the original hardcoded values kept as the fallback defaults. */
+let selectedPay = { signup: 'jazzcash', renew: 'jazzcash', recharge: 'jazzcash' };
+let selectedPlan = { signup: null, renew: null, recharge: null };
+
+function payNumbersFromSettings() {
+    const s = subSettings || DEFAULT_SUBSCRIPTION_SETTINGS;
+    return { jazzcash: s.jazzcashNumber, easypaisa: s.easypaisaNumber };
+}
+function bankIbanFromSettings() { return (subSettings || DEFAULT_SUBSCRIPTION_SETTINGS).bankIban; }
+
 function selectPayMethod(method, ctx) {
     ctx = ctx || 'signup';
     const suffix = ctx === 'signup' ? '' : '-' + ctx;
@@ -5797,26 +6050,140 @@ function selectPayMethod(method, ctx) {
     if (mobileBlock) mobileBlock.style.display = isBank ? 'none' : 'flex';
     if (bankBlock) bankBlock.style.display = isBank ? 'grid' : 'none';
 
-    const amtEl = document.getElementById('pay-amt-display' + suffix);
-    if (amtEl) amtEl.textContent = isBank ? `$${INTL_FEE_USD} / month` : `Rs. ${REGISTRATION_FEE} / month`;
+    const bnEl = document.getElementById('bank-name-display' + suffix); if (bnEl) bnEl.textContent = (subSettings||DEFAULT_SUBSCRIPTION_SETTINGS).bankName;
+    const btEl = document.getElementById('bank-title-display' + suffix); if (btEl) btEl.textContent = (subSettings||DEFAULT_SUBSCRIPTION_SETTINGS).bankAccountTitle;
+    const baEl = document.getElementById('bank-acct-display' + suffix); if (baEl) baEl.textContent = (subSettings||DEFAULT_SUBSCRIPTION_SETTINGS).bankAccountNumber;
+    const biEl = document.getElementById('bank-iban-display' + suffix); if (biEl) biEl.textContent = bankIbanFromSettings();
 
     const noteEl = document.getElementById('pay-note-text' + suffix);
     if (noteEl) {
         noteEl.textContent = isBank
-            ? `Send your bank transfer, then enter the transaction/reference number below. Your account activates once an admin verifies it (1 month valid).`
+            ? `Send your bank transfer, then enter the transaction/reference number below. Your account activates once an admin verifies it.`
             : (ctx === 'signup'
-                ? 'Payment bhejne ke baad Transaction ID yahan darj karein. Admin verify karne ke baad aapka account activate ho jayega (1 month valid).'
-                : 'Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account 1 month ke liye dobara activate ho jayega.');
+                ? 'Payment bhejne ke baad Transaction ID yahan darj karein. Admin verify karne ke baad aapka account activate ho jayega.'
+                : 'Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account dobara activate ho jayega.');
     }
     const disp = document.getElementById('pay-number-display' + suffix);
-    if (disp && !isBank) disp.textContent = PAY_NUMBERS[method];
+    if (disp && !isBank) disp.textContent = payNumbersFromSettings()[method];
+
+    updatePlanDependentUI(ctx);
 }
 function copyPayNumber(ctx) {
     ctx = ctx || 'signup';
     const method = selectedPay[ctx];
-    const num = (method === 'bank' ? BANK_IBAN : PAY_NUMBERS[method]).replace(/\s/g, '');
+    const num = (method === 'bank' ? bankIbanFromSettings() : payNumbersFromSettings()[method]).replace(/\s/g, '');
     if (navigator.clipboard) navigator.clipboard.writeText(num).catch(()=>{});
     showToast((method === 'bank' ? 'IBAN copied: ' : 'Number copied: ') + num, 'success');
+}
+
+/* ── Plan selector (chips) shared by Create Account / Renew / Account Recharge ── */
+function ensureSelectedPlan(ctx) {
+    const plans = getActivePlans();
+    if (!plans.length) return null;
+    if (!selectedPlan[ctx] || !plans.find(p => p.id === selectedPlan[ctx])) {
+        selectedPlan[ctx] = plans[0].id;
+    }
+    return getPlanById(selectedPlan[ctx]);
+}
+function renderPlanChips(ctx) {
+    const rowId = ctx === 'signup' ? 'signup-plan-row' : (ctx === 'renew' ? 'renew-plan-row' : 'recharge-plan-row');
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const plans = getActivePlans();
+    if (plans.length <= 1) { row.innerHTML = ''; ensureSelectedPlan(ctx); updatePlanDependentUI(ctx); return; }
+    const current = ensureSelectedPlan(ctx);
+    row.innerHTML = plans.map(p => `<div class="plan-chip ${current && p.id === current.id ? 'selected' : ''}" onclick="choosePlan('${ctx}','${p.id}')">
+        <span class="pc-name">${p.name}</span>
+        <span class="pc-price">Rs. ${p.priceLocal} · $${p.priceIntl}</span>
+    </div>`).join('');
+}
+function choosePlan(ctx, planId) {
+    selectedPlan[ctx] = planId;
+    renderPlanChips(ctx);
+    updatePlanDependentUI(ctx);
+}
+function updatePlanDependentUI(ctx) {
+    const suffix = ctx === 'signup' ? '' : '-' + ctx;
+    const plan = ensureSelectedPlan(ctx);
+    if (!plan) return;
+    const isBank = selectedPay[ctx] === 'bank';
+    const amtEl = document.getElementById('pay-amt-display' + suffix);
+    if (amtEl) amtEl.textContent = isBank ? `$${plan.priceIntl} / month` : `Rs. ${plan.priceLocal} / month`;
+    const nameEl = document.getElementById((ctx === 'signup' ? 'signup-plan-name' : (ctx === 'renew' ? 'renew-plan-name' : 'recharge-plan-name')));
+    if (nameEl) {
+        if (ctx === 'signup') nameEl.textContent = plan.name;
+        else if (ctx === 'renew') nameEl.textContent = 'Renew Subscription — ' + plan.name;
+        else nameEl.textContent = 'Account Recharge — ' + plan.name;
+    }
+}
+function renderSignupPlanRow() {
+    renderPlanChips('signup');
+    renderPlanChips('renew');
+    renderPlanChips('recharge');
+    // Refresh payment numbers/IBAN/amounts on-screen to match whatever is
+    // currently configured in Admin Settings.
+    selectPayMethod(selectedPay.signup, 'signup');
+    selectPayMethod(selectedPay.renew, 'renew');
+    selectPayMethod(selectedPay.recharge, 'recharge');
+}
+
+/* ── Subscription Plans section (Sign In page) ── */
+function renderSubplansList() {
+    const el = document.getElementById('subplans-list-container');
+    if (!el) return;
+    const plans = getActivePlans();
+    if (!plans.length) { el.innerHTML = `<p style="font-size:12px;color:var(--muted)">No plans configured yet.</p>`; return; }
+    el.innerHTML = plans.map(p => `<div class="subplan-card-auth">
+        <div>
+            <div class="spc-name">${p.name}</div>
+            <div class="spc-desc">${p.description || ''} · ${p.durationDays} day(s)</div>
+        </div>
+        <div class="spc-price">Rs. ${p.priceLocal}<small>or $${p.priceIntl} intl. / month</small></div>
+    </div>`).join('');
+}
+function showPlansTab() {
+    renderSubplansList();
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-plans').classList.add('active');
+}
+function showRechargeTab() {
+    document.getElementById('recharge-error').classList.remove('show');
+    document.getElementById('recharge-email').value = '';
+    document.getElementById('recharge-txnid').value = '';
+    renderPlanChips('recharge');
+    selectPayMethod('jazzcash', 'recharge');
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-recharge').classList.add('active');
+}
+async function doAccountRecharge() {
+    const errEl = document.getElementById('recharge-error');
+    errEl.classList.remove('show');
+    const email = document.getElementById('recharge-email').value.trim().toLowerCase();
+    const txnId = document.getElementById('recharge-txnid').value.trim();
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { errEl.textContent = 'Please enter a valid registered email address.'; errEl.classList.add('show'); return; }
+    if (!txnId) { errEl.textContent = 'Transaction ID darj karna zaroori hai.'; errEl.classList.add('show'); return; }
+
+    const user = await getUserByEmail(email);
+    if (!user) { errEl.textContent = 'No account found with this email address.'; errEl.classList.add('show'); return; }
+    if (!user.validUntil) { errEl.textContent = 'This account does not require a recharge.'; errEl.classList.add('show'); return; }
+
+    const plan = ensureSelectedPlan('recharge');
+    user.status = 'pending';
+    user.isRenewal = true;
+    user.paymentMethod = selectedPay.recharge;
+    user.transactionId = txnId;
+    if (plan) user.planId = plan.id;
+    user.pendingSince = new Date().toISOString();
+    await saveUser(user);
+    sendAdminNotification(user, true);
+
+    document.getElementById('pending-title').textContent = 'Recharge Request Submitted!';
+    document.getElementById('pending-text').textContent = 'Aapki recharge request admin ko bhej di gayi hai. Payment verify hone ke baad account dobara activate ho jayega.';
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-pending').classList.add('active');
 }
 
 let currentUser = null;
@@ -5890,6 +6257,11 @@ function loginSuccess(user, newLogin = true) {
     const navApprovals = document.getElementById('nav-approvals');
     if (navApprovals) navApprovals.style.display = user.role === 'admin' ? 'flex' : 'none';
     if (user.role === 'admin') renderApprovals();
+
+    // Admin-only: Subscription & Recharge Settings card
+    const adminSubCard = document.getElementById('admin-subscription-settings-card');
+    if (adminSubCard) adminSubCard.style.display = user.role === 'admin' ? 'block' : 'none';
+    if (user.role === 'admin' && subSettings) renderAdminSubscriptionSettings();
 
     renderSubscriptionBox();
     renderUsersTab();
@@ -6027,6 +6399,8 @@ function showRenewForm(user) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
     document.getElementById('form-renew').classList.add('active');
+    if (user.planId) selectedPlan.renew = user.planId;
+    renderPlanChips('renew');
     selectPayMethod('jazzcash', 'renew');
 }
 
@@ -6037,10 +6411,12 @@ async function doRenew() {
     const user = await getUserByEmail(renewTargetEmail);
     if (!user) { showToast('Account nahi mila.', 'error'); return; }
 
+    const plan = ensureSelectedPlan('renew');
     user.status = 'pending';
     user.isRenewal = true;
     user.paymentMethod = selectedPay.renew;
     user.transactionId = txnId;
+    if (plan) user.planId = plan.id;
     user.pendingSince = new Date().toISOString();
     await saveUser(user);
     sendAdminNotification(user, true);
@@ -6081,6 +6457,7 @@ function doSignup() {
             errEl.classList.add('show'); return;
         }
 
+        const signupPlan = ensureSelectedPlan('signup');
         const newUser = {
             id: 'u_' + Date.now(),
             fname, lname, email, company, role,
@@ -6089,6 +6466,7 @@ function doSignup() {
             isRenewal: false,
             paymentMethod: selectedPay.signup,
             transactionId: txnId,
+            planId: signupPlan ? signupPlan.id : null,
             pendingSince: new Date().toISOString(),
             createdAt: new Date().toISOString()
         };
@@ -6260,7 +6638,7 @@ async function renderApprovals() {
                 <span>·</span>
                 <span>Ref: <b>${u.transactionId || '—'}</b></span>
                 <span>·</span>
-                <span>${u.paymentMethod === 'bank' ? `$${INTL_FEE_USD}` : `Rs. ${REGISTRATION_FEE}`}</span>
+                <span>${(() => { const p = u.planId ? getPlanById(u.planId) : null; return u.paymentMethod === 'bank' ? `$${p ? p.priceIntl : INTL_FEE_USD_LEGACY}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; })()}${(() => { const p = u.planId ? getPlanById(u.planId) : null; return p ? ' · ' + p.name : ''; })()}</span>
             </div>
             <div class="approval-actions">
                 <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveUser('${emailAttr}')"><i class="fas fa-check"></i> Approve</button>
@@ -6274,8 +6652,10 @@ async function approveUser(email) {
     const user = await getUserByEmail(email);
     if (!user) return;
 
+    const plan = user.planId ? getPlanById(user.planId) : null;
+    const durationDays = plan ? plan.durationDays : SUBSCRIPTION_DAYS;
     const now = new Date();
-    const validUntil = new Date(now.getTime() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000);
+    const validUntil = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
     user.status = 'active';
     user.isRenewal = false;
     user.approvedAt = now.toISOString();
@@ -6323,8 +6703,107 @@ function renderSubscriptionBox() {
             <span style="font-size:13px;color:var(--muted)">${label}</span>
             <span class="sub-status-badge ${badgeClass}">${daysLeft <= 0 ? 'Expired' : 'Active'}</span>
         </div>
-        <p style="font-size:11.5px;color:var(--muted);margin-top:-2px">${currentUser.paymentMethod === 'bank' ? `$${INTL_FEE_USD}` : `Rs. ${REGISTRATION_FEE}`} / month · ${daysLeft > 0 ? daysLeft + ' day(s) left' : 'renewal required'}</p>
+        <p style="font-size:11.5px;color:var(--muted);margin-top:-2px">${(() => { const p = currentUser.planId ? getPlanById(currentUser.planId) : null; return currentUser.paymentMethod === 'bank' ? `$${p ? p.priceIntl : INTL_FEE_USD_LEGACY}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; })()}${(() => { const p = currentUser.planId ? getPlanById(currentUser.planId) : null; return p ? ' (' + p.name + ')' : ''; })()} / month · ${daysLeft > 0 ? daysLeft + ' day(s) left' : 'renewal required'}</p>
         ${daysLeft <= 5 ? `<button class="btn btn-ghost" style="width:fit-content" onclick="showRenewForm(currentUser)"><i class="fas fa-rotate"></i> Renew Now</button>` : ''}`;
+}
+
+/* ═══════════════════════════════════════════════
+   ADMIN SETTINGS — Subscription & Recharge (Settings page, admin only)
+═══════════════════════════════════════════════ */
+function renderAdminSubscriptionSettings() {
+    const card = document.getElementById('admin-subscription-settings-card');
+    if (!card || !subSettings) return;
+    card.style.display = 'block';
+
+    const jc = document.getElementById('as-jazzcash-number'); if (jc) jc.value = subSettings.jazzcashNumber || '';
+    const ep = document.getElementById('as-easypaisa-number'); if (ep) ep.value = subSettings.easypaisaNumber || '';
+    const bn = document.getElementById('as-bank-name'); if (bn) bn.value = subSettings.bankName || '';
+    const bt = document.getElementById('as-bank-title'); if (bt) bt.value = subSettings.bankAccountTitle || '';
+    const ba = document.getElementById('as-bank-account'); if (ba) ba.value = subSettings.bankAccountNumber || '';
+    const bi = document.getElementById('as-bank-iban'); if (bi) bi.value = subSettings.bankIban || '';
+
+    renderAdminPlansList();
+}
+
+function renderAdminPlansList() {
+    const el = document.getElementById('admin-plans-list-container');
+    if (!el) return;
+    const plans = getAllConfiguredPlans();
+    if (!plans.length) { el.innerHTML = `<p style="font-size:12px;color:var(--muted)">No plans yet — add one below.</p>`; return; }
+    el.innerHTML = plans.map(p => `<div class="admin-plan-row ${p.active === false ? 'apr-inactive' : ''}">
+        <div class="apr-info">
+            <div class="apr-name">${p.name}</div>
+            <div class="apr-meta">Rs. ${p.priceLocal} / $${p.priceIntl} · ${p.durationDays} day(s)${p.description ? ' · ' + p.description : ''}</div>
+        </div>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="togglePlanActive('${p.id}')"><i class="fas ${p.active === false ? 'fa-eye' : 'fa-eye-slash'}"></i> ${p.active === false ? 'Activate' : 'Hide'}</button>
+        <button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deleteAdminPlan('${p.id}')"><i class="fas fa-trash"></i></button>
+    </div>`).join('');
+}
+
+async function saveAdminPaymentSettings() {
+    if (!subSettings) subSettings = await getSubscriptionSettings();
+    subSettings.jazzcashNumber = document.getElementById('as-jazzcash-number').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.jazzcashNumber;
+    subSettings.easypaisaNumber = document.getElementById('as-easypaisa-number').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.easypaisaNumber;
+    subSettings.bankName = document.getElementById('as-bank-name').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.bankName;
+    subSettings.bankAccountTitle = document.getElementById('as-bank-title').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.bankAccountTitle;
+    subSettings.bankAccountNumber = document.getElementById('as-bank-account').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.bankAccountNumber;
+    subSettings.bankIban = document.getElementById('as-bank-iban').value.trim() || DEFAULT_SUBSCRIPTION_SETTINGS.bankIban;
+    await saveSubscriptionSettingsData(subSettings);
+    renderSubplansList();
+    renderSignupPlanRow();
+    showToast('Payment settings saved.', 'success');
+}
+
+async function addAdminPlan() {
+    const name = document.getElementById('ap-name').value.trim();
+    const duration = parseInt(document.getElementById('ap-duration').value, 10);
+    const priceLocal = parseFloat(document.getElementById('ap-price-local').value);
+    const priceIntl = parseFloat(document.getElementById('ap-price-intl').value);
+    const description = document.getElementById('ap-description').value.trim();
+
+    if (!name) { showToast('Plan name is required.', 'error'); return; }
+    if (!duration || duration < 1) { showToast('Enter a valid duration in days.', 'error'); return; }
+    if (isNaN(priceLocal) || priceLocal < 0 || isNaN(priceIntl) || priceIntl < 0) { showToast('Enter valid plan prices.', 'error'); return; }
+
+    if (!subSettings) subSettings = await getSubscriptionSettings();
+    subSettings.plans = subSettings.plans || [];
+    subSettings.plans.push({
+        id: 'plan_' + Date.now(),
+        name, durationDays: duration, priceLocal, priceIntl, description, active: true
+    });
+    await saveSubscriptionSettingsData(subSettings);
+
+    document.getElementById('ap-name').value = '';
+    document.getElementById('ap-duration').value = '';
+    document.getElementById('ap-price-local').value = '';
+    document.getElementById('ap-price-intl').value = '';
+    document.getElementById('ap-description').value = '';
+
+    renderAdminPlansList();
+    renderSubplansList();
+    renderSignupPlanRow();
+    showToast('Plan added.', 'success');
+}
+
+async function togglePlanActive(planId) {
+    if (!subSettings) return;
+    const plan = subSettings.plans.find(p => p.id === planId);
+    if (!plan) return;
+    plan.active = plan.active === false ? true : false;
+    await saveSubscriptionSettingsData(subSettings);
+    renderAdminPlansList();
+    renderSubplansList();
+    renderSignupPlanRow();
+}
+
+async function deleteAdminPlan(planId) {
+    if (!subSettings) return;
+    if (!confirm('Remove this plan? Existing users on it keep their current subscription.')) return;
+    subSettings.plans = subSettings.plans.filter(p => p.id !== planId);
+    await saveSubscriptionSettingsData(subSettings);
+    renderAdminPlansList();
+    renderSubplansList();
+    renderSignupPlanRow();
 }
 
 /* Init */
@@ -6344,6 +6823,7 @@ function backToMarketing(){
 }
 
 initAuth();
+loadSubscriptionSettings();
 
 // Load saved data from storage
 setTimeout(() => {
