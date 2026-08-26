@@ -5891,8 +5891,74 @@ function loginSuccess(user, newLogin = true) {
     if (navApprovals) navApprovals.style.display = user.role === 'admin' ? 'flex' : 'none';
     if (user.role === 'admin') renderApprovals();
 
+    // Display subscription/expiry status
+    displaySubscriptionStatus(user);
+    
     renderSubscriptionBox();
     renderUsersTab();
+}
+
+// Display subscription status in settings
+function displaySubscriptionStatus(user) {
+    const settingsEl = document.getElementById('settings-form');
+    if (!settingsEl) return;
+    
+    let statusHTML = '';
+    
+    if (!user.validUntil) {
+        // Admin account that never expires
+        statusHTML = `
+            <div style="padding:15px;background:rgba(52,211,153,0.1);border-radius:8px;border-left:3px solid var(--accent2);margin-bottom:20px;margin-top:15px;">
+                <div style="font-size:12px;color:var(--accent2);font-weight:600;margin-bottom:5px;">✓ Premium Account</div>
+                <div style="font-size:13px;color:var(--text-muted);">This account never expires. You have full access.</div>
+            </div>
+        `;
+    } else {
+        const expiryDate = new Date(user.validUntil);
+        const today = new Date();
+        const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+        const isExpired = daysUntilExpiry < 0;
+        
+        if (isExpired) {
+            statusHTML = `
+                <div style="padding:15px;background:rgba(251,113,133,0.1);border-radius:8px;border-left:3px solid #fb7185;margin-bottom:20px;margin-top:15px;">
+                    <div style="font-size:12px;color:#fb7185;font-weight:600;margin-bottom:5px;">🔒 Account Expired</div>
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Your subscription expired on ${expiryDate.toLocaleDateString()}.</div>
+                    <button class="auth-btn" onclick="showRechargeForm('${user.email}')" style="width:100%;font-size:12px;padding:8px;">
+                        <i class="fas fa-credit-card"></i> Renew Now
+                    </button>
+                </div>
+            `;
+        } else if (daysUntilExpiry <= 7) {
+            statusHTML = `
+                <div style="padding:15px;background:rgba(232,185,92,0.1);border-radius:8px;border-left:3px solid var(--accent4);margin-bottom:20px;margin-top:15px;">
+                    <div style="font-size:12px;color:var(--accent4);font-weight:600;margin-bottom:5px;">⏰ Expiring Soon</div>
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Your subscription expires on ${expiryDate.toLocaleDateString()} (${daysUntilExpiry} days remaining).</div>
+                    <button class="auth-btn" onclick="showRechargeForm('${user.email}')" style="width:100%;font-size:12px;padding:8px;">
+                        <i class="fas fa-credit-card"></i> Renew Subscription
+                    </button>
+                </div>
+            `;
+        } else {
+            statusHTML = `
+                <div style="padding:15px;background:rgba(52,211,153,0.1);border-radius:8px;border-left:3px solid var(--accent2);margin-bottom:20px;margin-top:15px;">
+                    <div style="font-size:12px;color:var(--accent2);font-weight:600;margin-bottom:5px;">✓ Active Subscription</div>
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:5px;">Expires on ${expiryDate.toLocaleDateString()}</div>
+                    <div style="font-size:11px;color:var(--muted);">${daysUntilExpiry} days remaining</div>
+                </div>
+            `;
+        }
+    }
+    
+    // Insert subscription status at the top of settings form if it doesn't exist
+    if (!document.getElementById('subscription-status-box')) {
+        const div = document.createElement('div');
+        div.id = 'subscription-status-box';
+        div.innerHTML = statusHTML;
+        settingsEl.insertBefore(div, settingsEl.firstChild);
+    } else {
+        document.getElementById('subscription-status-box').innerHTML = statusHTML;
+    }
 }
 
 async function doLogin() {
@@ -5919,7 +5985,7 @@ async function doLogin() {
     }
 
     if (user.status === 'active' && user.validUntil && new Date(user.validUntil) < new Date()) {
-        showRenewForm(user);
+        showExpiredAccountMessage(user);
         return;
     }
 
@@ -6152,6 +6218,267 @@ function selectRole(el) {
 document.getElementById('login-password').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
 document.getElementById('login-email').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
 
+/* ═══════════════════════════════════════════════
+   ACCOUNT EXPIRY & RECHARGE SYSTEM
+═══════════════════════════════════════════════ */
+
+// Show expired account message with recharge option
+function showExpiredAccountMessage(user) {
+    const errEl = document.getElementById('login-error');
+    errEl.innerHTML = `
+        <div style="text-align:center;padding:15px;background:rgba(251,113,133,0.15);border-radius:8px;border-left:4px solid #fb7185;">
+            <div style="font-weight:600;color:#fb7185;margin-bottom:8px;font-size:16px;">🔒 Your Account Has Expired</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:15px;">
+                Your subscription expired on <strong>${new Date(user.validUntil).toLocaleDateString()}</strong>.<br>
+                Please recharge your account to continue using PharmaTracker.
+            </div>
+            <button class="auth-btn" onclick="showRechargeForm('${user.email}')" style="margin-bottom:8px;width:100%;">
+                <i class="fas fa-credit-card"></i> Recharge Account
+            </button>
+            <button class="auth-btn" style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);width:100%;" onclick="backToLogin()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+        </div>
+    `;
+    errEl.classList.add('show');
+}
+
+// Show recharge form
+function showRechargeForm(email) {
+    const errEl = document.getElementById('login-error');
+    errEl.classList.remove('show');
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = '';
+    
+    // Show recharge overlay
+    const overlay = document.getElementById('auth-overlay');
+    const rechargeHTML = `
+        <div class="auth-panel" style="animation: slideUp 0.3s ease;">
+            <div class="auth-header">
+                <h2><i class="fas fa-credit-card"></i> Renew Your Subscription</h2>
+                <button class="auth-close" onclick="closeRechargeForm()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="auth-content" id="recharge-content">
+                <div style="text-align:center;margin:30px 0;">
+                    <div style="font-size:48px;margin-bottom:15px;">💳</div>
+                    <h3 style="margin:15px 0;color:var(--text);">Choose Your Plan</h3>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px;">
+                    <div class="plan-card" onclick="selectRechargePlan('1month', this)">
+                        <div style="font-weight:600;margin-bottom:8px;color:var(--accent2);">1 Month</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:3px;">Rs. 500</div>
+                        <div style="font-size:11px;color:var(--muted);">or $5 USD</div>
+                    </div>
+                    <div class="plan-card" onclick="selectRechargePlan('3months', this)">
+                        <div style="font-weight:600;margin-bottom:8px;color:var(--accent);"><i class="fas fa-star"></i> 3 Months</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:3px;">Rs. 1,200</div>
+                        <div style="font-size:11px;color:var(--muted);">or $15 USD (-20%)</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px;">
+                    <div class="plan-card" onclick="selectRechargePlan('6months', this)">
+                        <div style="font-weight:600;margin-bottom:8px;color:var(--accent);"><i class="fas fa-bolt"></i> 6 Months</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:3px;">Rs. 2,000</div>
+                        <div style="font-size:11px;color:var(--muted);">or $25 USD (-35%)</div>
+                    </div>
+                    <div class="plan-card" onclick="selectRechargePlan('12months', this)">
+                        <div style="font-weight:600;margin-bottom:8px;color:var(--accent4);">🏆 1 Year</div>
+                        <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:3px;">Rs. 3,500</div>
+                        <div style="font-size:11px;color:var(--muted);">or $50 USD (-42%)</div>
+                    </div>
+                </div>
+
+                <div id="recharge-payment" style="display:none;padding:20px;background:rgba(139,92,246,0.08);border-radius:8px;border:1px solid rgba(139,92,246,0.2);margin-bottom:20px;">
+                    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;"><strong>Selected Plan:</strong> <span id="selected-plan-text"></span></div>
+                    <div style="margin-bottom:15px;">
+                        <label style="font-size:12px;color:var(--text-muted);margin-bottom:5px;display:block;">Transaction ID / Reference</label>
+                        <input type="text" id="recharge-txn-id" placeholder="Enter transaction ID after payment" class="auth-input">
+                    </div>
+                    <button class="auth-btn" onclick="processRenewal()" style="width:100%;">
+                        <i class="fas fa-check"></i> Confirm Renewal
+                    </button>
+                </div>
+
+                <div style="padding:15px;background:rgba(232,185,92,0.1);border-radius:8px;border-left:3px solid var(--accent4);">
+                    <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">
+                        <strong style="color:var(--accent4);">📌 Payment Instructions:</strong><br>
+                        • Pay the amount to: <strong>UBL Remit Account</strong><br>
+                        • Enter your email in payment reference<br>
+                        • Enter transaction ID above<br>
+                        • Admin will verify & activate within 2 hours
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existing = document.querySelector('.recharge-panel');
+    if (existing) existing.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'recharge-panel';
+    div.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;';
+    div.innerHTML = rechargeHTML;
+    document.body.appendChild(div);
+}
+
+function selectRechargePlan(plan, element) {
+    // Remove previous selection
+    document.querySelectorAll('.plan-card').forEach(el => {
+        el.style.border = '1px solid rgba(139,92,246,0.2)';
+        el.style.background = 'transparent';
+    });
+    
+    // Highlight current selection
+    element.style.border = '2px solid rgba(139,92,246,0.6)';
+    element.style.background = 'rgba(139,92,246,0.08)';
+    
+    const planMap = {
+        '1month': '1 Month - Rs. 500',
+        '3months': '3 Months - Rs. 1,200',
+        '6months': '6 Months - Rs. 2,000',
+        '12months': '1 Year - Rs. 3,500'
+    };
+    
+    window.selectedRechargePlan = plan;
+    document.getElementById('selected-plan-text').textContent = planMap[plan];
+    document.getElementById('recharge-payment').style.display = 'block';
+}
+
+function processRenewal() {
+    if (!window.selectedRechargePlan) {
+        showToast('Please select a renewal plan', 'warning');
+        return;
+    }
+    
+    const txnId = document.getElementById('recharge-txn-id').value.trim();
+    if (!txnId) {
+        showToast('Please enter transaction ID', 'warning');
+        return;
+    }
+    
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const plan = window.selectedRechargePlan;
+    
+    // Calculate new expiry date
+    const daysMap = { '1month': 30, '3months': 90, '6months': 180, '12months': 365 };
+    const newExpiryDate = new Date();
+    newExpiryDate.setDate(newExpiryDate.getDate() + daysMap[plan]);
+    
+    // Save renewal record
+    const renewalRecord = {
+        id: 'renewal-' + Date.now(),
+        userEmail: email,
+        plan: plan,
+        transactionId: txnId,
+        amount: plan === '1month' ? 500 : plan === '3months' ? 1200 : plan === '6months' ? 2000 : 3500,
+        requestedAt: new Date().toISOString(),
+        newExpiryDate: newExpiryDate.toISOString(),
+        status: 'pending'
+    };
+    
+    saveRenewalRequest(renewalRecord);
+    
+    closeRechargeForm();
+    
+    showToast(`Renewal request submitted! Your new expiry will be ${newExpiryDate.toLocaleDateString()}. Admin will verify within 2 hours.`, 'success');
+    
+    // Show success message
+    const errEl = document.getElementById('login-error');
+    errEl.innerHTML = `
+        <div style="text-align:center;padding:15px;background:rgba(52,211,153,0.15);border-radius:8px;border-left:4px solid var(--accent2);">
+            <div style="font-weight:600;color:var(--accent2);margin-bottom:8px;font-size:16px;">✓ Renewal Request Submitted</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:15px;">
+                We've received your renewal request. Admin will verify and activate your account shortly.
+            </div>
+            <button class="auth-btn" onclick="backToLogin()" style="margin-bottom:0;width:100%;">
+                <i class="fas fa-arrow-left"></i> Back to Sign In
+            </button>
+        </div>
+    `;
+    errEl.classList.add('show');
+}
+
+function closeRechargeForm() {
+    const panel = document.querySelector('.recharge-panel');
+    if (panel) panel.remove();
+}
+
+// Save renewal request to storage
+function saveRenewalRequest(record) {
+    let requests = [];
+    try {
+        requests = JSON.parse(localStorage.getItem('RENEWAL_REQUESTS') || '[]');
+    } catch (e) {}
+    requests.push(record);
+    localStorage.setItem('RENEWAL_REQUESTS', JSON.stringify(requests));
+}
+
+// Check for expiry and send notification (simulated - can be connected to real email service)
+async function checkAndNotifyExpiry() {
+    const users = await getAllUsers();
+    const today = new Date();
+    
+    users.forEach(user => {
+        if (!user.validUntil) return;
+        const expiryDate = new Date(user.validUntil);
+        const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+        
+        // Notify 3 days before expiry
+        if (daysUntilExpiry === 3) {
+            // In production, this would call your backend to send a real email
+            logExpiryNotification(user.email, expiryDate, 3);
+        }
+    });
+}
+
+// Log expiry notification (in production, send real email)
+function logExpiryNotification(email, expiryDate, daysRemaining) {
+    let notifications = [];
+    try {
+        notifications = JSON.parse(localStorage.getItem('EXPIRY_NOTIFICATIONS') || '[]');
+    } catch (e) {}
+    
+    const lastNotification = notifications.find(n => n.email === email && n.type === 'expiry-warning');
+    if (lastNotification && new Date(lastNotification.sentAt) > new Date(Date.now() - 24*60*60*1000)) {
+        return; // Don't send more than once per day
+    }
+    
+    notifications.push({
+        id: 'notif-' + Date.now(),
+        email: email,
+        type: 'expiry-warning',
+        message: `Your account will expire on ${expiryDate.toLocaleDateString()}. ${daysRemaining} days remaining.`,
+        expiryDate: expiryDate.toISOString(),
+        sentAt: new Date().toISOString()
+    });
+    
+    localStorage.setItem('EXPIRY_NOTIFICATIONS', JSON.stringify(notifications));
+    console.log(`[EXPIRY NOTIFICATION] Email: ${email}, Days remaining: ${daysRemaining}`);
+}
+
+// Add plan card styles
+const style = document.createElement('style');
+style.textContent = `
+    .plan-card {
+        padding: 15px;
+        border: 1px solid rgba(139,92,246,0.2);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .plan-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(139,92,246,0.1);
+    }
+`;
+document.head.appendChild(style);
+
+// Run expiry check periodically (every 60 minutes)
+setInterval(checkAndNotifyExpiry, 60 * 60 * 1000);
+
 /* Settings — save profile */
 function saveProfile() {
     const fname = document.getElementById('settings-fname').value.trim();
@@ -6228,19 +6555,28 @@ async function renderApprovals() {
     if (!el) return;
 
     const all = await getAllUsers();
-    const pending = all.filter(u => u.status === 'pending');
+    const pendingRegistrations = all.filter(u => u.status === 'pending');
+    
+    let renewalRequests = [];
+    try {
+        renewalRequests = (JSON.parse(localStorage.getItem('RENEWAL_REQUESTS') || '[]')).filter(r => r.status === 'pending');
+    } catch (e) {}
+    
+    const totalPending = pendingRegistrations.length + renewalRequests.length;
 
     if (badge) {
-        badge.textContent = pending.length;
-        badge.style.display = pending.length > 0 ? 'inline-block' : 'none';
+        badge.textContent = totalPending;
+        badge.style.display = totalPending > 0 ? 'inline-block' : 'none';
     }
 
-    if (pending.length === 0) {
+    if (totalPending === 0) {
         el.innerHTML = `<div class="empty-approvals"><i class="fas fa-circle-check"></i>Koi pending registration ya renewal nahi hai.</div>`;
         return;
     }
 
-    el.innerHTML = pending.map(u => {
+    let html = '';
+    
+    html += pendingRegistrations.map(u => {
         const initials = ((u.fname||'?')[0] + ((u.lname||'')[0]||'')).toUpperCase();
         const col = ROLE_COLORS[u.role] || '#8b949e';
         const requestedOn = new Date(u.pendingSince || u.createdAt).toLocaleString('en-GB');
@@ -6252,7 +6588,7 @@ async function renderApprovals() {
                     <div class="approval-card-name">${u.fname} ${u.lname||''}</div>
                     <div class="approval-card-meta">${u.email} · ${u.company||'—'} · ${requestedOn}</div>
                 </div>
-                <span class="approval-tag ${u.isRenewal ? 'renewal' : ''}">${u.isRenewal ? 'Renewal' : 'New Registration'}</span>
+                <span class="approval-tag">New Registration</span>
             </div>
             <div class="approval-pay-row">
                 <i class="${u.paymentMethod === 'bank' ? 'fas fa-building-columns' : 'fas fa-mobile-alt'}"></i>
@@ -6268,6 +6604,42 @@ async function renderApprovals() {
             </div>
         </div>`;
     }).join('');
+    
+    html += renewalRequests.map(r => {
+        const user = { fname: '?', lname: '', email: r.userEmail, company: '—' };
+        const initials = ((user.fname||'?')[0] + ((user.lname||'')[0]||'')).toUpperCase();
+        const requestedOn = new Date(r.requestedAt).toLocaleString('en-GB');
+        const planMap = { '1month': '1 Month', '3months': '3 Months', '6months': '6 Months', '12months': '1 Year' };
+        const emailAttr = r.userEmail.replace(/'/g, "\\'");
+        const renewalIdAttr = r.id.replace(/'/g, "\\'");
+        return `<div class="approval-card" style="border-left:4px solid var(--accent);">
+            <div class="approval-card-top">
+                <div class="user-row-avatar" style="background:linear-gradient(135deg,var(--accent),#bc8cff)">${initials}</div>
+                <div class="user-row-info">
+                    <div class="approval-card-name">${user.fname} ${user.lname||''}</div>
+                    <div class="approval-card-meta">${user.email} · ${user.company||'—'} · ${requestedOn}</div>
+                </div>
+                <span class="approval-tag renewal" style="background:rgba(88,166,255,0.15);"><i class="fas fa-sync-alt"></i> Renewal</span>
+            </div>
+            <div class="approval-pay-row">
+                <i class="fas fa-credit-card"></i>
+                <span>${planMap[r.plan] || r.plan}</span>
+                <span>·</span>
+                <span>Ref: <b>${r.transactionId || '—'}</b></span>
+                <span>·</span>
+                <span>Rs. ${r.amount || '—'}</span>
+            </div>
+            <div style="padding:8px;background:rgba(139,92,246,0.06);border-radius:4px;font-size:11px;color:var(--muted);margin-bottom:10px;">
+                <strong>New Expiry:</strong> ${new Date(r.newExpiryDate).toLocaleDateString('en-GB')}
+            </div>
+            <div class="approval-actions">
+                <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveRenewal('${emailAttr}', '${renewalIdAttr}')"><i class="fas fa-check"></i> Approve</button>
+                <button class="btn btn-danger" style="padding:7px 14px;font-size:12px" onclick="rejectRenewal('${emailAttr}', '${renewalIdAttr}')"><i class="fas fa-xmark"></i> Reject</button>
+            </div>
+        </div>`;
+    }).join('');
+    
+    el.innerHTML = html;
 }
 
 async function approveUser(email) {
@@ -6296,6 +6668,61 @@ function rejectUser(email) {
         renderUsersTab();
         showToast('Registration reject kar di gayi.', 'info');
     })();
+}
+
+// Approve user renewal/recharge
+async function approveRenewal(email, renewalId) {
+    const user = await getUserByEmail(email);
+    if (!user) return;
+    
+    let renewals = [];
+    try {
+        renewals = JSON.parse(localStorage.getItem('RENEWAL_REQUESTS') || '[]');
+    } catch (e) {}
+    
+    const renewal = renewals.find(r => r.id === renewalId);
+    if (!renewal) return;
+    
+    // Calculate new expiry date based on plan
+    const daysMap = { '1month': 30, '3months': 90, '6months': 180, '12months': 365 };
+    const newExpiryDate = new Date();
+    newExpiryDate.setDate(newExpiryDate.getDate() + daysMap[renewal.plan] || 30);
+    
+    // Update user
+    user.validUntil = newExpiryDate.toISOString();
+    user.status = 'active';
+    user.lastRenewalDate = new Date().toISOString();
+    user.lastRenewalPlan = renewal.plan;
+    await saveUser(user);
+    
+    // Mark renewal as approved
+    renewal.status = 'approved';
+    renewal.approvedAt = new Date().toISOString();
+    localStorage.setItem('RENEWAL_REQUESTS', JSON.stringify(renewals));
+    
+    renderApprovals();
+    renderUsersTab();
+    showToast(`${user.fname} ka renewal approve ho gaya! Valid till ${newExpiryDate.toLocaleDateString('en-GB')}.`, 'success');
+}
+
+// Reject renewal request
+function rejectRenewal(email, renewalId) {
+    if (!confirm('Is renewal request ko reject kar dein?')) return;
+    
+    let renewals = [];
+    try {
+        renewals = JSON.parse(localStorage.getItem('RENEWAL_REQUESTS') || '[]');
+    } catch (e) {}
+    
+    const renewal = renewals.find(r => r.id === renewalId);
+    if (renewal) {
+        renewal.status = 'rejected';
+        renewal.rejectedAt = new Date().toISOString();
+        localStorage.setItem('RENEWAL_REQUESTS', JSON.stringify(renewals));
+    }
+    
+    renderApprovals();
+    showToast('Renewal request reject kar di gayi.', 'info');
 }
 
 /* ═══════════════════════════════════════════════
