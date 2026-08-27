@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <!-- saved from url=(0059)file:///C:/Users/4MSERVER/Downloads/pharma_dashboard_1.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script>
+    /* Global Report Theme System — applies the user's saved report design
+       to <html> before first paint so there is no flash of the wrong theme.
+       Presentation only; does not touch data, calculations or workflows. */
+    (function () {
+        try {
+            var VALID = ['modern-dark', 'light-clean', 'gradient-card', 'minimal-professional'];
+            var saved = localStorage.getItem('pt_report_theme');
+            var theme = VALID.indexOf(saved) > -1 ? saved : 'modern-dark';
+            document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+            document.documentElement.setAttribute('data-theme', 'modern-dark');
+        }
+    })();
+    </script>
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PharmaTracker — Smart Sales Dashboard</title>
@@ -2188,6 +2203,35 @@ function changeSiteLanguage(language){
                     <option value="20">20</option>
                     <option value="all">All</option>
                 </select>
+            </div>
+            <div class="rt-switcher" id="rtSwitcherWrap">
+                <button type="button" class="rt-switcher-btn" id="rtSwitcherBtn" onclick="toggleReportThemeMenu(event)" aria-haspopup="listbox" aria-expanded="false" title="Report Theme">
+                    <i class="fas fa-palette"></i>
+                    <span id="rtSwitcherLabel">Modern Dark</span>
+                    <i class="fas fa-chevron-down rt-switcher-caret"></i>
+                </button>
+                <div class="rt-switcher-menu" id="rtSwitcherMenu" role="listbox" aria-label="Report Theme">
+                    <button type="button" class="rt-option" data-rt-theme="modern-dark" onclick="setReportTheme('modern-dark')">
+                        <span class="rt-swatch rt-swatch-modern-dark" aria-hidden="true"></span>
+                        <span class="rt-option-text"><strong>Modern Dark</strong><small>Deep navy, vivid accents</small></span>
+                        <i class="fas fa-check rt-option-check"></i>
+                    </button>
+                    <button type="button" class="rt-option" data-rt-theme="light-clean" onclick="setReportTheme('light-clean')">
+                        <span class="rt-swatch rt-swatch-light-clean" aria-hidden="true"></span>
+                        <span class="rt-option-text"><strong>Light Clean</strong><small>Bright, minimal contrast</small></span>
+                        <i class="fas fa-check rt-option-check"></i>
+                    </button>
+                    <button type="button" class="rt-option" data-rt-theme="gradient-card" onclick="setReportTheme('gradient-card')">
+                        <span class="rt-swatch rt-swatch-gradient-card" aria-hidden="true"></span>
+                        <span class="rt-option-text"><strong>Gradient Card</strong><small>Rich purple gradients</small></span>
+                        <i class="fas fa-check rt-option-check"></i>
+                    </button>
+                    <button type="button" class="rt-option" data-rt-theme="minimal-professional" onclick="setReportTheme('minimal-professional')">
+                        <span class="rt-swatch rt-swatch-minimal-professional" aria-hidden="true"></span>
+                        <span class="rt-option-text"><strong>Minimal Professional</strong><small>Flat, monochrome, quiet</small></span>
+                        <i class="fas fa-check rt-option-check"></i>
+                    </button>
+                </div>
             </div>
             <div class="search-wrap">
                 <i class="fas fa-search"></i>
@@ -7334,4 +7378,366 @@ setTimeout(() => {
   .sub-status-badge.expiring{ background:rgba(232,185,92,.15) !important; color:var(--accent4) !important; }
   .sub-status-badge.expired{ background:rgba(251,113,133,.15) !important; color:var(--accent3) !important; }
 </style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     GLOBAL REPORT THEME SYSTEM — 4 selectable report designs.
+     Presentation only: no markup, data, calculations, fields,
+     APIs or workflows are changed by anything below. This block
+     is intentionally last in the cascade so its !important rules
+     take precedence over the earlier presentation layers above,
+     but ONLY when data-theme is light-clean / gradient-card /
+     minimal-professional. When data-theme="modern-dark" (default)
+     nothing in this block applies, so the app's original look is
+     preserved pixel-for-pixel.
+═══════════════════════════════════════════════════════════ -->
+<style id="global-report-theme-system">
+
+  /* ── Theme switcher control (topbar) ───────────────────────── */
+  .rt-switcher { position: relative; }
+  .rt-switcher-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color .15s, transform .15s;
+  }
+  .rt-switcher-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .rt-switcher-btn i.fas.fa-palette { color: var(--accent); font-size: 12px; }
+  .rt-switcher-caret { font-size: 9px; opacity: .65; margin-left: 2px; transition: transform .15s; }
+  .rt-switcher.open .rt-switcher-caret { transform: rotate(180deg); }
+  .rt-switcher-menu {
+      display: none;
+      position: absolute; right: 0; top: calc(100% + 8px); z-index: 600;
+      width: 250px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 20px 46px rgba(0,0,0,.35);
+  }
+  .rt-switcher-menu.show { display: block; }
+  .rt-option {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 9px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      color: var(--text);
+      margin-bottom: 2px;
+  }
+  .rt-option:last-child { margin-bottom: 0; }
+  .rt-option:hover { background: var(--surface2); }
+  .rt-option.active { border-color: var(--accent); background: var(--surface2); }
+  .rt-swatch {
+      flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      position: relative; overflow: hidden;
+  }
+  .rt-swatch::after {
+      content: ''; position: absolute; left: 5px; right: 5px; bottom: 5px; height: 4px; border-radius: 3px;
+      background: rgba(255,255,255,.85);
+  }
+  .rt-swatch-modern-dark { background: linear-gradient(135deg, #0d1117, #21262d); }
+  .rt-swatch-modern-dark::after { background: linear-gradient(90deg, #58a6ff, #bc8cff); }
+  .rt-swatch-light-clean { background: linear-gradient(135deg, #ffffff, #e7ebf3); border-color: #d7dce6; }
+  .rt-swatch-light-clean::after { background: linear-gradient(90deg, #2f6fed, #16a34a); }
+  .rt-swatch-gradient-card { background: linear-gradient(135deg, #35206b, #7c3aed); }
+  .rt-swatch-gradient-card::after { background: linear-gradient(90deg, #f472b6, #fbbf24); }
+  .rt-swatch-minimal-professional { background: linear-gradient(135deg, #111214, #1f2023); }
+  .rt-swatch-minimal-professional::after { background: #9ca3af; }
+  .rt-option-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .rt-option-text strong { font-size: 12.5px; font-weight: 600; }
+  .rt-option-text small { font-size: 10.5px; color: var(--muted); font-weight: 400; }
+  .rt-option-check { font-size: 11px; color: var(--accent); opacity: 0; }
+  .rt-option.active .rt-option-check { opacity: 1; }
+  @media (max-width: 900px) {
+      .rt-switcher-btn span:not(.rt-switcher-caret) { display: none; }
+      .rt-switcher-menu { right: -40px; }
+  }
+
+  /* ── Theme: Light Clean base variables ─────────────────────── */
+  html[data-theme="light-clean"] {
+      --bg: #f3f5fa; --surface: #ffffff; --surface2: #f3f5f9;
+      --border: #e1e5ee;
+      --accent: #2563eb; --accent2: #16a34a; --accent3: #e11d48; --accent4: #d97706; --accent5: #7c3aed;
+      --text: #101828; --muted: #64748b;
+      --rt-body-bg: var(--bg);
+      --rt-sidebar-bg: #ffffff;
+      --rt-topbar-bg: rgba(255,255,255,.92);
+      --rt-card-bg: #ffffff;
+      --rt-card-radius: 12px;
+      --rt-card-shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+      --rt-card-shadow-hover: 0 10px 26px rgba(16,24,40,.10);
+      --rt-header-bg: #f6f8fb;
+      --rt-btn-radius: 8px;
+      --rt-btn-primary-bg: var(--accent);
+      --rt-btn-primary-color: #ffffff;
+      --rt-btn-primary-shadow: 0 8px 18px rgba(37,99,235,.22);
+      --rt-input-bg: #ffffff;
+      --rt-modal-bg: #ffffff;
+      --rt-row-hover: #f6f8fb;
+      --rt-progress-bg: #eef1f6;
+      --rt-progress-fill: linear-gradient(90deg, var(--accent2), #22c55e);
+      --rt-letter-spacing: normal;
+      color-scheme: light;
+  }
+
+  /* ── Theme: Gradient Card base variables ───────────────────── */
+  html[data-theme="gradient-card"] {
+      --bg: #180f34; --surface: #241653; --surface2: #2d1c66;
+      --border: rgba(196,166,255,.20);
+      --accent: #8b5cf6; --accent2: #22c55e; --accent3: #f472b6; --accent4: #fbbf24; --accent5: #a78bfa;
+      --text: #f6f2ff; --muted: #b3a2dc;
+      --rt-body-bg:
+          radial-gradient(circle at 85% -10%, rgba(139,92,246,.35), transparent 40%),
+          radial-gradient(circle at 5% 100%, rgba(244,114,182,.16), transparent 42%),
+          var(--bg);
+      --rt-sidebar-bg: linear-gradient(180deg, #241653 0%, #180f34 100%);
+      --rt-topbar-bg: rgba(24,15,52,.72);
+      --rt-card-bg: linear-gradient(150deg, rgba(45,28,102,.92), rgba(30,18,68,.92));
+      --rt-card-radius: 18px;
+      --rt-card-shadow: 0 14px 34px rgba(9,4,26,.45);
+      --rt-card-shadow-hover: 0 20px 44px rgba(9,4,26,.55);
+      --rt-header-bg: rgba(139,92,246,.14);
+      --rt-btn-radius: 12px;
+      --rt-btn-primary-bg: linear-gradient(135deg, var(--accent5), var(--accent));
+      --rt-btn-primary-color: #ffffff;
+      --rt-btn-primary-shadow: 0 10px 24px rgba(139,92,246,.38);
+      --rt-input-bg: rgba(255,255,255,.06);
+      --rt-modal-bg: linear-gradient(150deg, #2d1c66, #1c1140);
+      --rt-row-hover: rgba(139,92,246,.10);
+      --rt-progress-bg: rgba(255,255,255,.08);
+      --rt-progress-fill: linear-gradient(90deg, var(--accent), var(--accent3));
+      --rt-letter-spacing: normal;
+      color-scheme: dark;
+  }
+
+  /* ── Theme: Minimal Professional base variables ────────────── */
+  html[data-theme="minimal-professional"] {
+      --bg: #111214; --surface: #17181b; --surface2: #1e1f22;
+      --border: #2b2c30;
+      --accent: #cfd2d9; --accent2: #9aa0ab; --accent3: #ef8080; --accent4: #b7bac1; --accent5: #9aa0ab;
+      --text: #e7e8eb; --muted: #85888f;
+      --rt-body-bg: var(--bg);
+      --rt-sidebar-bg: var(--surface);
+      --rt-topbar-bg: var(--surface);
+      --rt-card-bg: var(--surface);
+      --rt-card-radius: 6px;
+      --rt-card-shadow: none;
+      --rt-card-shadow-hover: none;
+      --rt-header-bg: var(--surface2);
+      --rt-btn-radius: 4px;
+      --rt-btn-primary-bg: #e7e8eb;
+      --rt-btn-primary-color: #111214;
+      --rt-btn-primary-shadow: none;
+      --rt-input-bg: var(--surface2);
+      --rt-modal-bg: var(--surface);
+      --rt-row-hover: var(--surface2);
+      --rt-progress-bg: var(--surface2);
+      --rt-progress-fill: var(--muted);
+      --rt-letter-spacing: .01em;
+      color-scheme: dark;
+  }
+
+  /* ── Shared "skin" rules — apply to any non-default theme ──── */
+  html[data-theme]:not([data-theme="modern-dark"]) body { background: var(--rt-body-bg) !important; letter-spacing: var(--rt-letter-spacing) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .sidebar { background: var(--rt-sidebar-bg) !important; border-right-color: var(--border) !important; box-shadow: none !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .logo { border-bottom-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .logo-icon { background: linear-gradient(135deg, var(--accent), var(--accent5)) !important; box-shadow: none !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .avatar { background: linear-gradient(135deg, var(--accent), var(--accent5)) !important; box-shadow: none !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .nav-item { color: var(--muted) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .nav-item:hover { background: var(--surface2) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .nav-item.active { background: color-mix(in srgb, var(--accent) 16%, transparent) !important; color: var(--accent) !important; border-color: color-mix(in srgb, var(--accent) 30%, transparent) !important; box-shadow: inset 3px 0 var(--accent) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .nav-badge { background: var(--accent) !important; color: var(--rt-btn-primary-color, var(--bg)) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .sidebar-footer { border-top-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .user-card { background: var(--surface2) !important; border-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .topbar { background: var(--rt-topbar-bg) !important; border-bottom-color: var(--border) !important; backdrop-filter: blur(14px); }
+  html[data-theme]:not([data-theme="modern-dark"]) .page-heading p { color: var(--muted) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .filter-select,
+  html[data-theme]:not([data-theme="modern-dark"]) .search-wrap input,
+  html[data-theme]:not([data-theme="modern-dark"]) .period-value-toggle,
+  html[data-theme]:not([data-theme="modern-dark"]) #fMonth {
+      background: var(--rt-input-bg) !important;
+      border-color: var(--border) !important;
+      color: var(--text) !important;
+      border-radius: var(--rt-btn-radius) !important;
+  }
+  html[data-theme]:not([data-theme="modern-dark"]) .filter-select:focus,
+  html[data-theme]:not([data-theme="modern-dark"]) .search-wrap input:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) select.filter-select option { background: var(--surface) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) #fMonth,
+  html[data-theme]:not([data-theme="modern-dark"]) #fMonth option { background-color: var(--rt-input-bg) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .filters-bar { background: var(--rt-input-bg) !important; border-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .table-pagination { border-top-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .period-value-panel { background: var(--rt-modal-bg) !important; color: var(--text) !important; border-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .period-value-option,
+  html[data-theme]:not([data-theme="modern-dark"]) .period-value-option span { color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .period-value-option:hover { background: var(--surface2) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .btn { border-radius: var(--rt-btn-radius) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .btn-primary { background: var(--rt-btn-primary-bg) !important; color: var(--rt-btn-primary-color) !important; box-shadow: var(--rt-btn-primary-shadow) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .btn-ghost { background: var(--rt-input-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .btn-ghost:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .btn-success { background: var(--accent2) !important; color: var(--rt-btn-primary-color, #fff) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .btn-danger { background: color-mix(in srgb, var(--accent3) 16%, transparent) !important; color: var(--accent3) !important; border-color: color-mix(in srgb, var(--accent3) 34%, transparent) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .stat-card,
+  html[data-theme]:not([data-theme="modern-dark"]) .card {
+      background: var(--rt-card-bg) !important;
+      border-color: var(--border) !important;
+      border-radius: var(--rt-card-radius) !important;
+      box-shadow: var(--rt-card-shadow) !important;
+  }
+  html[data-theme]:not([data-theme="modern-dark"]) .stat-card:hover,
+  html[data-theme]:not([data-theme="modern-dark"]) .card:hover {
+      border-color: color-mix(in srgb, var(--accent) 40%, var(--border)) !important;
+      box-shadow: var(--rt-card-shadow-hover) !important;
+  }
+  html[data-theme]:not([data-theme="modern-dark"]) .stat-value { color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .stat-label { color: var(--muted) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .card-header { border-bottom-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .card-title { color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .card-sub { color: var(--muted) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) table { border-collapse: separate !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) thead th { background: var(--rt-header-bg) !important; color: var(--muted) !important; border-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) tbody td, html[data-theme]:not([data-theme="modern-dark"]) tbody tr { border-color: var(--border) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) tbody tr:hover { background: var(--rt-row-hover) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .table-pagination-info { color: var(--muted) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .progress-bar { background: var(--rt-progress-bg) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .progress-fill { background: var(--rt-progress-fill) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .empty-state { color: var(--muted) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .empty-state h3 { color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .insight-item { border-bottom-color: var(--border) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .insight-text span { color: var(--muted) !important; }
+
+  html[data-theme]:not([data-theme="modern-dark"]) .modal { background: var(--rt-modal-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .modal p { color: var(--muted) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .map-item select { background: var(--rt-input-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .toast { background: var(--rt-modal-bg) !important; border-color: var(--border) !important; color: var(--text) !important; }
+  html[data-theme]:not([data-theme="modern-dark"]) .spinner { border-color: var(--border) !important; border-top-color: var(--accent) !important; }
+
+  /* Light Clean needs a light native-select popup, unlike the app's default dark one */
+  html[data-theme="light-clean"] select.filter-select,
+  html[data-theme="light-clean"] #fMonth { color-scheme: light !important; }
+
+  /* ── Minimal Professional: flatten colored chips + badges ──── */
+  html[data-theme="minimal-professional"] .stat-icon-wrap {
+      background: var(--surface2) !important;
+      color: var(--muted) !important;
+  }
+  html[data-theme="minimal-professional"] .stat-card::before { opacity: .5 !important; background: var(--muted) !important; }
+  html[data-theme="minimal-professional"] .badge {
+      background: var(--surface2) !important;
+      color: var(--text) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 5px !important;
+  }
+  html[data-theme="minimal-professional"] .badge-red { color: var(--accent3) !important; border-color: color-mix(in srgb, var(--accent3) 40%, var(--border)) !important; }
+
+  /* ── Gradient Card: give each stat card its own subtle accent glow ── */
+  html[data-theme="gradient-card"] .stat-card::before {
+      height: 3px !important;
+      background: linear-gradient(90deg, var(--card-accent, var(--accent)), transparent) !important;
+  }
+  html[data-theme="gradient-card"] .stat-icon-wrap { box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+  html[data-theme="gradient-card"] .btn-primary:hover,
+  html[data-theme="gradient-card"] .btn-success:hover { filter: brightness(1.08); }
+
+  /* ── Light Clean: quieter icon chips, crisp shadows ─────────── */
+  html[data-theme="light-clean"] .stat-icon-wrap { box-shadow: none; }
+  html[data-theme="light-clean"] .badge { font-weight: 600; }
+
+</style>
+
+<script id="global-report-theme-script">
+/* Global Report Theme System — persistence + UI wiring.
+   Presentation only: does not read/write any report data. */
+(function () {
+    var STORAGE_KEY = 'pt_report_theme';
+    var VALID = ['modern-dark', 'light-clean', 'gradient-card', 'minimal-professional'];
+    var LABELS = {
+        'modern-dark': 'Modern Dark',
+        'light-clean': 'Light Clean',
+        'gradient-card': 'Gradient Card',
+        'minimal-professional': 'Minimal Professional'
+    };
+
+    function applyReportTheme(theme, persist) {
+        if (VALID.indexOf(theme) === -1) theme = 'modern-dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        if (document.body) document.body.setAttribute('data-theme', theme);
+        var label = document.getElementById('rtSwitcherLabel');
+        if (label) label.textContent = LABELS[theme];
+        var opts = document.querySelectorAll('.rt-option');
+        for (var i = 0; i < opts.length; i++) {
+            var isActive = opts[i].getAttribute('data-rt-theme') === theme;
+            opts[i].classList.toggle('active', isActive);
+            opts[i].setAttribute('aria-selected', isActive ? 'true' : 'false');
+        }
+        if (persist !== false) {
+            try { localStorage.setItem(STORAGE_KEY, theme); } catch (e) {}
+        }
+    }
+
+    function toggleReportThemeMenu(evt) {
+        if (evt) evt.stopPropagation();
+        var menu = document.getElementById('rtSwitcherMenu');
+        var wrap = document.getElementById('rtSwitcherWrap');
+        var btn = document.getElementById('rtSwitcherBtn');
+        if (!menu) return;
+        var willShow = !menu.classList.contains('show');
+        menu.classList.toggle('show', willShow);
+        if (wrap) wrap.classList.toggle('open', willShow);
+        if (btn) btn.setAttribute('aria-expanded', willShow ? 'true' : 'false');
+    }
+
+    function closeReportThemeMenu() {
+        var menu = document.getElementById('rtSwitcherMenu');
+        var wrap = document.getElementById('rtSwitcherWrap');
+        var btn = document.getElementById('rtSwitcherBtn');
+        if (menu) menu.classList.remove('show');
+        if (wrap) wrap.classList.remove('open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function setReportTheme(theme) {
+        applyReportTheme(theme, true);
+        closeReportThemeMenu();
+    }
+
+    document.addEventListener('click', function (evt) {
+        var wrap = document.getElementById('rtSwitcherWrap');
+        if (wrap && !wrap.contains(evt.target)) closeReportThemeMenu();
+    });
+    document.addEventListener('keydown', function (evt) {
+        if (evt.key === 'Escape') closeReportThemeMenu();
+    });
+
+    // Expose globally for the inline onclick handlers in the topbar markup
+    window.toggleReportThemeMenu = toggleReportThemeMenu;
+    window.setReportTheme = setReportTheme;
+    window.applyReportTheme = applyReportTheme;
+
+    // Sync the switcher UI (label + active option) to whatever theme the
+    // pre-paint head script already applied, without re-persisting it.
+    var current = document.documentElement.getAttribute('data-theme') || 'modern-dark';
+    applyReportTheme(current, false);
+})();
+</script>
+
 </body></html>
