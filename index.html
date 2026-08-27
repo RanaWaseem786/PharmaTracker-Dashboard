@@ -386,6 +386,11 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             outline: none;
         }
         .filter-select:focus { border-color: var(--accent); }
+        /* Keep native single- and multi-select option menus aligned with the dark dashboard theme. */
+        select.filter-select { color-scheme: dark; }
+        select.filter-select option { background: var(--surface); color: var(--text); }
+        select.filter-select option:checked { background: linear-gradient(var(--accent), var(--accent)); color: #fff; }
+        select.filter-select option:hover { background: var(--surface2); color: var(--text); }
         .slicer-search { cursor: text; }
         .slicer-control { display:flex; flex-direction:column; gap:6px; min-width:200px; }
         .slicer-control .filter-select { width:100%; }
@@ -2903,11 +2908,27 @@ function changeSiteLanguage(language){
             <div class="card-header"><div><div class="card-title">YTD Data Catalogue</div><div class="card-sub" id="ytd-subtitle">Year-to-year comparison</div></div>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                     <select class="filter-select" id="ytdYears" multiple size="1" onchange="renderYTDCatalogue()" title="Select years to compare"></select>
+                    <button class="btn btn-ghost" style="font-size:12px" type="button" onclick="ytdSelectAll('ytdYears')" title="Select all available years"><i class="fas fa-check-double"></i> All Years</button>
                     <select class="filter-select" id="ytdRank" onchange="renderYTDCatalogue()">
                         <option value="all">All</option><option value="top-200">Top 200</option><option value="top-100">Top 100</option><option value="top-50">Top 50</option><option value="top-20">Top 20</option><option value="top-10">Top 10</option><option value="top-5">Top 5</option><option value="bottom-200">Bottom 200</option><option value="bottom-100">Bottom 100</option><option value="bottom-50">Bottom 50</option><option value="bottom-20">Bottom 20</option><option value="bottom-10">Bottom 10</option><option value="bottom-5">Bottom 5</option>
                     </select>
+                    <select class="filter-select" id="ytdGrowth" multiple size="1" onchange="ytdOnFilterChange(this)" title="Growth filter — select one or more growth results">
+                        <option value="all">All Growth</option><option value="positive">Positive Growth (+%)</option><option value="negative">Negative Growth (-%)</option><option value="zero">Zero Growth (0%)</option>
+                    </select>
+                    <button class="btn btn-ghost" style="font-size:12px" type="button" onclick="ytdSelectAll('ytdGrowth')" title="Select all growth results"><i class="fas fa-check-double"></i> All Growth</button>
                     <button class="btn btn-ghost" style="font-size:12px" onclick="exportYTDCustomerData()"><i class="fas fa-file-export"></i> Export</button>
                 </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 20px 16px">
+                <select class="filter-select" id="ytdCompany" multiple size="1" onchange="ytdOnFilterChange()" title="Company — select one or more"><option value="">All Companies</option></select>
+                <select class="filter-select" id="ytdGroup" multiple size="1" onchange="ytdOnFilterChange()" title="Company group — select one or more"><option value="">All Groups</option></select>
+                <select class="filter-select" id="ytdProduct" multiple size="1" onchange="ytdOnFilterChange()" title="Product — select one or more"><option value="">All Products</option></select>
+                <select class="filter-select" id="ytdCustomer" multiple size="1" onchange="ytdOnFilterChange()" title="Customer — select one or more"><option value="">All Customers</option></select>
+                <select class="filter-select" id="ytdBookingMan" multiple size="1" onchange="ytdOnFilterChange()" title="Booking man — select one or more"><option value="">All Booking Men</option></select>
+                <select class="filter-select" id="ytdRegion" multiple size="1" onchange="ytdOnFilterChange()" title="Region — select one or more"><option value="">All Regions</option></select>
+                <select class="filter-select" id="ytdMonth" multiple size="1" onchange="ytdOnFilterChange()" title="Month — select one or more"><option value="">All Months</option></select>
+                <button class="btn btn-ghost" style="font-size:12px" type="button" onclick="ytdSelectAllFilters()"><i class="fas fa-check-double"></i> Select All</button>
+                <button class="btn btn-ghost" style="font-size:12px" type="button" onclick="ytdClearFilters()"><i class="fas fa-times"></i> Clear</button>
             </div>
             <div id="ytd-catalogue" style="display:grid;gap:16px"></div>
         </div>
@@ -4100,6 +4121,7 @@ function updateAll() {
     updateCharts();
     updateInsights();
     populateYTDCatalogueYears();
+    populateYTDCatalogueFilters();
     renderYTDCatalogue();
     populateMonthComparison();
     renderMonthComparison();
@@ -5203,6 +5225,79 @@ function populateYTDCatalogueYears() {
     select.title = years.length > 2 ? 'Use Ctrl/Cmd-click to compare multiple years' : 'Select years to compare';
 }
 
+const YTD_FILTER_FIELDS = [
+    { id: 'ytdCompany', field: 'companyName', allLabel: 'All Companies' },
+    { id: 'ytdGroup', field: 'companyGroup', allLabel: 'All Groups' },
+    { id: 'ytdProduct', field: 'itemName', allLabel: 'All Products' },
+    { id: 'ytdCustomer', field: 'customerName', allLabel: 'All Customers' },
+    { id: 'ytdBookingMan', field: 'bookingMan', allLabel: 'All Booking Men' },
+    { id: 'ytdRegion', field: 'regionName', allLabel: 'All Regions' },
+    { id: 'ytdMonth', field: 'invoiceDate', allLabel: 'All Months', month: true }
+];
+function ytdSelectedValues(id) {
+    const select = document.getElementById(id);
+    return select ? [...select.selectedOptions].map(option => option.value).filter(Boolean) : [];
+}
+function populateYTDCatalogueFilters() {
+    const data = getBaseData();
+    YTD_FILTER_FIELDS.forEach(config => {
+        const select = document.getElementById(config.id);
+        if (!select) return;
+        const selected = ytdSelectedValues(config.id);
+        const values = config.month
+            ? [...new Set(data.map(row => String(row.invoiceDate || '').slice(5, 7)).filter(month => /^\d{2}$/.test(month)))].sort()
+            : getUniqueSlicerValues(data, config.field).filter(value => value !== '—');
+        select.innerHTML = `<option value="">${config.allLabel}</option>` + values.map(value => {
+            const label = config.month ? `${value} — ${MONTH_NAMES[Number(value) - 1] || value}` : value;
+            return `<option value="${String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}">${String(label).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</option>`;
+        }).join('');
+        [...select.options].forEach(option => { option.selected = selected.includes(option.value); });
+        select.title = `${config.allLabel.replace('All ', '').replace(/s$/, '')} — use Ctrl/Cmd-click for multiple selections`;
+    });
+}
+function ytdSelectAll(id) {
+    const select = document.getElementById(id);
+    if (!select) return;
+    [...select.options].forEach(option => { option.selected = option.value !== '' && option.value !== 'all'; });
+    if (id === 'ytdGrowth') {
+        const all = [...select.options].find(option => option.value === 'all');
+        if (all) all.selected = true;
+    }
+    renderYTDCatalogue();
+}
+function ytdSelectAllFilters() {
+    YTD_FILTER_FIELDS.forEach(config => ytdSelectAll(config.id));
+}
+function ytdClearFilters() {
+    [...YTD_FILTER_FIELDS.map(config => config.id), 'ytdGrowth'].forEach(id => {
+        const select = document.getElementById(id);
+        if (select) [...select.options].forEach(option => { option.selected = false; });
+    });
+    renderYTDCatalogue();
+}
+function ytdOnFilterChange(select) {
+    if (select?.id === 'ytdGrowth' && ytdSelectedValues('ytdGrowth').includes('all')) {
+        [...select.options].forEach(option => { option.selected = option.value === 'all'; });
+    }
+    renderYTDCatalogue();
+}
+function ytdRowMatchesFilters(row) {
+    return YTD_FILTER_FIELDS.every(config => {
+        const selected = ytdSelectedValues(config.id);
+        if (!selected.length) return true;
+        const value = config.month ? String(row.invoiceDate || '').slice(5, 7) : String(row[config.field] || '').trim();
+        return selected.includes(value);
+    });
+}
+function ytdRowMatchesGrowth(row, years) {
+    const selected = ytdSelectedValues('ytdGrowth').filter(value => value !== 'all');
+    if (!selected.length || years.length < 2) return true;
+    const current = row.values[years[years.length - 1]] || 0;
+    const previous = row.values[years[years.length - 2]] || 0;
+    const growth = current - previous;
+    return (growth > 0 && selected.includes('positive')) || (growth < 0 && selected.includes('negative')) || (growth === 0 && selected.includes('zero'));
+}
+
 function ytdMeasureLabel() { return measureMode === 'units' ? 'Units' : 'Value'; }
 function ytdValue(row) { return Number(row[measureField()] || 0); }
 function ytdGrowth(current, previous) {
@@ -5218,6 +5313,28 @@ function ytdRank(rows) {
     const sorted = [...rows].sort((a, b) => (b.latest - a.latest) || a.label.localeCompare(b.label));
     return direction === 'bottom' ? sorted.slice(-n).reverse() : sorted.slice(0, n);
 }
+const ytdSectionFilters = {};
+function ytdSectionId(field, monthWise) { return `ytd-section-${monthWise ? 'month' : field}`; }
+function ytdSectionEscape(value) {
+    return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function ytdOnSectionFilterChange(sectionId) {
+    ytdSectionFilters[sectionId] = ytdSelectedValues(sectionId);
+    renderYTDCatalogue();
+}
+function ytdSelectAllSection(sectionId) {
+    const select = document.getElementById(sectionId);
+    if (!select) return;
+    ytdSectionFilters[sectionId] = [...select.options].map(option => option.value).filter(Boolean);
+    renderYTDCatalogue();
+}
+function ytdSectionFilterMarkup(sectionId, title, rows) {
+    const available = rows.map(row => row.key);
+    const selected = (ytdSectionFilters[sectionId] || []).filter(value => available.includes(value));
+    ytdSectionFilters[sectionId] = selected;
+    const options = rows.map(row => `<option value="${ytdSectionEscape(row.key)}"${selected.includes(row.key) ? ' selected' : ''}>${ytdSectionEscape(row.label)}</option>`).join('');
+    return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select class="filter-select" id="${sectionId}" multiple size="1" onchange="ytdOnSectionFilterChange('${sectionId}')" title="Filter ${title} — use Ctrl/Cmd-click for multiple selections"><option value="">All ${title}</option>${options}</select><button class="btn btn-ghost" style="font-size:12px" type="button" onclick="ytdSelectAllSection('${sectionId}')" title="Select all ${title}"><i class="fas fa-check-double"></i> Select All</button></div>`;
+}
 function ytdTable(title, field, data, years, monthWise = false) {
     const grouped = new Map();
     data.forEach(row => {
@@ -5230,7 +5347,12 @@ function ytdTable(title, field, data, years, monthWise = false) {
     });
     const rows = [...grouped.entries()].map(([key, row]) => ({ ...row, key, latest: row.values[years[years.length - 1]] || 0 }));
     rows.sort(monthWise ? (a, b) => Number(a.key) - Number(b.key) : (a, b) => b.latest - a.latest || a.label.localeCompare(b.label));
-    const displayed = monthWise ? rows : ytdRank(rows);
+    const growthFiltered = rows.filter(row => ytdRowMatchesGrowth(row, years));
+    const sectionId = ytdSectionId(field, monthWise);
+    const sectionSelected = (ytdSectionFilters[sectionId] || []).filter(value => rows.some(row => row.key === value));
+    ytdSectionFilters[sectionId] = sectionSelected;
+    const sectionFiltered = growthFiltered.filter(row => !sectionSelected.length || sectionSelected.includes(row.key));
+    const displayed = monthWise ? sectionFiltered : ytdRank(sectionFiltered);
     const headings = years.flatMap((year, index) => index ? [`<th>${year}</th><th>Growth %</th>`] : [`<th>${year}</th>`]).join('');
     const body = displayed.length ? displayed.map(row => {
         let values = `<td style="font-weight:600">${row.label}</td>`;
@@ -5240,7 +5362,8 @@ function ytdTable(title, field, data, years, monthWise = false) {
         });
         return `<tr>${values}</tr>`;
     }).join('') : `<tr><td colspan="${years.length * 2}" style="color:var(--muted)">No data for the selected filters and years.</td></tr>`;
-    return `<div class="card" style="margin:0"><div class="card-header"><div class="card-title">${title}</div><div class="card-sub">${ytdMeasureLabel()} Wise</div></div><div class="table-wrap"><table><thead><tr><th>${monthWise ? 'Month' : title.replace(' Sales', '')}</th>${headings}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+    const filterLabel = monthWise ? 'Months' : title.replace('-wise Sales', 's');
+    return `<div class="card" style="margin:0"><div class="card-header"><div><div class="card-title">${title}</div><div class="card-sub">${ytdMeasureLabel()} Wise</div></div>${ytdSectionFilterMarkup(sectionId, filterLabel, rows)}</div><div class="table-wrap"><table><thead><tr><th>${monthWise ? 'Month' : title.replace(' Sales', '')}</th>${headings}</tr></thead><tbody>${body}</tbody></table></div></div>`;
 }
 function renderYTDCatalogue() {
     const host = document.getElementById('ytd-catalogue');
@@ -5249,7 +5372,7 @@ function renderYTDCatalogue() {
     const subtitle = document.getElementById('ytd-subtitle');
     if (!years.length) { host.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><h3>No dated data available</h3><p>Upload dated sales records to build year-to-year comparisons.</p></div>'; return; }
     if (subtitle) subtitle.textContent = `${ytdMeasureLabel()} wise: ${years.join(' vs ')}. Ranking uses ${years[years.length - 1]}.`;
-    const data = getBaseData().filter(row => years.includes(String(row.invoiceDate || '').slice(0, 4)));
+    const data = getBaseData().filter(row => years.includes(String(row.invoiceDate || '').slice(0, 4)) && ytdRowMatchesFilters(row));
     host.innerHTML = [
         ytdTable('Company Group-wise Sales', 'companyGroup', data, years),
         ytdTable('Region-wise Sales', 'regionName', data, years),
@@ -5260,9 +5383,8 @@ function renderYTDCatalogue() {
     ].join('');
 }
 function exportYTDCustomerData() {
-    const selectedCustomer = document.getElementById('customerSlicer')?.value || '';
     const years = ytdSelectedYears();
-    const rows = getBaseData().filter(row => (!selectedCustomer || row.customerName === selectedCustomer) && years.includes(String(row.invoiceDate || '').slice(0, 4)));
+    const rows = getBaseData().filter(row => ytdRowMatchesFilters(row) && years.includes(String(row.invoiceDate || '').slice(0, 4)));
     if (!rows.length) { showToast('No customer data available to export.', 'error'); return; }
     const output = rows.map(row => ({
         Date: row.invoiceDate, Customer: row.customerName, 'Customer Code': row.customerCode || '', Company: row.companyName, 'Company Group': row.companyGroup,
@@ -5272,8 +5394,8 @@ function exportYTDCustomerData() {
     if (typeof XLSX !== 'undefined') {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(output), 'Customer YTD Data');
-        XLSX.writeFile(workbook, `${selectedCustomer || 'All_Customers'}_YTD_Data.xlsx`);
-        showToast(`Exported ${output.length.toLocaleString()} ${selectedCustomer ? 'selected-customer' : 'all-customer'} records.`, 'success');
+        XLSX.writeFile(workbook, 'YTD_Filtered_Data.xlsx');
+        showToast(`Exported ${output.length.toLocaleString()} filtered YTD records.`, 'success');
     }
 }
 
