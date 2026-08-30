@@ -8317,7 +8317,12 @@ setTimeout(() => {
      ═══════════════════════════════════════════════════════════════════════════ -->
 
 <!-- Word Document Generation Library -->
-<script src="https://cdn.jsdelivr.net/npm/docx@8.12.7/build/index.js"></script>
+<!-- NOTE: the previous tag pointed at "docx/build/index.js", which is the raw
+     ES-module source (not a browser UMD bundle) and never defines a global
+     `docx` object, causing "ReferenceError: docx is not defined". The actual
+     loading + readiness check now happens in the Key Insights script below,
+     which loads the correct UMD build (with a CDN fallback) and waits for it
+     before generating the report. -->
 
 <style>
     /* Key Insights Button Styling (non-destructive) */
@@ -8394,6 +8399,45 @@ setTimeout(() => {
         config: {
             buttonInjected: false,
             observerActive: false
+        },
+
+        // Ensures the docx library (window.docx) is loaded before it is used.
+        // Loads it on demand (only when a report is first generated), tries a
+        // primary CDN build and falls back to a secondary CDN if the first
+        // fails, and reuses the same loading promise on subsequent calls so
+        // the library is only ever fetched once.
+        _docxLibraryPromise: null,
+        loadDocxLibrary: function() {
+            if (window.docx) {
+                return Promise.resolve(window.docx);
+            }
+            if (this._docxLibraryPromise) {
+                return this._docxLibraryPromise;
+            }
+
+            const loadScript = (src) => new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.onload = () => {
+                    if (window.docx) resolve(window.docx);
+                    else reject(new Error('docx global not found after loading ' + src));
+                };
+                script.onerror = () => reject(new Error('Failed to load script: ' + src));
+                document.head.appendChild(script);
+            });
+
+            const sources = [
+                'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js',
+                'https://unpkg.com/docx@8.5.0/build/index.umd.js'
+            ];
+
+            this._docxLibraryPromise = sources.reduce(
+                (chain, src) => chain.catch(() => loadScript(src)),
+                Promise.reject(new Error('init'))
+            );
+
+            return this._docxLibraryPromise;
         },
 
         // Initialize the system
@@ -8664,28 +8708,33 @@ setTimeout(() => {
 
         // Generate Word document
         generateReport: function(context) {
-            try {
-                const extractedData = this.extractFilteredData();
-                const analysis = this.analyzeData(extractedData);
-                
-                const doc = new docx.Document({
-                    sections: [{
-                        properties: {},
-                        children: this.buildDocumentContent(analysis, extractedData)
-                    }]
-                });
-                
-                docx.Packer.toBlob(doc).then(blob => {
-                    this.downloadDocument(blob, analysis);
-                }).catch(error => {
-                    console.error('Error packing document:', error);
-                    alert('Error generating report. Please try again.');
-                });
-                
-            } catch (error) {
-                console.error('Error generating report:', error);
-                alert('Error generating report. Please check console for details.');
-            }
+            this.loadDocxLibrary().then((docx) => {
+                try {
+                    const extractedData = this.extractFilteredData();
+                    const analysis = this.analyzeData(extractedData);
+
+                    const doc = new docx.Document({
+                        sections: [{
+                            properties: {},
+                            children: this.buildDocumentContent(analysis, extractedData)
+                        }]
+                    });
+
+                    docx.Packer.toBlob(doc).then(blob => {
+                        this.downloadDocument(blob, analysis);
+                    }).catch(error => {
+                        console.error('Error packing document:', error);
+                        alert('Error generating report. Please try again.');
+                    });
+
+                } catch (error) {
+                    console.error('Error generating report:', error);
+                    alert('Error generating report. Please check console for details.');
+                }
+            }).catch((error) => {
+                console.error('Error loading docx library:', error);
+                alert('Could not load the Word document library. Please check your internet connection and try again.');
+            });
         },
 
         // Build document content
