@@ -70,6 +70,10 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <!-- Firebase: shared database so registrations/approvals sync across every device. See FIREBASE_CONFIG below to activate. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- Auth is required so Firestore Security Rules can verify requests (request.auth != null).
+         The app signs users in anonymously behind the scenes (see FIREBASE_CONFIG init below) —
+         this does not add any visible sign-in step or change the app's own email/password login. -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -6203,11 +6207,29 @@ const FIREBASE_CONFIG = {
 
 let useFirestore = false;
 let db = null;
+// Resolves once Firebase is ready to be *used* (i.e. after the anonymous
+// sign-in below completes, or immediately if Firebase isn't configured at
+// all). Every Firestore read/write below awaits this first so it never races
+// ahead of authentication and wrongly falls back to local storage.
+let firebaseAuthReady = Promise.resolve();
 try {
     if (window.firebase && !FIREBASE_CONFIG.apiKey.startsWith('YOUR_')) {
         firebase.initializeApp(FIREBASE_CONFIG);
         db = firebase.firestore();
         useFirestore = true;
+        // Firestore Security Rules require an authenticated request
+        // (request.auth != null) to read/write. This app has its own
+        // email/password login backed by the `users` collection itself, so
+        // there's no separate Firebase Auth sign-in step for the user to see
+        // — we just sign in anonymously in the background purely to satisfy
+        // the security rules. This changes nothing about the app's actual
+        // login/registration/approval flow or UI.
+        firebaseAuthReady = firebase.auth().signInAnonymously()
+            .then(() => {})
+            .catch(e => {
+                console.warn('Firebase anonymous sign-in failed — Firestore reads/writes will fall back to local storage.', e);
+                useFirestore = false;
+            });
     }
 } catch (e) {
     console.warn('Firebase not configured — using per-device local storage instead.', e);
@@ -6220,6 +6242,7 @@ function localGetAll() {
 function localSaveAll(users) { localStorage.setItem(AUTH_KEY, JSON.stringify(users)); }
 
 async function getAllUsers() {
+    await firebaseAuthReady;
     if (useFirestore) {
         try {
             const snap = await db.collection('users').get();
@@ -6230,6 +6253,7 @@ async function getAllUsers() {
 }
 async function getUserByEmail(email) {
     email = (email || '').toLowerCase();
+    await firebaseAuthReady;
     if (useFirestore) {
         try {
             const doc = await db.collection('users').doc(email).get();
@@ -6239,6 +6263,7 @@ async function getUserByEmail(email) {
     return localGetAll().find(u => u.email.toLowerCase() === email) || null;
 }
 async function saveUser(user) {
+    await firebaseAuthReady;
     if (useFirestore) {
         try { await db.collection('users').doc(user.email.toLowerCase()).set(user); return; }
         catch (e) { console.warn('Firestore write failed, falling back to local:', e); }
@@ -6250,6 +6275,7 @@ async function saveUser(user) {
 }
 async function deleteUserByEmail(email) {
     email = (email || '').toLowerCase();
+    await firebaseAuthReady;
     if (useFirestore) {
         try { await db.collection('users').doc(email).delete(); return; }
         catch (e) { console.warn('Firestore delete failed, falling back to local:', e); }
@@ -6285,6 +6311,7 @@ let subSettings = null;
 
 async function getSubscriptionSettings() {
     let data = null;
+    await firebaseAuthReady;
     if (useFirestore) {
         try {
             const doc = await db.collection('appSettings').doc('subscription').get();
@@ -6303,6 +6330,7 @@ async function getSubscriptionSettings() {
 }
 async function saveSubscriptionSettingsData(settings) {
     localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(settings));
+    await firebaseAuthReady;
     if (useFirestore) {
         try { await db.collection('appSettings').doc('subscription').set(settings); }
         catch (e) { console.warn('Firestore settings write failed, kept locally only:', e); }
