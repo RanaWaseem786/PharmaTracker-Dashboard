@@ -6222,6 +6222,26 @@ const FIREBASE_CONFIG = {
 
 let useFirestore = false;
 let db = null;
+
+// Firestore is optional for this app. If Firebase rules deny access,
+// automatically fall back to the existing local account/data store instead
+// of repeatedly throwing permission errors. Reloading after fixing Firebase
+// Rules will re-enable Firestore automatically.
+function isFirestorePermissionError(e) {
+    const code = String(e && e.code || '').toLowerCase();
+    const msg = String(e && e.message || '').toLowerCase();
+    return code.includes('permission-denied') ||
+           msg.includes('missing or insufficient permissions') ||
+           msg.includes('permission-denied');
+}
+
+function disableFirestoreForThisSession(e) {
+    if (isFirestorePermissionError(e)) {
+        useFirestore = false;
+        console.warn('Firestore access denied by Firebase Rules; using local storage for this session. Fix Firestore Rules and reload to re-enable cloud sync.');
+    }
+}
+
 try {
     if (window.firebase && !FIREBASE_CONFIG.apiKey.startsWith('YOUR_')) {
         firebase.initializeApp(FIREBASE_CONFIG);
@@ -6239,28 +6259,75 @@ function localGetAll() {
 function localSaveAll(users) { localStorage.setItem(AUTH_KEY, JSON.stringify(users)); }
 
 async function getAllUsers() {
+    const localUsers = localGetAll();
+
     if (useFirestore) {
         try {
             const snap = await db.collection('users').get();
-            return snap.docs.map(d => d.data());
-        } catch (e) { console.warn('Firestore read failed, falling back to local:', e); }
+            const firestoreUsers = snap.docs.map(d => d.data());
+            const firestoreEmails = new Set(
+                firestoreUsers.map(u => String(u.email || '').toLowerCase())
+            );
+
+            // Keep legacy/local accounts usable after Firebase is enabled.
+            // Only migrate accounts that do not already exist in Firestore.
+            for (const user of localUsers) {
+                const email = String(user.email || '').toLowerCase();
+                if (email && !firestoreEmails.has(email)) {
+                    try {
+                        await db.collection('users').doc(email).set(user);
+                        firestoreUsers.push(user);
+                        firestoreEmails.add(email);
+                    } catch (e) {
+                        console.warn('Could not migrate local user to Firestore:', email, e);
+                    }
+                }
+            }
+            return firestoreUsers;
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Firestore read failed, falling back to local:', e);
+        }
     }
-    return localGetAll();
+    return localUsers;
 }
+
 async function getUserByEmail(email) {
-    email = (email || '').toLowerCase();
+    email = (email || '').trim().toLowerCase();
+    const localUser = localGetAll().find(
+        u => String(u.email || '').trim().toLowerCase() === email
+    ) || null;
+
     if (useFirestore) {
         try {
             const doc = await db.collection('users').doc(email).get();
-            return doc.exists ? doc.data() : null;
-        } catch (e) { console.warn('Firestore read failed, falling back to local:', e); }
+
+            // IMPORTANT: a missing Firestore document must not hide an existing
+            // account that was created by an older/local version of the app.
+            if (doc.exists) return doc.data();
+
+            if (localUser) {
+                try {
+                    await db.collection('users').doc(email).set(localUser);
+                } catch (e) {
+                    console.warn('Could not migrate local login account to Firestore:', e);
+                }
+                return localUser;
+            }
+            return null;
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Firestore read failed, falling back to local:', e);
+            return localUser;
+        }
     }
-    return localGetAll().find(u => u.email.toLowerCase() === email) || null;
+
+    return localUser;
 }
 async function saveUser(user) {
     if (useFirestore) {
         try { await db.collection('users').doc(user.email.toLowerCase()).set(user); return; }
-        catch (e) { console.warn('Firestore write failed, falling back to local:', e); }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore write failed, falling back to local:', e); }
     }
     const users = localGetAll();
     const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
@@ -6271,7 +6338,7 @@ async function deleteUserByEmail(email) {
     email = (email || '').toLowerCase();
     if (useFirestore) {
         try { await db.collection('users').doc(email).delete(); return; }
-        catch (e) { console.warn('Firestore delete failed, falling back to local:', e); }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore delete failed, falling back to local:', e); }
     }
     localSaveAll(localGetAll().filter(u => u.email.toLowerCase() !== email));
 }
@@ -6308,7 +6375,7 @@ async function getSubscriptionSettings() {
         try {
             const doc = await db.collection('appSettings').doc('subscription').get();
             if (doc.exists) data = doc.data();
-        } catch (e) { console.warn('Firestore settings read failed, falling back to local:', e); }
+        } catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore settings read failed, falling back to local:', e); }
     }
     if (!data) {
         try { data = JSON.parse(localStorage.getItem(SUB_SETTINGS_KEY) || 'null'); } catch (e) { data = null; }
@@ -6324,7 +6391,7 @@ async function saveSubscriptionSettingsData(settings) {
     localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(settings));
     if (useFirestore) {
         try { await db.collection('appSettings').doc('subscription').set(settings); }
-        catch (e) { console.warn('Firestore settings write failed, kept locally only:', e); }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore settings write failed, kept locally only:', e); }
     }
 }
 async function loadSubscriptionSettings() {
@@ -6732,6 +6799,20 @@ async function doLogin() {
         document.getElementById('login-password').classList.add('error');
         return;
     }
+
+    // If this was a legacy/local account, keep its working credentials in
+    // Firestore as soon as the user successfully logs in.
+    if (useFirestore) {
+        try {
+            await db.collection('users').doc(email).set(user);
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Could not sync logged-in user to Firestore:', e);
+        }
+    }
+
+    document.getElementById('login-email').classList.remove('error');
+    document.getElementById('login-password').classList.remove('error');
 
     if (user.status === 'pending') {
         errEl.textContent = 'Aapka account abhi admin approval ka intezar kar raha hai. Payment verify hone tak sabar karein.';
