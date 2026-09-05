@@ -6868,14 +6868,181 @@ zone.addEventListener('drop', e => {
 });
 
 // Init with sample data for demo
-const DEMO = [
-    {srno:1,invoiceId:'INV-001',invoiceDate:'2025-01-15',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:100,bonus:0,grossAmount:550,discount:0,discountAmount:25,netAmount:525},
-    {srno:2,invoiceId:'INV-002',invoiceDate:'2025-02-14',customerName:'MediCare',customerCode:'CUST-002',companyName:'Health Ltd',companyGroup:'Group B',regionName:'South',bookingMan:'Fatima Ali',itemName:'Paracetamol',packSize:'500mg',rate:3.20,stock:200,bonus:0,grossAmount:640,discount:0,discountAmount:30,netAmount:610},
-    {srno:3,invoiceId:'INV-003',invoiceDate:'2025-02-13',customerName:'City Pharma',customerCode:'CUST-003',companyName:'City Corp',companyGroup:'Group A',regionName:'East',bookingMan:'Usman Malik',itemName:'Amoxicillin',packSize:'250mg',rate:8.75,stock:150,bonus:0,grossAmount:1312,discount:0,discountAmount:50,netAmount:1262},
-    {srno:4,invoiceId:'INV-004',invoiceDate:'2025-03-12',customerName:'Star Pharma',customerCode:'CUST-004',companyName:'Star Corp',companyGroup:'Group B',regionName:'West',bookingMan:'Sara Khan',itemName:'Ibuprofen',packSize:'200mg',rate:4.50,stock:180,bonus:0,grossAmount:810,discount:0,discountAmount:40,netAmount:770},
-    {srno:5,invoiceId:'INV-005',invoiceDate:'2025-03-11',customerName:'Health Plus',customerCode:'CUST-005',companyName:'Plus Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Vitamin C',packSize:'1000mg',rate:12.00,stock:90,bonus:0,grossAmount:1080,discount:0,discountAmount:60,netAmount:1020},
-    {srno:6,invoiceId:'INV-006',invoiceDate:'2025-03-20',customerName:'Pak Pharma',customerCode:'CUST-001',companyName:'Pharma Corp',companyGroup:'Group A',regionName:'North',bookingMan:'Ahmed Khan',itemName:'Aspirin',packSize:'20mg',rate:5.50,stock:120,bonus:0,grossAmount:660,discount:0,discountAmount:33,netAmount:627},
+// ═══════════════════════════════════════════════
+// DEMO DATA GENERATOR — professional, international-scale
+// dataset (~5MB) covering the last 10 years, used to seed
+// the dashboard the first time it is opened so every chart,
+// KPI, filter, comparison, and report has something realistic
+// to show. Generated on the fly (deterministic seed) rather
+// than hard-coded, so the source stays small while the seeded
+// dataset itself is large and rich.
+// ═══════════════════════════════════════════════
+const DEMO_REGIONS = [
+    'North America','Latin America','Western Europe','Eastern Europe',
+    'Middle East','North Africa','Sub-Saharan Africa','South Asia',
+    'Southeast Asia','East Asia','Oceania'
 ];
+const DEMO_COMPANIES = [
+    ['Meridian Biosciences Ltd','Meridian Health Group'],
+    ['Meridian Consumer Health','Meridian Health Group'],
+    ['Meridian Vaccines Inc','Meridian Health Group'],
+    ['Meridian Diagnostics Co','Meridian Health Group'],
+    ['Continental Pharmaceuticals','Continental Pharma Alliance'],
+    ['Continental Generics Ltd','Continental Pharma Alliance'],
+    ['Continental BioTech','Continental Pharma Alliance'],
+    ['Continental Wellness Corp','Continental Pharma Alliance'],
+    ['NovaCure Pharmaceuticals','Novaris Partners'],
+    ['NovaCure Specialty Care','Novaris Partners'],
+    ['Novaris Oncology Ltd','Novaris Partners'],
+    ['Novaris Animal Health','Novaris Partners'],
+    ['Helix Life Sciences','Helix Global Group'],
+    ['Helix Nutraceuticals','Helix Global Group'],
+    ['Helix Med Devices','Helix Global Group'],
+    ['Helix Respiratory Care','Helix Global Group'],
+    ['Atlas Health Industries','Atlas Pharma Holdings'],
+    ['Atlas Cardio Sciences','Atlas Pharma Holdings'],
+    ['Atlas Pediatric Care','Atlas Pharma Holdings'],
+    ['Atlas Dermatology Labs','Atlas Pharma Holdings'],
+    ['Silverline Pharma Ltd','Silverline Group'],
+    ['Silverline Consumer Brands','Silverline Group'],
+    ['Silverline Biotech','Silverline Group'],
+    ['Silverline Global Supply','Silverline Group'],
+];
+const DEMO_CUSTOMER_TEMPLATES = [
+    'CityCare Pharmacy','MedPlus Distributors','Global Health Mart','WellLife Pharmacy',
+    'PrimeCare Drugstore','HealthBridge Wholesalers','Vitality Pharmacy','CareFirst Distributors',
+    'MediTrust Pharmacy','NovaHealth Retailers','PharmaLink Group','TrustMed Pharmacy',
+    'BlueCross Pharmacy','GreenLeaf Health Store','Unity Pharma Distributors','LifeLine Pharmacy',
+];
+const DEMO_REP_FIRST = ['Ahmed','Fatima','Usman','Sara','Ali','Zainab','Bilal','Hina','Omar','Ayesha',
+    'John','Emily','Carlos','Maria','David','Sophia','Wei','Yuki','Rahul','Priya',
+    'Mohammed','Layla','Kwame','Amara','Ivan','Elena','Hassan','Noor','Lucas','Isabella',
+    'James','Grace','Chen','Mei','Arjun','Anita','Yusuf','Amina','Daniel','Olivia'];
+const DEMO_REP_LAST = ['Khan','Ali','Malik','Ahmed','Raza','Iqbal','Farooq','Siddiqui','Butt','Chaudhry',
+    'Smith','Johnson','Garcia','Martinez','Brown','Davis','Wang','Tanaka','Sharma','Patel',
+    'Al-Farsi','Haddad','Mensah','Okafor','Petrov','Ivanova','Yousuf','Rahman','Silva','Rossi'];
+const DEMO_PACK_UNITS = ['mg','ml','g','mcg'];
+const DEMO_CATEGORIES = [
+    { items: ['Paracetamol','Ibuprofen','Aspirin','Diclofenac','Naproxen','Tramadol'], rate: [3,25] },
+    { items: ['Amoxicillin','Azithromycin','Ciprofloxacin','Cefixime','Doxycycline','Metronidazole'], rate: [8,45] },
+    { items: ['Cetirizine','Loratadine','Fexofenadine','Chlorpheniramine'], rate: [4,18] },
+    { items: ['Atorvastatin','Amlodipine','Losartan','Metoprolol','Clopidogrel','Bisoprolol'], rate: [10,60] },
+    { items: ['Metformin','Gliclazide','Insulin Glargine','Sitagliptin'], rate: [12,90] },
+    { items: ['Salbutamol','Montelukast','Budesonide','Theophylline'], rate: [15,55] },
+    { items: ['Vitamin C','Vitamin D3','Multivitamin','Calcium Carbonate','Zinc Sulphate','Folic Acid'], rate: [5,30] },
+    { items: ['Clotrimazole Cream','Betamethasone Cream','Salicylic Acid Gel','Hydrocortisone Cream'], rate: [7,35] },
+    { items: ['Omeprazole','Ranitidine','Domperidone','Loperamide','Oral Rehydration Salts'], rate: [4,28] },
+    { items: ['Paracetamol Syrup','Amoxicillin Syrup','ORS Sachets','Zinc Syrup'], rate: [3,20] },
+];
+function demoMulberry32(a) {
+    return function () {
+        a |= 0; a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+let _demoDatasetCache = null;
+function buildDemoDataset() {
+    if (_demoDatasetCache) return _demoDatasetCache;
+    const rand = demoMulberry32(20260101);
+    const pick = arr => arr[Math.floor(rand() * arr.length)];
+    const int = (a, b) => Math.floor(a + rand() * (b - a + 1));
+
+    const customers = [];
+    let custN = 1;
+    for (const region of DEMO_REGIONS) {
+        for (let i = 0; i < 16; i++) {
+            customers.push({
+                name: `${pick(DEMO_CUSTOMER_TEMPLATES)} - ${region.split(' ')[0]} ${i + 1}`,
+                code: `CUST-${String(custN).padStart(5, '0')}`,
+                region
+            });
+            custN++;
+        }
+    }
+    const reps = [];
+    for (let i = 0; i < 48; i++) reps.push(`${pick(DEMO_REP_FIRST)} ${pick(DEMO_REP_LAST)}`);
+    const deliveryMen = [];
+    for (let i = 0; i < 28; i++) deliveryMen.push(`${pick(DEMO_REP_FIRST)} ${pick(DEMO_REP_LAST)}`);
+
+    const products = [];
+    for (const cat of DEMO_CATEGORIES) {
+        for (const itemName of cat.items) {
+            const packCount = 2 + int(0, 2);
+            for (let p = 0; p < packCount; p++) {
+                const size = pick([10, 20, 25, 50, 100, 200, 250, 500, 1000]);
+                const unit = pick(DEMO_PACK_UNITS);
+                products.push({ name: itemName, pack: `${size}${unit}`, rateMin: cat.rate[0], rateMax: cat.rate[1] });
+            }
+        }
+    }
+
+    const currentYear = new Date().getFullYear();
+    const startYear = currentYear - 10;
+    const endYear = currentYear - 1;
+    const targetBytes = 5 * 1024 * 1024;
+
+    function monthWeight(year, month) {
+        const growth = 1 + (year - startYear) * 0.08;
+        const season = 1 + 0.15 * Math.sin((month / 12) * Math.PI * 2);
+        return growth * season;
+    }
+
+    const rows = [];
+    let srno = 1, invCounter = 1, bytesEstimate = 0;
+    outer:
+    for (let year = startYear; year <= endYear; year++) {
+        for (let month = 0; month < 12; month++) {
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const invoicesThisMonth = Math.round(72 * monthWeight(year, month));
+            for (let k = 0; k < invoicesThisMonth; k++) {
+                const day = int(1, daysInMonth);
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const cust = pick(customers);
+                const [companyName, companyGroup] = pick(DEMO_COMPANIES);
+                const prod = pick(products);
+                const rate = +(int(prod.rateMin * 10, prod.rateMax * 10) / 10).toFixed(2);
+                const stock = int(20, 400);
+                const bonus = int(0, Math.round(stock * 0.08));
+                const grossAmount = +(rate * stock).toFixed(2);
+                const discount = pick([0, 0, 0, 2, 3, 5, 5, 8, 10]);
+                const discountAmount = +((grossAmount * discount) / 100).toFixed(2);
+                const netAmount = +(grossAmount - discountAmount).toFixed(2);
+
+                rows.push({
+                    srno: srno,
+                    invoiceId: `INV-${year}-${String(invCounter).padStart(6, '0')}`,
+                    invoiceDate: dateStr,
+                    customerName: cust.name,
+                    customerCode: cust.code,
+                    companyName,
+                    companyGroup,
+                    regionName: cust.region,
+                    bookingMan: pick(reps),
+                    deliveryMan: pick(deliveryMen),
+                    itemName: prod.name,
+                    packSize: prod.pack,
+                    rate,
+                    stock,
+                    bonus,
+                    grossAmount,
+                    discount,
+                    discountAmount,
+                    netAmount,
+                });
+                srno++; invCounter++;
+
+                if (rows.length % 1000 === 0) {
+                    bytesEstimate = JSON.stringify(rows.slice(-1000)).length * (rows.length / 1000);
+                    if (bytesEstimate >= targetBytes) break outer;
+                }
+            }
+        }
+    }
+    _demoDatasetCache = rows;
+    return rows;
+}
 // Only seed demo data the very first time (i.e. no saved data key exists yet).
 // Once the user has uploaded or cleared data, that saved state (including "empty") persists.
 // The real dataset now lives in IndexedDB (loaded asynchronously just below via
@@ -6886,7 +7053,7 @@ const DEMO = [
     const hasDataFlag = localStorage.getItem(LS_HASDATA_KEY);
     const legacyData = localStorage.getItem(LEGACY_LS_KEY);
     if (hasDataFlag === null && legacyData === null) {
-        rawData = DEMO;
+        rawData = buildDemoDataset();
     } else if (legacyData !== null) {
         // Pre-IndexedDB save found — show it immediately; loadDataFromStorage() below
         // will migrate it into IndexedDB moments later.
@@ -7441,7 +7608,8 @@ async function initAuth() {
             status: 'active',
             createdAt: new Date().toISOString(),
             approvedAt: new Date().toISOString(),
-            validUntil: null // owner admin never expires
+            validUntil: null, // owner admin never expires
+            hasSeenDemo: true
         };
         await saveUser(demo);
         document.getElementById('login-success').textContent = 'Admin account ready → ' + OWNER_EMAIL + ' / demo1234';
@@ -7452,6 +7620,21 @@ async function initAuth() {
 function loginSuccess(user, newLogin = true) {
     currentUser = user;
     if (newLogin) saveSession(user.email);
+
+    // For a brand-new user account that has never logged in before, make sure
+    // the dashboard isn't empty on their very first visit. This only fires when
+    // there's no dataset yet (nothing real to lose), and never runs again for
+    // that account once flagged.
+    if (newLogin && !user.hasSeenDemo && !rawData.length) {
+        rawData = buildDemoDataset();
+        saveDataToStorage();
+        populateGlobalFilters();
+        populateFilters();
+        updateAll();
+        user.hasSeenDemo = true;
+        saveUser(user).catch(() => {});
+    }
+
     document.getElementById('auth-overlay').classList.add('hidden');
     document.getElementById('marketing-root').classList.add('hidden');
     document.querySelector('.sidebar').classList.remove('hidden');
@@ -7711,7 +7894,8 @@ function doSignup() {
             transactionId: txnId,
             planId: signupPlan ? signupPlan.id : null,
             pendingSince: new Date().toISOString(),
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            hasSeenDemo: false
         };
         await saveUser(newUser);
         sendAdminNotification(newUser, false);
