@@ -70,6 +70,9 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <!-- Firebase: shared database so registrations/approvals sync across every device. See FIREBASE_CONFIG below to activate. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- html2canvas + jsPDF: power the per-section "Download PDF" buttons (client-side PDF generation) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -2555,7 +2558,6 @@ function changeSiteLanguage(language){
                 </div>
             </div>
             <button class="btn btn-ghost" onclick="exportCSV()" title="Export to CSV"><i class="fas fa-file-export"></i></button>
-            <button class="btn btn-ghost" onclick="exportPDF()" title="Print / Save Full Report as PDF"><i class="fas fa-file-pdf"></i> PDF Report</button>
             <button class="btn btn-ghost" onclick="clearAllData()" title="Delete ALL imported data" style="color: var(--accent3)"><i class="fas fa-trash"></i> Clear Data</button>
             <script>
             (function () {
@@ -2608,6 +2610,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ DASHBOARD PAGE ═══ -->
     <div class="page active" id="page-dashboard">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('dashboard')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="stats-grid">
             <div class="stat-card" style="--card-accent: var(--accent)">
                 <div class="stat-icon-wrap"><i class="fas fa-shopping-bag"></i></div>
@@ -2743,6 +2748,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ SALES PAGE ═══ -->
     <div class="page" id="page-sales">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('sales')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="filters-bar">
             <label>Filter:</label>
             <select class="filter-select" id="fRegion" onchange="onSalesFilterChange()"><option value="">All</option><option value="East">East</option><option value="North">North</option><option value="South">South</option><option value="West">West</option></select>
@@ -2888,6 +2896,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ CUSTOMERS PAGE ═══ -->
     <div class="page" id="page-customers">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('customers')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
             <div class="stat-card" style="--card-accent:var(--accent5)">
                 <div class="stat-icon-wrap" style="background:rgba(188,140,255,0.1);color:var(--accent5)"><i class="fas fa-user-friends"></i></div>
@@ -3055,6 +3066,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ PRODUCTS PAGE ═══ -->
     <div class="page" id="page-products">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('products')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
             <div class="stat-card" style="--card-accent:var(--accent)">
                 <div class="stat-icon-wrap"><i class="fas fa-pills"></i></div>
@@ -3219,6 +3233,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ PROJECTION & TARGET PAGE ═══ -->
     <div class="page" id="page-projection">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('projection')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="projection-toolbar">
             <div class="projection-control"><label for="projectionBooker">Booker Slicer</label><select class="filter-select" id="projectionBooker" onchange="syncProjectionAssignment('projectionBooker')"></select></div>
             <div class="projection-control projection-multi" id="projectionProductMulti"><label>Product Slicer</label><button type="button" class="filter-select projection-multi-toggle" onclick="toggleProjectionProducts(event)"><span id="projectionProductLabel">All Products</span><i class="fas fa-chevron-down" style="font-size:10px"></i></button><div class="projection-multi-panel" id="projectionProductPanel"></div></div>
@@ -3267,6 +3284,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ ANALYTICS PAGE ═══ -->
     <div class="page" id="page-analytics">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('analytics')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="charts-grid" style="margin-bottom:16px">
             <div class="card">
                 <div class="card-header"><div class="card-title" id="regionChartTitle">Revenue by Region</div></div>
@@ -3386,6 +3406,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ BUSINESS INTELLIGENCE PAGE (NEW — additive, does not touch any existing page) ═══ -->
     <div class="page" id="page-bi">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('bi')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="bi-dash">
             <div class="bi-header">
                 <div class="bi-header-left">
@@ -3530,6 +3553,9 @@ function changeSiteLanguage(language){
 
     <!-- ═══ SETTINGS PAGE ═══ -->
     <div class="page" id="page-approvals">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('approvals')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="page-heading">
             <div><h2>Pending Approvals</h2><p style="font-size:12.5px;color:var(--muted)">Naye registrations aur renewals jinki payment verify karni hai</p></div>
         </div>
@@ -3537,6 +3563,9 @@ function changeSiteLanguage(language){
     </div>
 
     <div class="page" id="page-settings">
+        <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('settings')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </div>
         <div class="card" style="max-width:480px">
             <div class="card-header"><div class="card-title">Subscription</div></div>
             <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px" id="subscription-box"></div>
@@ -6910,6 +6939,69 @@ window.addEventListener('afterprint', () => {
     const el = document.getElementById('printReportRoot');
     if (el) el.remove();
 });
+
+/* ═══════════════════════════════════════════════
+   DOWNLOAD PDF (PER SECTION)
+   Captures only the requested section's own DOM (same
+   data + layout the user currently sees on that page)
+   and saves it as a standalone PDF file — no browser
+   print dialog, no other sections included.
+═══════════════════════════════════════════════ */
+async function downloadSectionPDF(sectionId) {
+    const pageEl = document.getElementById('page-' + sectionId);
+    if (!pageEl) { showToast('Section not found!', 'error'); return; }
+
+    if (typeof html2canvas === 'undefined' || !window.jspdf) {
+        showToast('PDF library failed to load. Check your connection and try again.', 'error');
+        return;
+    }
+
+    showLoading(true);
+    try {
+        // Make sure charts in this section are current before capturing
+        if (typeof updateCharts === 'function') { updateCharts(); }
+        await new Promise(r => setTimeout(r, 300));
+
+        const bodyBg = getComputedStyle(document.body).backgroundColor || '#ffffff';
+
+        const canvas = await html2canvas(pageEl, {
+            backgroundColor: bodyBg,
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            ignoreElements: (el) => el.classList && el.classList.contains('section-pdf-toolbar')
+        });
+
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        pdf.save(`${sectionId}_section.pdf`);
+        showToast('Section downloaded as PDF!', 'success');
+    } catch (err) {
+        console.error(err);
+        showToast('Failed to generate PDF for this section.', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
 function downloadSample() {
     const hdrs = ['SRNO','Booking Man','Region Name','Customer Name','Company Name','Company Group','Item Name','Pack Size','Rate','Invoice Id','Invoice Date','Stock','Bonus','Gross Amount','Discount Amount','Net Amount'];
