@@ -522,11 +522,17 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             font-family: 'DM Sans', sans-serif;
         }
         @media print {
-            body * { visibility: hidden; }
-            #printReportRoot, #printReportRoot * { visibility: visible; }
-            #printReportRoot { position: absolute; left: 0; top: 0; width: 100%; }
-            #printReportRoot thead { display: table-header-group; }
-            #printReportRoot tr, #printReportRoot img { break-inside: avoid; page-break-inside: avoid; }
+            html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
+            body > * { display: none !important; }
+            #printReportRoot { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; color: black !important; }
+            #printReportRoot * { display: auto !important; visibility: visible !important; position: static !important; }
+            #printReportRoot table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; }
+            #printReportRoot thead { display: table-header-group !important; }
+            #printReportRoot tbody { display: table-row-group !important; }
+            #printReportRoot tfoot { display: table-footer-group !important; }
+            #printReportRoot tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+            #printReportRoot img { max-width: 100% !important; height: auto !important; }
+            #printReportRoot div { page-break-inside: avoid !important; }
         }
 
         /* Loading overlay */
@@ -6641,29 +6647,30 @@ async function exportPDF() {
     if (!data.length) { showToast('No filtered data to export!', 'error'); return; }
     showLoading(true);
 
-    // Temporarily reveal every page so hidden chart canvases size/render correctly for capture
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(p => { p.dataset.wasActive = p.classList.contains('active') ? '1' : '0'; p.style.display = 'block'; });
-    updateCharts();
-    await new Promise(r => setTimeout(r, 400));
+    // Get currently active page - print ONLY that section
+    const activePage = document.querySelector('.page.active');
+    const activePageId = activePage ? activePage.id : 'page-dashboard';
+    const activePageName = activePageId.replace('page-', '');
 
+    // Only capture chart from the currently active section
+    let chartImgs = {};
+    
+    // Update only the active page's charts
+    updateCharts();
+    await new Promise(r => setTimeout(r, 300));
+
+    // Capture only charts that are in the active page
     const chartIds = ['chartMonthly','chartTopProducts','chartRegion','chartBookingMan','chartGrossNet'];
-    const chartImgs = {};
     chartIds.forEach(id => {
         const c = document.getElementById(id);
-        try { chartImgs[id] = c && c.width ? c.toDataURL('image/png', 1.0) : ''; } catch(e) { chartImgs[id] = ''; }
+        if (c && c.offsetParent !== null) { // Check if visible
+            try { chartImgs[id] = c.width ? c.toDataURL('image/png', 1.0) : ''; } catch(e) { chartImgs[id] = ''; }
+        }
     });
 
-    // Restore original page visibility
-    pages.forEach(p => {
-        p.style.display = '';
-        p.classList.toggle('active', p.dataset.wasActive === '1');
-        delete p.dataset.wasActive;
-    });
-    updateCharts();
-
-    buildPrintReport(data, chartImgs);
-    showLoading(false);
+    buildPrintReport(data, chartImgs, activePageName, activePage);
+    // Keep loading visible until print dialog is shown, then hide it
+    setTimeout(() => showLoading(false), 100);
 }
 
 function reportTableRows(entries, valueLabel) {
@@ -6675,7 +6682,7 @@ function reportTableRows(entries, valueLabel) {
         </tr>`).join('');
 }
 
-function buildPrintReport(data, chartImgs) {
+function buildPrintReport(data, chartImgs, pageSection='dashboard', activePage=null) {
     const old = document.getElementById('printReportRoot');
     if (old) old.remove();
 
@@ -6685,6 +6692,19 @@ function buildPrintReport(data, chartImgs) {
     const uniqueCust = new Set(data.map(r=>normKey(r.customerCode || r.customerName))).size;
     const uniqueProd = new Set(data.map(r=>normKey(r.itemName))).size;
     const avgOrder = totalRev / data.length;
+    
+    // Build page-specific title
+    const pageTitleMap = {
+        'dashboard': '📊 Sales Dashboard Report',
+        'sales': '💼 Sales Transactions Report',
+        'customers': '👥 Customer Analysis Report',
+        'products': '💊 Product Performance Report',
+        'analytics': '📈 Analytics & Trends Report',
+        'bi': '🔍 Business Intelligence Report',
+        'approvals': '✅ Approvals Report',
+        'settings': '⚙️ Settings Configuration Report'
+    };
+    const pageTitle = pageTitleMap[pageSection] || '📊 PharmaTracker Report';
 
     let periodLabel = 'All Time';
     if (periodMode === 'month' && periodValue.length) periodLabel = periodValue.map(monthLabel).join(', ');
@@ -6715,8 +6735,8 @@ function buildPrintReport(data, chartImgs) {
         <div style="padding:36px 40px;">
             <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1a1a1a;padding-bottom:14px;margin-bottom:20px">
                 <div>
-                    <div style="font-size:22px;font-weight:700">💊 PharmaTracker — Sales Report</div>
-                    <div style="font-size:12px;color:#888;margin-top:2px">Generated ${now.toLocaleString()}</div>
+                    <div style="font-size:22px;font-weight:700">${pageTitle}</div>
+                    <div style="font-size:12px;color:#888;margin-top:2px">Section: ${pageSection.charAt(0).toUpperCase() + pageSection.slice(1)} • Generated ${now.toLocaleString()}</div>
                 </div>
                 <div style="text-align:right;font-size:12px;color:#555">
                     <div><strong>Company:</strong> ${globalCompany || 'All Companies'}</div>
@@ -6767,6 +6787,7 @@ function buildPrintReport(data, chartImgs) {
                 </div>
             </div>
 
+            ${pageSection !== 'settings' && pageSection !== 'approvals' ? `
             <div style="page-break-before:always"></div>
             <div style="font-size:14px;font-weight:700;margin-bottom:8px">All Filtered Transactions (${data.length.toLocaleString()})</div>
             <table style="width:100%;border-collapse:collapse;font-size:11px">
@@ -6793,11 +6814,64 @@ function buildPrintReport(data, chartImgs) {
                     </tr>`).join('')}
                 </tbody>
             </table>
+            ` : `
+            <div style="margin-top:20px;padding:20px;background:#f9f9f9;border-radius:8px;border:1px solid #e4e4e4">
+                <div style="font-size:13px;color:#666"><em>This report is for the ${pageTitle.split('•')[0]} section of PharmaTracker.</em></div>
+            </div>
+            `}
         </div>`;
 
     document.body.appendChild(root);
-    setTimeout(() => window.print(), 50);
+    
+    // Force browser to render the element
+    root.offsetHeight;
+    root.offsetWidth;
+    
+    // Wait for all images to load before printing
+    const imgs = root.querySelectorAll('img');
+    let loadedCount = 0;
+    let hasImages = imgs.length > 0;
+    
+    const attemptPrint = () => {
+        // All images loaded or timeout reached
+        setTimeout(() => window.print(), 600);
+    };
+    
+    if (!hasImages) {
+        // No images - proceed to print after brief delay for DOM stabilization
+        setTimeout(attemptPrint, 400);
+    } else {
+        // Track image loads
+        const imageLoadPromises = [];
+        imgs.forEach(img => {
+            const promise = new Promise(resolve => {
+                if (img.complete) {
+                    resolve();
+                } else {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    // Timeout for slow/failed images
+                    setTimeout(resolve, 3000);
+                }
+            });
+            imageLoadPromises.push(promise);
+        });
+        
+        // Wait for all images or timeout
+        Promise.all(imageLoadPromises).then(attemptPrint);
+        // Fallback timeout
+        setTimeout(attemptPrint, 3500);
+    }
 }
+
+window.addEventListener('beforeprint', () => {
+    const el = document.getElementById('printReportRoot');
+    if (el) {
+        // Ensure element is properly styled for printing
+        el.style.display = 'block';
+        el.style.visibility = 'visible';
+    }
+});
 
 window.addEventListener('afterprint', () => {
     const el = document.getElementById('printReportRoot');
@@ -8273,7 +8347,7 @@ setTimeout(() => {
   body.ex-light #ex-suite{background:radial-gradient(circle at 12% 0%,#dce4ff 0,transparent 31%),radial-gradient(circle at 94% 4%,#f2dcff 0,transparent 30%),#f4f7fc}
   .ex-shell{max-width:1540px;margin:auto}.ex-top{display:flex;align-items:center;gap:18px;justify-content:space-between;margin-bottom:20px}.ex-brand{font-size:25px;font-weight:800;letter-spacing:-.8px}.ex-brand b{color:#9ea8ff}.ex-sub{color:var(--ex-muted);font-size:13px;margin-top:4px}.ex-actions,.ex-filterbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.ex-btn,.ex-select,.ex-search{border:1px solid var(--ex-line);background:var(--ex-panel);backdrop-filter:blur(18px);color:var(--ex-ink);border-radius:11px;padding:10px 12px;font:600 12px "DM Sans",sans-serif}.ex-btn{cursor:pointer}.ex-btn:hover{border-color:#8290ff;background:rgba(109,124,255,.16)}.ex-search{min-width:220px}.ex-select option{color:#111}.ex-close{font-size:18px;padding:8px 13px}.ex-kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px;margin:14px 0}.ex-card,.ex-panel{background:var(--ex-panel);border:1px solid var(--ex-line);backdrop-filter:blur(20px);border-radius:17px;box-shadow:0 16px 40px rgba(0,0,0,.14)}.ex-card{padding:16px;position:relative;overflow:hidden}.ex-card:after{content:"";position:absolute;width:60px;height:60px;border-radius:50%;right:-22px;top:-22px;background:var(--card-color,#6d7cff);opacity:.18}.ex-label{color:var(--ex-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}.ex-value{font-size:22px;font-weight:800;margin:8px 0 5px;letter-spacing:-.5px}.ex-delta{font-size:11px;color:var(--ex-green);font-weight:700}.ex-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.ex-panel{padding:16px;min-height:260px}.ex-panel h3{font-size:13px;margin:0 0 14px;letter-spacing:-.1px}.ex-span-3{grid-column:span 3}.ex-span-4{grid-column:span 4}.ex-span-5{grid-column:span 5}.ex-span-6{grid-column:span 6}.ex-span-7{grid-column:span 7}.ex-span-8{grid-column:span 8}.ex-chart{height:225px;position:relative}.ex-list{list-style:none;margin:0;padding:0}.ex-list li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--ex-line);font-size:12px}.ex-list li:last-child{border:0}.ex-list small{color:var(--ex-muted)}.ex-meter{height:11px;border-radius:99px;background:rgba(139,160,207,.16);overflow:hidden;margin:13px 0 7px}.ex-meter i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6d7cff,#2ee6a6)}.ex-funnel{display:grid;gap:7px;padding-top:10px}.ex-funnel div{height:30px;margin:auto;border-radius:7px;background:linear-gradient(90deg,#6576ff,#af6dff);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}.ex-heatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;padding-top:15px}.ex-heatmap i{height:23px;border-radius:5px;background:rgba(109,124,255,.12)}.ex-heatmap i[data-l="1"]{background:rgba(109,124,255,.32)}.ex-heatmap i[data-l="2"]{background:rgba(109,124,255,.56)}.ex-heatmap i[data-l="3"]{background:rgba(46,230,166,.82)}.ex-timeline{border-left:1px solid var(--ex-line);padding-left:16px;margin:8px 0}.ex-timeline div{font-size:12px;padding:7px 0;position:relative}.ex-timeline div:before{content:"";position:absolute;left:-21px;top:11px;width:9px;height:9px;background:#7f8bff;border-radius:50%}.ex-note{font-size:11px;color:var(--ex-muted)}#ex-notices{display:none;position:absolute;right:0;top:45px;width:300px;padding:13px;z-index:2}.ex-relative{position:relative}.ex-empty{color:var(--ex-muted);font-size:13px;padding:65px 8px;text-align:center}
   @media(max-width:1050px){.ex-kpis{grid-template-columns:repeat(3,1fr)}.ex-span-3,.ex-span-4,.ex-span-5,.ex-span-6,.ex-span-7,.ex-span-8{grid-column:span 6}}@media(max-width:640px){#ex-suite{padding:14px}.ex-top{align-items:flex-start}.ex-kpis{grid-template-columns:repeat(2,1fr)}.ex-span-3,.ex-span-4,.ex-span-5,.ex-span-6,.ex-span-7,.ex-span-8{grid-column:span 12}.ex-brand{font-size:20px}.ex-actions{justify-content:flex-end}.ex-search{min-width:140px}}
-  @media print{body>*:not(#ex-suite){display:none!important}#ex-suite{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important}.ex-panel,.ex-card{background:#fff!important;box-shadow:none!important;border:1px solid #ddd!important}.ex-btn,#ex-launch{display:none!important}}
+  @media print{body>*:not(#ex-suite):not(#printReportRoot){display:none!important}#ex-suite{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important}#printReportRoot{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important;margin:0!important;width:100%!important}.ex-panel,.ex-card{background:#fff!important;box-shadow:none!important;border:1px solid #ddd!important}.ex-btn,#ex-launch{display:none!important}}
 </style>
 <button id="ex-launch" type="button">✦ Executive Dashboard</button>
 <section id="ex-suite" aria-label="Executive Analytics Dashboard">
