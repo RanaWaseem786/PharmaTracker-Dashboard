@@ -522,17 +522,26 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
             font-family: 'DM Sans', sans-serif;
         }
         @media print {
-            html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; }
+            * { margin: 0 !important; padding: 0 !important; }
+            html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; background: white !important; }
             body > * { display: none !important; }
-            #printReportRoot { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; color: black !important; }
+            .sidebar { display: none !important; }
+            .topbar { display: none !important; }
+            .main { display: none !important; }
+            .content { display: none !important; }
+            .page { display: none !important; visibility: hidden !important; }
+            .page.active { display: none !important; visibility: hidden !important; }
+            #ex-suite { display: none !important; }
+            #printReportRoot { display: block !important; visibility: visible !important; position: static !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; color: black !important; page-break-after: avoid !important; }
             #printReportRoot * { display: auto !important; visibility: visible !important; position: static !important; }
             #printReportRoot table { width: 100% !important; border-collapse: collapse !important; margin: 0 !important; }
             #printReportRoot thead { display: table-header-group !important; }
             #printReportRoot tbody { display: table-row-group !important; }
             #printReportRoot tfoot { display: table-footer-group !important; }
             #printReportRoot tr { page-break-inside: avoid !important; break-inside: avoid !important; }
-            #printReportRoot img { max-width: 100% !important; height: auto !important; }
+            #printReportRoot img { max-width: 100% !important; height: auto !important; display: block !important; }
             #printReportRoot div { page-break-inside: avoid !important; }
+            @page { margin: 0.5in !important; }
         }
 
         /* Loading overlay */
@@ -6827,19 +6836,46 @@ function buildPrintReport(data, chartImgs, pageSection='dashboard', activePage=n
     root.offsetHeight;
     root.offsetWidth;
     
+    // Hide all other content before printing
+    const allPages = document.querySelectorAll('.page');
+    const sidebar = document.querySelector('.sidebar');
+    const topbar = document.querySelector('.topbar');
+    const main = document.querySelector('.main');
+    const exSuite = document.getElementById('ex-suite');
+    
+    // Store original visibility
+    const hiddenElements = [];
+    [sidebar, topbar, main, exSuite, ...allPages].forEach(el => {
+        if (el) {
+            hiddenElements.push({el, display: el.style.display, visibility: el.style.visibility});
+            el.style.display = 'none !important';
+            el.style.visibility = 'hidden !important';
+        }
+    });
+    
     // Wait for all images to load before printing
     const imgs = root.querySelectorAll('img');
     let loadedCount = 0;
     let hasImages = imgs.length > 0;
     
     const attemptPrint = () => {
-        // All images loaded or timeout reached
-        setTimeout(() => window.print(), 600);
+        setTimeout(() => {
+            window.print();
+            // Restore elements after print
+            setTimeout(() => {
+                hiddenElements.forEach(({el, display, visibility}) => {
+                    if (el) {
+                        el.style.display = display;
+                        el.style.visibility = visibility;
+                    }
+                });
+            }, 100);
+        }, 300);
     };
     
     if (!hasImages) {
-        // No images - proceed to print after brief delay for DOM stabilization
-        setTimeout(attemptPrint, 400);
+        // No images - proceed to print after brief delay
+        setTimeout(attemptPrint, 200);
     } else {
         // Track image loads
         const imageLoadPromises = [];
@@ -6850,16 +6886,13 @@ function buildPrintReport(data, chartImgs, pageSection='dashboard', activePage=n
                 } else {
                     img.onload = resolve;
                     img.onerror = resolve;
-                    // Timeout for slow/failed images
                     setTimeout(resolve, 3000);
                 }
             });
             imageLoadPromises.push(promise);
         });
         
-        // Wait for all images or timeout
         Promise.all(imageLoadPromises).then(attemptPrint);
-        // Fallback timeout
         setTimeout(attemptPrint, 3500);
     }
 }
@@ -8347,7 +8380,7 @@ setTimeout(() => {
   body.ex-light #ex-suite{background:radial-gradient(circle at 12% 0%,#dce4ff 0,transparent 31%),radial-gradient(circle at 94% 4%,#f2dcff 0,transparent 30%),#f4f7fc}
   .ex-shell{max-width:1540px;margin:auto}.ex-top{display:flex;align-items:center;gap:18px;justify-content:space-between;margin-bottom:20px}.ex-brand{font-size:25px;font-weight:800;letter-spacing:-.8px}.ex-brand b{color:#9ea8ff}.ex-sub{color:var(--ex-muted);font-size:13px;margin-top:4px}.ex-actions,.ex-filterbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.ex-btn,.ex-select,.ex-search{border:1px solid var(--ex-line);background:var(--ex-panel);backdrop-filter:blur(18px);color:var(--ex-ink);border-radius:11px;padding:10px 12px;font:600 12px "DM Sans",sans-serif}.ex-btn{cursor:pointer}.ex-btn:hover{border-color:#8290ff;background:rgba(109,124,255,.16)}.ex-search{min-width:220px}.ex-select option{color:#111}.ex-close{font-size:18px;padding:8px 13px}.ex-kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px;margin:14px 0}.ex-card,.ex-panel{background:var(--ex-panel);border:1px solid var(--ex-line);backdrop-filter:blur(20px);border-radius:17px;box-shadow:0 16px 40px rgba(0,0,0,.14)}.ex-card{padding:16px;position:relative;overflow:hidden}.ex-card:after{content:"";position:absolute;width:60px;height:60px;border-radius:50%;right:-22px;top:-22px;background:var(--card-color,#6d7cff);opacity:.18}.ex-label{color:var(--ex-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}.ex-value{font-size:22px;font-weight:800;margin:8px 0 5px;letter-spacing:-.5px}.ex-delta{font-size:11px;color:var(--ex-green);font-weight:700}.ex-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}.ex-panel{padding:16px;min-height:260px}.ex-panel h3{font-size:13px;margin:0 0 14px;letter-spacing:-.1px}.ex-span-3{grid-column:span 3}.ex-span-4{grid-column:span 4}.ex-span-5{grid-column:span 5}.ex-span-6{grid-column:span 6}.ex-span-7{grid-column:span 7}.ex-span-8{grid-column:span 8}.ex-chart{height:225px;position:relative}.ex-list{list-style:none;margin:0;padding:0}.ex-list li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--ex-line);font-size:12px}.ex-list li:last-child{border:0}.ex-list small{color:var(--ex-muted)}.ex-meter{height:11px;border-radius:99px;background:rgba(139,160,207,.16);overflow:hidden;margin:13px 0 7px}.ex-meter i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#6d7cff,#2ee6a6)}.ex-funnel{display:grid;gap:7px;padding-top:10px}.ex-funnel div{height:30px;margin:auto;border-radius:7px;background:linear-gradient(90deg,#6576ff,#af6dff);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}.ex-heatmap{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;padding-top:15px}.ex-heatmap i{height:23px;border-radius:5px;background:rgba(109,124,255,.12)}.ex-heatmap i[data-l="1"]{background:rgba(109,124,255,.32)}.ex-heatmap i[data-l="2"]{background:rgba(109,124,255,.56)}.ex-heatmap i[data-l="3"]{background:rgba(46,230,166,.82)}.ex-timeline{border-left:1px solid var(--ex-line);padding-left:16px;margin:8px 0}.ex-timeline div{font-size:12px;padding:7px 0;position:relative}.ex-timeline div:before{content:"";position:absolute;left:-21px;top:11px;width:9px;height:9px;background:#7f8bff;border-radius:50%}.ex-note{font-size:11px;color:var(--ex-muted)}#ex-notices{display:none;position:absolute;right:0;top:45px;width:300px;padding:13px;z-index:2}.ex-relative{position:relative}.ex-empty{color:var(--ex-muted);font-size:13px;padding:65px 8px;text-align:center}
   @media(max-width:1050px){.ex-kpis{grid-template-columns:repeat(3,1fr)}.ex-span-3,.ex-span-4,.ex-span-5,.ex-span-6,.ex-span-7,.ex-span-8{grid-column:span 6}}@media(max-width:640px){#ex-suite{padding:14px}.ex-top{align-items:flex-start}.ex-kpis{grid-template-columns:repeat(2,1fr)}.ex-span-3,.ex-span-4,.ex-span-5,.ex-span-6,.ex-span-7,.ex-span-8{grid-column:span 12}.ex-brand{font-size:20px}.ex-actions{justify-content:flex-end}.ex-search{min-width:140px}}
-  @media print{body>*:not(#ex-suite):not(#printReportRoot){display:none!important}#ex-suite{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important}#printReportRoot{display:block!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important;margin:0!important;width:100%!important}.ex-panel,.ex-card{background:#fff!important;box-shadow:none!important;border:1px solid #ddd!important}.ex-btn,#ex-launch{display:none!important}}
+  @media print{body>*{display:none!important;visibility:hidden!important}#printReportRoot{display:block!important;visibility:visible!important;position:static!important;background:#fff!important;color:#111!important;padding:0!important;margin:0!important;width:100%!important;height:auto!important}.page{display:none!important;visibility:hidden!important}#ex-suite{display:none!important;visibility:hidden!important}.ex-panel,.ex-card{display:none!important}}
 </style>
 <button id="ex-launch" type="button">✦ Executive Dashboard</button>
 <section id="ex-suite" aria-label="Executive Analytics Dashboard">
