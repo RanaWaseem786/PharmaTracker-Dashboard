@@ -70,6 +70,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     <!-- Firebase: shared database so registrations/approvals sync across every device. See FIREBASE_CONFIG below to activate. -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <!-- html2canvas + jsPDF: power the per-section "Download PDF" buttons (client-side PDF generation) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -8452,7 +8453,310 @@ function backToMarketing(){
     document.getElementById('marketing-root').classList.remove('hidden');
 }
 
-initAuth();
+/* ═══════════════════════════════════════════════════════════════════════
+   FIREBASE AUTHENTICATION OVERRIDE
+   Keeps the existing UI/workflows but replaces browser-local password auth
+   with Firebase Authentication. Firestore remains the profile/data store.
+═══════════════════════════════════════════════════════════════════════ */
+(function () {
+    if (!window.firebase) return;
+    let firebaseAuth = null;
+    try {
+        firebaseAuth = firebase.auth();
+        firebaseAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+    } catch (e) {
+        console.error('Firebase Authentication initialization failed:', e);
+        return;
+    }
+
+    async function firebaseProfile(email) {
+        try {
+            const snap = await db.collection('users').doc(String(email).toLowerCase()).get();
+            return snap.exists ? snap.data() : null;
+        } catch (e) {
+            console.error('Could not read Firebase user profile:', e);
+            throw e;
+        }
+    }
+
+    async function ensureLegacyAccountMigrated(email, password) {
+        const profile = await firebaseProfile(email);
+        if (!profile || !profile.pw) return false;
+        // Only migrate when the supplied password matches the legacy credential.
+        // This prevents an unknown Firebase account from being created with a bad password.
+        if (profile.pw !== hashPw(password)) return false;
+        try {
+            const cred = await firebaseAuth.createUserWithEmailAndPassword(email, password);
+            const clean = { ...profile };
+            delete clean.pw;
+            clean.firebaseUid = cred.user.uid;
+            await db.collection('users').doc(email.toLowerCase()).set(clean, { merge: true });
+            return true;
+        } catch (e) {
+            // auth/email-already-in-use means the account was already migrated;
+            // the normal Firebase sign-in path should be used instead.
+            if (e && e.code === 'auth/email-already-in-use') return false;
+            throw e;
+        }
+    }
+
+    function authErrorMessage(e) {
+        const code = String(e && e.code || '');
+        if (code.includes('wrong-password') || code.includes('invalid-credential') || code.includes('user-not-found')) return 'Invalid email or password. Please try again.';
+        if (code.includes('too-many-requests')) return 'Too many attempts. Please wait a little and try again.';
+        if (code.includes('invalid-email')) return 'Please enter a valid email address.';
+        if (code.includes('weak-password')) return 'Password must be at least 6 characters.';
+        if (code.includes('email-already-in-use')) return 'An account with this email already exists.';
+        if (code.includes('network-request-failed')) return 'Internet connection problem. Please try again.';
+        return (e && e.message) ? e.message.replace(/^Firebase:\s*/i, '') : 'Authentication failed. Please try again.';
+    }
+
+    window.initAuth = async function () {
+        document.getElementById('marketing-root').classList.remove('hidden');
+        await new Promise(resolve => {
+            let done = false;
+            const finish = () => { if (!done) { done = true; resolve(); } };
+            firebaseAuth.onAuthStateChanged(async (authUser) => {
+                if (!authUser) {
+                    currentUser = null;
+                    clearSession();
+                    document.getElementById('auth-overlay').classList.remove('hidden');
+                    document.querySelector('.sidebar').classList.add('hidden');
+                    finish();
+                    return;
+                }
+                try {
+                    const profile = await firebaseProfile(authUser.email);
+                    if (!profile) {
+                        await firebaseAuth.signOut();
+                        const err = document.getElementById('login-error');
+                        if (err) { err.textContent = 'Your Firebase account has no PharmaTracker profile. Please contact the admin.'; err.classList.add('show'); }
+                        finish(); return;
+                    }
+                    profile.firebaseUid = authUser.uid;
+                    if (profile.status === 'pending') {
+                        currentUser = profile;
+                        document.getElementById('auth-overlay').classList.remove('hidden');
+                        document.querySelector('.sidebar').classList.add('hidden');
+                        finish(); return;
+                    }
+                    if (profile.status !== 'active') {
+                        await firebaseAuth.signOut();
+                        finish(); return;
+                    }
+                    if (profile.validUntil && new Date(profile.validUntil) < new Date()) {
+                        currentUser = profile;
+                        showRenewForm(profile);
+                        finish(); return;
+                    }
+                    currentUser = profile;
+                    loginSuccess(profile, false);
+                    finish();
+                } catch (e) {
+                    console.error(e);
+                    finish();
+                }
+            });
+        });
+    };
+
+    window.doLogin = async function () {
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const pw = document.getElementById('login-password').value;
+        const errEl = document.getElementById('login-error');
+        errEl.classList.remove('show');
+        if (!email || !pw) { errEl.textContent = 'Please enter your email and password.'; errEl.classList.add('show'); return; }
+        try {
+            // Existing accounts created by the old HTML password system are
+            // upgraded to Firebase Auth on their first successful login.
+            try {
+                await firebaseAuth.signInWithEmailAndPassword(email, pw);
+            } catch (e) {
+                if (e && (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential')) {
+                    const migrated = await ensureLegacyAccountMigrated(email, pw);
+                    if (migrated) await firebaseAuth.signInWithEmailAndPassword(email, pw);
+                    else throw e;
+                } else throw e;
+            }
+            const authUser = firebaseAuth.currentUser;
+            const profile = await firebaseProfile(email);
+            if (!profile) { await firebaseAuth.signOut(); throw new Error('No PharmaTracker profile found for this account.'); }
+            profile.firebaseUid = authUser.uid;
+            if (profile.status === 'pending') {
+                errEl.textContent = 'Aapka account abhi admin approval ka intezar kar raha hai. Payment verify hone tak sabar karein.';
+                errEl.classList.add('show');
+                await firebaseAuth.signOut(); return;
+            }
+            if (profile.status !== 'active') { errEl.textContent = 'This account is not active.'; errEl.classList.add('show'); await firebaseAuth.signOut(); return; }
+            if (profile.validUntil && new Date(profile.validUntil) < new Date()) { showRenewForm(profile); return; }
+            document.getElementById('login-email').classList.remove('error');
+            document.getElementById('login-password').classList.remove('error');
+            loginSuccess(profile, true);
+        } catch (e) {
+            console.error(e);
+            errEl.textContent = authErrorMessage(e);
+            errEl.classList.add('show');
+            document.getElementById('login-email').classList.add('error');
+            document.getElementById('login-password').classList.add('error');
+        }
+    };
+
+    window.doSignup = async function () {
+        const fname = document.getElementById('signup-fname').value.trim();
+        const lname = document.getElementById('signup-lname').value.trim();
+        const email = document.getElementById('signup-email').value.trim().toLowerCase();
+        const company = document.getElementById('signup-company').value.trim();
+        const pw = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('signup-confirm').value;
+        const txnId = document.getElementById('signup-txnid').value.trim();
+        const roleEl = document.querySelector('.role-option.selected');
+        const role = roleEl ? roleEl.dataset.role : 'analyst';
+        const errEl = document.getElementById('signup-error');
+        const okEl = document.getElementById('signup-success');
+        errEl.classList.remove('show'); okEl.classList.remove('show');
+        if (!fname) { errEl.textContent = 'First name is required.'; errEl.classList.add('show'); return; }
+        if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
+        if (!company) { errEl.textContent = 'Company name is required.'; errEl.classList.add('show'); return; }
+        if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+        if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+        if (!txnId) { errEl.textContent = 'Payment ka Transaction ID darj karna zaroori hai.'; errEl.classList.add('show'); return; }
+        try {
+            const existing = await firebaseProfile(email);
+            if (existing) { errEl.textContent = 'An account with this email already exists.'; errEl.classList.add('show'); return; }
+            const cred = await firebaseAuth.createUserWithEmailAndPassword(email, pw);
+            const signupPlan = ensureSelectedPlan('signup');
+            const newUser = {
+                id: 'u_' + Date.now(), firebaseUid: cred.user.uid,
+                fname, lname, email, company, role,
+                status: 'pending', isRenewal: false,
+                paymentMethod: selectedPay.signup, transactionId: txnId,
+                planId: signupPlan ? signupPlan.id : null,
+                pendingSince: new Date().toISOString(), createdAt: new Date().toISOString(), hasSeenSample: false
+            };
+            await db.collection('users').doc(email).set(newUser);
+            await firebaseAuth.signOut();
+            sendAdminNotification(newUser, false);
+            okEl.textContent = '✅ Registration submitted! Waiting for approval…'; okEl.classList.add('show');
+            document.getElementById('pending-title').textContent = 'Registration Submitted!';
+            document.getElementById('pending-text').textContent = 'Aapki registration request admin ko bhej di gayi hai. Payment verify hone ke baad aapka account activate ho jayega.';
+            setTimeout(() => { document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active')); document.getElementById('form-pending').classList.add('active'); }, 500);
+        } catch (e) {
+            console.error(e);
+            errEl.textContent = authErrorMessage(e); errEl.classList.add('show');
+        }
+    };
+
+    window.doLogout = async function () {
+        try { await firebaseAuth.signOut(); } catch (e) { console.error(e); }
+        clearSession(); currentUser = null;
+        document.querySelector('.sidebar').classList.add('hidden');
+        document.getElementById('auth-overlay').classList.remove('hidden');
+        document.getElementById('login-error').classList.remove('show');
+        document.getElementById('login-success').classList.remove('show');
+        document.getElementById('login-email').value = ''; document.getElementById('login-password').value = '';
+        backToLogin(); showToast('Signed out successfully.', 'info');
+    };
+
+    window.doForgotPassword = async function () {
+        // Custom 6-digit reset-code flow. Firebase email-link reset is intentionally not used.
+        const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+        const errEl = document.getElementById('forgot-error'); const okEl = document.getElementById('forgot-success');
+        errEl.classList.remove('show'); okEl.classList.remove('show');
+        if (!email) { errEl.textContent = 'Email address darj karein.'; errEl.classList.add('show'); return; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
+        try {
+            const user = await getUserByEmail(email);
+            if (!user) {
+                okEl.textContent = 'Agar ye email registered hai, to reset code bhej diya gaya hai. Apna inbox/spam folder check karein.';
+                okEl.classList.add('show'); return;
+            }
+            const code = genResetCode();
+            user.resetCode = code;
+            user.resetCodeExpiry = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+            await saveUser(user);
+            const sent = sendResetCodeEmail(user, code);
+            resetTargetEmail = email;
+            document.getElementById('reset-error').classList.remove('show');
+            document.getElementById('reset-success').classList.remove('show');
+            document.getElementById('reset-code').value = '';
+            document.getElementById('reset-password').value = '';
+            document.getElementById('reset-confirm').value = '';
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('form-reset').classList.add('active');
+            if (!sent) {
+                document.getElementById('reset-success').textContent = `Reset code: ${code} (EmailJS configured nahi hai — testing ke liye code yahan dikhaya gaya hai)`;
+                document.getElementById('reset-success').classList.add('show');
+            } else {
+                showToast('6-digit reset code aapke email par bhej diya gaya hai.', 'success');
+            }
+        } catch (e) {
+            console.error(e);
+            errEl.textContent = 'Reset code bhejne mein masla hua. Dobara koshish karein.';
+            errEl.classList.add('show');
+        }
+    };
+
+    window.doResetPassword = async function () {
+        const code = document.getElementById('reset-code').value.trim();
+        const pw = document.getElementById('reset-password').value;
+        const confirm = document.getElementById('reset-confirm').value;
+        const errEl = document.getElementById('reset-error'); const okEl = document.getElementById('reset-success');
+        errEl.classList.remove('show'); okEl.classList.remove('show');
+        if (!resetTargetEmail) { errEl.textContent = 'Session expire ho gaya, dobara code mangwayein.'; errEl.classList.add('show'); return; }
+        if (!/^\d{6}$/.test(code)) { errEl.textContent = '6-digit reset code darj karein.'; errEl.classList.add('show'); return; }
+        if (!pw || pw.length < 6) { errEl.textContent = 'Password kam az kam 6 characters ka hona chahiye.'; errEl.classList.add('show'); return; }
+        if (pw !== confirm) { errEl.textContent = 'Password match nahi ho raha.'; errEl.classList.add('show'); return; }
+        try {
+            const user = await getUserByEmail(resetTargetEmail);
+            if (!user || !user.resetCode) { errEl.textContent = 'Reset request nahi mila. Dobara code mangwayein.'; errEl.classList.add('show'); return; }
+            if (user.resetCode !== code) { errEl.textContent = 'Reset code ghalat hai.'; errEl.classList.add('show'); return; }
+            if (!user.resetCodeExpiry || new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'Reset code expire ho chuka hai. Dobara mangwayein.'; errEl.classList.add('show'); return; }
+            user.pw = hashPw(pw);
+            delete user.resetCode; delete user.resetCodeExpiry;
+            await saveUser(user);
+            resetTargetEmail = null;
+            okEl.textContent = 'Password reset ho gaya! Ab naye password se sign in karein.';
+            okEl.classList.add('show');
+            setTimeout(() => { backToLogin(); document.getElementById('login-email').value = user.email; }, 1200);
+        } catch (e) {
+            console.error(e);
+            errEl.textContent = 'Password reset nahi ho saka. Dobara koshish karein.';
+            errEl.classList.add('show');
+        }
+    };
+
+    window.changePassword = async function () {
+        const cur = document.getElementById('pw-current').value;
+        const nw = document.getElementById('pw-new').value;
+        const cnf = document.getElementById('pw-confirm').value;
+        if (!cur || !nw || !cnf) { showToast('Fill all password fields.', 'error'); return; }
+        if (nw.length < 6) { showToast('New password must be 6+ characters.', 'error'); return; }
+        if (nw !== cnf) { showToast('Passwords do not match.', 'error'); return; }
+        const authUser = firebaseAuth.currentUser;
+        if (!authUser || !currentUser) { showToast('Please sign in again.', 'error'); return; }
+        try {
+            const credential = firebase.auth.EmailAuthProvider.credential(authUser.email, cur);
+            await authUser.reauthenticateWithCredential(credential);
+            await authUser.updatePassword(nw);
+            const profile = await firebaseProfile(authUser.email);
+            if (profile) { delete profile.pw; profile.firebaseUid = authUser.uid; await db.collection('users').doc(authUser.email.toLowerCase()).set(profile, { merge: true }); currentUser = profile; }
+            document.getElementById('pw-current').value = ''; document.getElementById('pw-new').value = ''; document.getElementById('pw-confirm').value = '';
+            showToast('Password changed successfully!', 'success');
+        } catch (e) {
+            if (e && e.code === 'auth/wrong-password') showToast('Current password is incorrect.', 'error');
+            else if (e && e.code === 'auth/requires-recent-login') showToast('For security, please sign out and sign in again before changing your password.', 'error');
+            else showToast(authErrorMessage(e), 'error');
+        }
+    };
+
+    // Remove old local/demo credential messaging from the existing UI.
+    const demoMsg = document.getElementById('login-success');
+    if (demoMsg && /Admin account ready/i.test(demoMsg.textContent)) { demoMsg.textContent = ''; demoMsg.classList.remove('show'); }
+
+    // Start the protected-route/session gate using Firebase's persistent auth state.
+    window.initAuth();
+})();
 loadSubscriptionSettings();
 
 // Load saved data from storage
