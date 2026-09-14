@@ -4538,12 +4538,12 @@ function projectionSaveTableField(input) {
 function syncProjectionAssignment() {
     const booker = document.getElementById('assignmentBooker')?.value, product = document.getElementById('assignmentProduct')?.value;
     if (!booker || !product) return;
-    document.getElementById('assignmentProductTarget').value = projectionState.productTargets[product] ?? '';
+    document.getElementById('assignmentProductUnitTarget').value = projectionState.productTargets[product] ?? '';
     document.getElementById('assignmentPercent').value = projectionState.bookerPercentages[projectionKey(booker, product)] ?? 100;
 }
 function saveProjectionAssignment() {
     const booker = document.getElementById('assignmentBooker').value, product = document.getElementById('assignmentProduct').value;
-    const productTarget = Math.max(0, projectionNumber(document.getElementById('assignmentProductTarget').value));
+    const productTarget = Math.max(0, projectionNumber(document.getElementById('assignmentProductUnitTarget').value));
     const percent = Math.min(100, Math.max(1, projectionNumber(document.getElementById('assignmentPercent').value)));
     if (!booker || !product) { showToast('Select both a Booker and Product first.', 'error'); return; }
     projectionState.productTargets[product] = productTarget;
