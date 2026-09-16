@@ -1362,6 +1362,8 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 #auth-overlay .role-option.selected i{ color:var(--gold-bright) !important; }
 
 /* payment box premium styling */
+#form-signup .signup-payment-legacy{display:none !important;}
+#form-signup .saas-trial-signup-box{display:block;}
 #auth-overlay .payment-box{ background:linear-gradient(160deg, rgba(232,185,92,0.07), rgba(255,255,255,0.02)) !important; border-color:rgba(232,185,92,0.25) !important; border-radius:14px !important; }
 #auth-overlay .payment-box-title{ color:var(--gold-bright) !important; font-size:13px !important; letter-spacing:.3px; }
 #auth-overlay .payment-box-title .amt{ color:var(--gold-bright) !important; font-weight:800; }
@@ -1987,7 +1989,7 @@ function changeSiteLanguage(language){
             <div class="mkt-back-home" onclick="backToMarketing()"><i class="fas fa-arrow-left"></i> Back to home</div>
 
             <div class="prem-form-header">
-                <h2>Create Your <span class="gold">Premium</span> Account</h2>
+                <h2>Create Your <span class="gold">PharmaTracker</span> Account</h2>
                 <p>Join thousands of successful distributors</p>
             </div>
 
@@ -2125,8 +2127,19 @@ function changeSiteLanguage(language){
                 </div>
             </div>
 
-            <!-- PAYMENT STEP — retained for compatibility; SaaS trial signup is handled by the additive SaaS module. -->
-            <div class="payment-box">
+            <!-- SaaS trial: signup is free for 7 days; payment is only required when upgrading/renewing. -->
+            <div class="saas-trial-signup-box" style="margin:12px 0 14px;padding:14px 15px;border:1px solid rgba(232,185,92,.35);border-radius:14px;background:linear-gradient(160deg,rgba(232,185,92,.10),rgba(255,255,255,.025));">
+                <div style="display:flex;align-items:center;gap:10px;font-weight:800;color:var(--gold-bright);font-size:13px;">
+                    <i class="fas fa-gift"></i> 7-Day Free Trial
+                    <span style="margin-left:auto;font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(232,185,92,.12);color:var(--gold-bright);">FULL ACCESS</span>
+                </div>
+                <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:7px;">
+                    Start free with complete PharmaTracker access for 7 days. No payment or transaction ID is required. Upgrade to Basic, Professional or Business whenever you are ready.
+                </div>
+            </div>
+
+            <!-- Legacy payment step retained for paid-signup compatibility; hidden because new accounts start on the free trial. -->
+            <div class="payment-box signup-payment-legacy">
                 <div class="payment-box-title"><i class="fas fa-gem"></i> <span id="signup-plan-name">Premium Plan</span> <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
                 <div class="plan-select-row" id="signup-plan-row"></div>
                 <div class="pay-method-row pay-method-row-3">
@@ -2154,7 +2167,7 @@ function changeSiteLanguage(language){
             </div>
 
             <button class="auth-btn" id="signup-btn" onclick="doSignup()">
-                <i class="fas fa-crown"></i> Create Premium Account
+                <i class="fas fa-rocket"></i> Start 7-Day Free Trial
             </button>
 
             <div class="auth-terms">
@@ -8459,24 +8472,35 @@ function copyPayNumber(ctx) {
 }
 
 /* ── Plan selector (chips) shared by Create Account / Renew / Account Recharge ── */
+/* SaaS payment plans: keep the existing payment UI, but source plan names/prices
+   from the new SaaS catalogue instead of the legacy single "Premium Plan". */
+function getSaaSPaymentPlans() {
+    return ['basic','professional','business'].map(id => {
+        const p = PT_SAAS.plans[id];
+        return { id:p.id, name:p.name, priceLocal:p.price, priceIntl:null, durationDays:30, description:p.desc, active:true };
+    });
+}
+function paymentPlansForContext(ctx) {
+    return ctx === 'renew' ? getSaaSPaymentPlans() : getActivePlans();
+}
 function ensureSelectedPlan(ctx) {
-    const plans = getActivePlans();
+    const plans = paymentPlansForContext(ctx);
     if (!plans.length) return null;
     if (!selectedPlan[ctx] || !plans.find(p => p.id === selectedPlan[ctx])) {
         selectedPlan[ctx] = plans[0].id;
     }
-    return getPlanById(selectedPlan[ctx]);
+    return plans.find(p => p.id === selectedPlan[ctx]) || null;
 }
 function renderPlanChips(ctx) {
     const rowId = ctx === 'signup' ? 'signup-plan-row' : (ctx === 'renew' ? 'renew-plan-row' : 'recharge-plan-row');
     const row = document.getElementById(rowId);
     if (!row) return;
-    const plans = getActivePlans();
+    const plans = paymentPlansForContext(ctx);
     if (plans.length <= 1) { row.innerHTML = ''; ensureSelectedPlan(ctx); updatePlanDependentUI(ctx); return; }
     const current = ensureSelectedPlan(ctx);
     row.innerHTML = plans.map(p => `<div class="plan-chip ${current && p.id === current.id ? 'selected' : ''}" onclick="choosePlan('${ctx}','${p.id}')">
         <span class="pc-name">${p.name}</span>
-        <span class="pc-price">Rs. ${p.priceLocal} · $${p.priceIntl}</span>
+        <span class="pc-price">Rs. ${Number(p.priceLocal).toLocaleString()}</span>
     </div>`).join('');
 }
 function choosePlan(ctx, planId) {
@@ -8490,7 +8514,7 @@ function updatePlanDependentUI(ctx) {
     if (!plan) return;
     const isBank = selectedPay[ctx] === 'bank';
     const amtEl = document.getElementById('pay-amt-display' + suffix);
-    if (amtEl) amtEl.textContent = isBank ? `$${plan.priceIntl} / month` : `Rs. ${plan.priceLocal} / month`;
+    if (amtEl) amtEl.textContent = isBank && Number.isFinite(Number(plan.priceIntl)) ? `$${plan.priceIntl} / month` : `Rs. ${Number(plan.priceLocal).toLocaleString()} / month`;
     const nameEl = document.getElementById((ctx === 'signup' ? 'signup-plan-name' : (ctx === 'renew' ? 'renew-plan-name' : 'recharge-plan-name')));
     if (nameEl) {
         if (ctx === 'signup') nameEl.textContent = plan.name;
@@ -11406,12 +11430,14 @@ window.renderSubscriptionBox=function(){ window.renderPharmaTrackerSubscriptionB
 
 /* ----- Upgrade / renewal uses the existing verified-payment approval workflow. */
 window.openSaaSUpgrade=function(planId){
-  const p=planDef(planId); if(!p || planId==='trial') planId='professional';
+  if(!PT_SAAS.plans[planId]) planId='professional';
+  const p=planDef(planId);
   if(typeof currentUser==='undefined'||!currentUser){enterAuth('signup');return;}
   if(typeof renewTargetEmail!=='undefined') renewTargetEmail=(currentUser.email||'').toLowerCase();
   try{
     if(typeof selectedPlan!=='undefined') selectedPlan.renew=planId;
     if(typeof showRenewForm==='function') showRenewForm(currentUser);
+    /* showRenewForm restores the current legacy plan; immediately restore the SaaS selection. */
     if(typeof selectedPlan!=='undefined') selectedPlan.renew=planId;
     if(typeof renderPlanChips==='function') renderPlanChips('renew');
     if(typeof updatePlanDependentUI==='function') updatePlanDependentUI('renew');
