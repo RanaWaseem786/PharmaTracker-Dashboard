@@ -1,58 +1,5 @@
 <!DOCTYPE html>
-<!-- 
-    ═══════════════════════════════════════════════════════════════════════════════
-    PHARMАTRACKER SAAS — OPTIMIZED & FIXED VERSION
-    ═══════════════════════════════════════════════════════════════════════════════
-    
-    CRITICAL FIXES APPLIED:
-    
-    ✅ FIX #1: USER DATA ISOLATION (Security + Performance)
-       - Each user's data stored separately in IndexedDB with user-scoped keys
-       - User key format: pharmaTrackerData_[userEmail]
-       - Previous user's data cleared immediately on logout
-       - No cross-user data leakage across devices/sessions
-       - Query cache cleared per user
-       - Implementation: getUserDataKey(), clearQueryCache(), loginSuccess()
-    
-    ✅ FIX #2: SUBSCRIPTION ACCESS CONTROL (Business Logic)
-       - Per-plan feature limits enforced: trial, basic, pro, enterprise
-       - checkPlanAccess() validates user access to features
-       - enforcePlanLimit() prevents unauthorized actions
-       - Plan-based record limits via getPlanMaxRecords()
-       - Admin role bypasses all plan restrictions
-       - Applies to: export, advanced reports, file upload, team features
-    
-    ✅ FIX #3: PERFORMANCE OPTIMIZATION (Speed + Responsiveness)
-       - Query result caching with 60-second TTL
-       - Debouncing for filter/search/chart updates (no redundant redraws)
-       - Request deduplication for Firebase calls
-       - Memoization for expensive calculations
-       - Throttling for frequent events (scroll, resize, input)
-       - Optimized data loading with user-scoped keys
-       - Implementation: PT_QUERY_CACHE, debounce(), memoize(), throttle()
-    
-    ✅ FIX #4: DESKTOP INTRO PAGE LAYOUT (UI/UX)
-       - Full-width hero section using 100vw (fixes side margins)
-       - Centered gradient backgrounds
-       - Desktop: hero section fills entire viewport height
-       - Responsive design maintained for mobile/tablet
-       - Professional full-screen appearance
-       - Implementation: CSS viewport width fixes + flexbox centering
-    
-    SECURITY NOTES:
-    - Firebase Rules must enforce: users can only read/write their own data
-    - Session tokens validated per request
-    - User email used as primary data isolation key
-    - Recommended: Enable Firestore security rules
-    
-    PERFORMANCE METRICS:
-    - First load: Debounced filter updates (-200ms lag)
-    - Dashboard render: Memoized calculations (-150-300ms)
-    - Firebase queries: Cached results (-85% redundant reads)
-    - Chart updates: Debounced (-500ms+ improvements)
-    
-    ═══════════════════════════════════════════════════════════════════════════════
--->
+<!-- saved from url=(0059)file:///C:/Users/4MSERVER/Downloads/pharma_dashboard_1.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
     /* Global Report Theme System — applies the user's saved report design
@@ -1106,7 +1053,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 }
 
 #marketing-root{
-    width:100vw;
+    width:100%;
     min-height:100vh;
     background:
         radial-gradient(ellipse 900px 500px at 15% -10%, rgba(124,140,255,0.16), transparent 60%),
@@ -1116,21 +1063,6 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     color:var(--text);
     position:relative;
     overflow-x:hidden;
-    left:50%;
-    right:50%;
-    margin-left:-50vw;
-    margin-right:-50vw;
-}
-/* Desktop: Hero section fills screen properly */
-@media (min-width: 1024px) {
-    #marketing-root .mkt-hero {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 80px 28px;
-    }
 }
 #marketing-root.hidden{ display:none; }
 #marketing-root::before{
@@ -5266,70 +5198,12 @@ function importData(headers, rows, mapping) {
    the user explicitly clears it. Import already renders immediately
    via updateAll() below regardless of how long this save takes, so
    there is no separate "save" step the user has to wait on.
-   
-   OPTIMIZATIONS & USER ISOLATION:
-   - Each user's data is stored with unique key: pharmaTrackerData_[userEmail]
-   - Data is cleared on logout to prevent cross-user leakage
-   - Query results are cached with user-specific cache keys
-   - Firebase reads are batched and deduplicated
 ═══════════════════════════════════════════════ */
 const IDB_NAME = 'PharmaTrackerDB';
 const IDB_STORE = 'kv';
+const IDB_DATA_KEY = 'pharmaTrackerData';
 const LEGACY_LS_KEY = 'pharmaTrackerData';
 const LS_HASDATA_KEY = 'pharmaTrackerHasData';
-
-// Performance: Query result cache (auto-cleared on user change)
-const PT_QUERY_CACHE = new Map();
-const PT_REQUEST_CACHE = new Map();
-const PT_CACHE_TTL = 60000; // 1 minute
-const PT_DEBOUNCE_MAP = new Map(); // Debounce timers
-
-// Get user-scoped data key
-function getUserDataKey() {
-    return currentUser ? `pharmaTrackerData_${String(currentUser.email).toLowerCase()}` : 'pharmaTrackerData';
-}
-
-// Clear cache on logout
-function clearQueryCache() {
-    PT_QUERY_CACHE.clear();
-    PT_REQUEST_CACHE.clear();
-    // Clear pending debounced calls
-    PT_DEBOUNCE_MAP.forEach(timer => clearTimeout(timer));
-    PT_DEBOUNCE_MAP.clear();
-}
-
-// Debounce utility for expensive operations (filters, search, chart updates)
-function debounce(fn, wait, key = 'default') {
-    return function(...args) {
-        if (PT_DEBOUNCE_MAP.has(key)) clearTimeout(PT_DEBOUNCE_MAP.get(key));
-        const timer = setTimeout(() => { fn.apply(this, args); PT_DEBOUNCE_MAP.delete(key); }, wait);
-        PT_DEBOUNCE_MAP.set(key, timer);
-    };
-}
-
-// Memoize expensive calculations
-function memoize(fn, keyFn) {
-    const cache = new Map();
-    return function(...args) {
-        const key = keyFn ? keyFn(...args) : JSON.stringify(args);
-        if (cache.has(key)) return cache.get(key);
-        const result = fn.apply(this, args);
-        cache.set(key, result);
-        return result;
-    };
-}
-
-// Throttle for frequent events (scroll, resize, input)
-function throttle(fn, wait, key = 'default') {
-    let lastCall = 0;
-    return function(...args) {
-        const now = Date.now();
-        if (now - lastCall >= wait) {
-            lastCall = now;
-            fn.apply(this, args);
-        }
-    };
-}
 
 function idbOpen() {
     return new Promise((resolve, reject) => {
@@ -5365,9 +5239,8 @@ function saveDataToStorage() {
     // to open IndexedDB first. The actual dataset — of any size — goes to IndexedDB.
     try { localStorage.setItem(LS_HASDATA_KEY, rawData.length ? '1' : '0'); } catch(err) { /* non-fatal */ }
 
-    const dataKey = getUserDataKey();
-    idbSet(dataKey, rawData).then(() => {
-        console.log(`✅ Data saved to storage (${dataKey}): ${rawData.length} records`);
+    idbSet(IDB_DATA_KEY, rawData).then(() => {
+        console.log(`✅ Data saved to storage: ${rawData.length} records`);
         // Drop any legacy copy so large datasets are never duplicated across both stores.
         try { localStorage.removeItem(LEGACY_LS_KEY); } catch(err) { /* non-fatal */ }
     }).catch(err => {
@@ -5378,11 +5251,10 @@ function saveDataToStorage() {
 
 async function loadDataFromStorage() {
     try {
-        const dataKey = getUserDataKey();
-        const idbData = await idbGet(dataKey);
+        const idbData = await idbGet(IDB_DATA_KEY);
         if (idbData && idbData.length) {
             rawData = idbData;
-            console.log(`✅ Loaded ${rawData.length} records from storage (${dataKey})`);
+            console.log(`✅ Loaded ${rawData.length} records from storage`);
             populateGlobalFilters();
             populateFilters();
             updateAll();
@@ -5398,8 +5270,7 @@ async function loadDataFromStorage() {
             if (parsed && parsed.length) {
                 rawData = parsed;
                 console.log(`✅ Migrated ${rawData.length} records from legacy storage`);
-                const dataKey = getUserDataKey();
-                await idbSet(dataKey, rawData);
+                await idbSet(IDB_DATA_KEY, rawData);
                 localStorage.removeItem(LEGACY_LS_KEY);
                 localStorage.setItem(LS_HASDATA_KEY, '1');
                 populateGlobalFilters();
@@ -8414,21 +8285,7 @@ async function deleteUserByEmail(email) {
 
 function getSession() { return localStorage.getItem(SESSION_KEY); }
 function saveSession(email) { localStorage.setItem(SESSION_KEY, email.toLowerCase()); }
-function clearSession() { 
-    // Clear session key
-    localStorage.removeItem(SESSION_KEY); 
-    
-    // Clear cache
-    clearQueryCache();
-    
-    // Clear in-memory data
-    rawData = [];
-    uploadedFiles.clear();
-    fileRowMap.clear();
-    
-    // Clear theme preference (keep design choices)
-    // localStorage.removeItem('pt_report_theme');
-}
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
 
 /* ═══════════════════════════════════════════════
    SUBSCRIPTION / RECHARGE SETTINGS — Admin-configurable payment details
@@ -8801,55 +8658,6 @@ let renewTargetEmail = null;
 const ROLE_COLORS = { admin:'#ffa657', analyst:'#58a6ff', manager:'#bc8cff', viewer:'#8b949e' };
 const ROLE_LABELS = { admin:'Admin', analyst:'Analyst', manager:'Manager', viewer:'Viewer' };
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SUBSCRIPTION ACCESS CONTROL — Feature limits per plan
-   Enforces plan restrictions across all features
-═══════════════════════════════════════════════════════════════════════ */
-const PLAN_FEATURES = {
-    'trial': { 
-        maxUsers: 1, maxRecords: 1000, export: false, advancedReports: false, 
-        charts: true, filters: true, upload: true, sharing: false 
-    },
-    'basic': { 
-        maxUsers: 3, maxRecords: 50000, export: true, advancedReports: false,
-        charts: true, filters: true, upload: true, sharing: false 
-    },
-    'pro': { 
-        maxUsers: 10, maxRecords: 500000, export: true, advancedReports: true,
-        charts: true, filters: true, upload: true, sharing: true 
-    },
-    'enterprise': { 
-        maxUsers: 999, maxRecords: Infinity, export: true, advancedReports: true,
-        charts: true, filters: true, upload: true, sharing: true 
-    }
-};
-
-function getUserPlan() {
-    if (!currentUser) return 'trial';
-    return currentUser.planId ? getPlanById(currentUser.planId)?.id : 'trial';
-}
-
-function checkPlanAccess(feature) {
-    if (!currentUser || currentUser.role === 'admin') return true; // Admins always have access
-    const plan = getUserPlan();
-    const features = PLAN_FEATURES[plan] || PLAN_FEATURES['trial'];
-    return features[feature] === true;
-}
-
-function enforcePlanLimit(feature) {
-    if (!checkPlanAccess(feature)) {
-        showToast(`This feature is not available in your plan. Upgrade to access ${feature}.`, 'warning');
-        return false;
-    }
-    return true;
-}
-
-function getPlanMaxRecords() {
-    if (!currentUser) return PLAN_FEATURES['trial'].maxRecords;
-    const plan = getUserPlan();
-    return (PLAN_FEATURES[plan] || PLAN_FEATURES['trial']).maxRecords;
-}
-
 async function initAuth() {
     await migrateLegacyOwnerAccount();
     const sessionEmail = getSession();
@@ -8886,22 +8694,8 @@ async function initAuth() {
 }
 
 function loginSuccess(user, newLogin = true) {
-    // CRITICAL: Clear previous user's data, cache, and uploads
-    if (currentUser && currentUser.email !== user.email) {
-        rawData = [];
-        uploadedFiles.clear();
-        fileRowMap.clear();
-        clearQueryCache();
-    }
-    
     currentUser = user;
     if (newLogin) saveSession(user.email);
-    
-    // Load user-scoped data from IndexedDB
-    loadDataFromStorage().catch(err => {
-        console.error('Could not load user data:', err);
-        rawData = [];
-    });
 
     // For a brand-new user account that has never logged in before, make sure
     // the dashboard isn't empty on their very first visit. This only fires when
@@ -8915,13 +8709,6 @@ function loginSuccess(user, newLogin = true) {
         updateAll();
         user.hasSeenSample = true;
         saveUser(user).catch(() => {});
-    }
-    
-    // If user has existing data, load and render it
-    if (rawData.length) {
-        populateGlobalFilters();
-        populateFilters();
-        updateAll();
     }
 
     document.getElementById('auth-overlay').classList.add('hidden');
@@ -9749,22 +9536,13 @@ function backToMarketing(){
 
     window.doLogout = async function () {
         try { await firebaseAuth.signOut(); } catch (e) { console.error(e); }
-        // CRITICAL: Clear all user data, cache, and in-memory state
-        clearSession(); 
-        currentUser = null;
-        rawData = [];
-        uploadedFiles.clear();
-        fileRowMap.clear();
-        clearQueryCache();
-        
+        clearSession(); currentUser = null;
         document.querySelector('.sidebar').classList.add('hidden');
         document.getElementById('auth-overlay').classList.remove('hidden');
         document.getElementById('login-error').classList.remove('show');
         document.getElementById('login-success').classList.remove('show');
-        document.getElementById('login-email').value = ''; 
-        document.getElementById('login-password').value = '';
-        backToLogin(); 
-        showToast('Signed out successfully. All data cleared.', 'info');
+        document.getElementById('login-email').value = ''; document.getElementById('login-password').value = '';
+        backToLogin(); showToast('Signed out successfully.', 'info');
     };
 
     window.doForgotPassword = async function () {
