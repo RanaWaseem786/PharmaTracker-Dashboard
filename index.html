@@ -4404,6 +4404,386 @@ function changeSiteLanguage(language){
 </script>
 
 
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PART 3 — OPERATIONAL INTELLIGENCE LAYER
+     Additive only: preserves Parts 1 & 2 and consumes the existing data model.
+═══════════════════════════════════════════════════════════════════════ -->
+<style id="pt-part3-style">
+#pt-part3 .pt3-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+#pt-part3 .pt3-col-12{grid-column:span 12}.pt3-col-8{grid-column:span 8}.pt3-col-6{grid-column:span 6}.pt3-col-4{grid-column:span 4}
+#pt-part3 .pt3-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;min-width:0}
+#pt-part3 .pt3-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+#pt-part3 .pt3-title{font-size:15px;font-weight:700}.pt3-sub{font-size:11px;color:var(--muted);margin-top:3px}
+#pt-part3 .pt3-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+#pt-part3 .pt3-kpi{padding:13px;border:1px solid var(--border);background:var(--surface2);border-radius:11px}
+#pt-part3 .pt3-kpi b{display:block;font-size:20px;margin-top:5px}.pt3-kpi span{font-size:10px;color:var(--muted)}
+#pt-part3 .pt3-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+#pt-part3 .pt3-control{display:flex;flex-direction:column;gap:5px;min-width:145px}.pt3-control label{font-size:10px;color:var(--muted)}
+#pt-part3 .pt3-control select,#pt-part3 .pt3-control input{width:100%}
+#pt-part3 .pt3-table-wrap{overflow:auto;max-height:430px}#pt-part3 table{width:100%;border-collapse:collapse;font-size:11px}
+#pt-part3 th{position:sticky;top:0;background:var(--surface2);z-index:1;text-align:left;padding:8px;border-bottom:1px solid var(--border);white-space:nowrap}
+#pt-part3 td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top}
+#pt-part3 .pt3-pill{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:700;border:1px solid var(--border)}
+#pt-part3 .pt3-ok{background:rgba(63,185,80,.10)}.pt3-warn{background:rgba(255,166,87,.12)}.pt3-danger{background:rgba(255,123,114,.12)}
+#pt-part3 .pt3-muted{color:var(--muted)}.pt3-empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--border);border-radius:12px}
+#pt-part3 .pt3-method{font-size:10px;color:var(--muted);padding:9px 11px;background:var(--surface2);border-radius:9px;margin-top:10px}
+#pt-part3 .pt3-tabs{display:flex;gap:7px;flex-wrap:wrap}.pt3-tab{cursor:pointer}.pt3-tab.active{outline:1px solid var(--accent)}
+#pt-part3 .pt3-detail{cursor:pointer}.pt3-detail:hover{background:var(--surface2)}
+#pt-part3 .pt3-alert-actions{display:flex;gap:5px;flex-wrap:wrap}
+#pt-part3 .pt3-small{font-size:10px}.pt3-right{text-align:right}
+@media(max-width:1050px){#pt-part3 .pt3-kpis{grid-template-columns:repeat(3,1fr)}#pt-part3 .pt3-col-8,#pt-part3 .pt3-col-6,#pt-part3 .pt3-col-4{grid-column:span 12}}
+@media(max-width:650px){#pt-part3 .pt3-kpis{grid-template-columns:repeat(2,1fr)}#pt-part3 .pt3-card{padding:12px}.pt3-control{min-width:120px}}
+</style>
+
+<div class="page" id="page-part3">
+  <div id="pt-part3">
+    <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('part3')" title="Download Operational Intelligence PDF">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+    </div>
+
+    <div class="page-heading">
+      <div><h2>Operational Intelligence</h2><p style="font-size:12.5px;color:var(--muted)">Territory, inventory, forecasting, anomaly detection and smart alerts</p></div>
+    </div>
+
+    <div class="pt3-card" style="margin-bottom:14px">
+      <div class="pt3-head">
+        <div><div class="pt3-title">Management filters</div><div class="pt3-sub">Uses the same live dataset as the existing dashboard</div></div>
+        <div class="pt3-controls">
+          <div class="pt3-control"><label>Region</label><select id="pt3-region"><option value="">All regions</option></select></div>
+          <div class="pt3-control"><label>Product</label><select id="pt3-product"><option value="">All products</option></select></div>
+          <div class="pt3-control"><label>Rep</label><select id="pt3-rep"><option value="">All reps</option></select></div>
+          <div class="pt3-control"><label>Customer</label><select id="pt3-customer"><option value="">All customers</option></select></div>
+          <button class="btn btn-ghost" onclick="pt3Refresh()">Refresh</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt3-card" style="margin-bottom:14px">
+      <div class="pt3-head"><div><div class="pt3-title">Territory Intelligence</div><div class="pt3-sub" id="pt3-territory-caption">Geographic hierarchy is detected from imported fields; missing levels are not fabricated.</div></div></div>
+      <div class="pt3-kpis" id="pt3-territory-kpis"></div>
+      <div id="pt3-territory-table" style="margin-top:14px"></div>
+    </div>
+
+    <div class="pt3-grid">
+      <div class="pt3-card pt3-col-8">
+        <div class="pt3-head"><div><div class="pt3-title">Inventory Intelligence</div><div class="pt3-sub">Stock-based signals; cost, reorder and supplier metrics appear only when supplied</div></div></div>
+        <div class="pt3-kpis" id="pt3-inv-kpis"></div>
+        <div id="pt3-inventory-table" style="margin-top:14px"></div>
+        <div class="pt3-method">Coverage = current stock ÷ estimated average daily units sold over the recent 30-day window. Default operational thresholds: ≤7 days = stock-out risk, &gt;90 days = overstock signal, no sales in the last 90 days = dead-stock signal. These are transparent heuristics, not machine-learning predictions.</div>
+      </div>
+      <div class="pt3-card pt3-col-4">
+        <div class="pt3-head"><div><div class="pt3-title">Inventory Health Score</div><div class="pt3-sub">Transparent, availability-aware score</div></div></div>
+        <div id="pt3-health" class="pt3-empty"></div>
+        <div class="pt3-method">When only stock + sales history exist, the score uses stock-out, overstock and movement-balance signals. Expiry/cost/reorder components are excluded rather than invented. Optional data can increase coverage later.</div>
+      </div>
+    </div>
+
+    <div class="pt3-grid" style="margin-top:14px">
+      <div class="pt3-card pt3-col-8">
+        <div class="pt3-head"><div><div class="pt3-title">Advanced Forecasting</div><div class="pt3-sub">30 / 60 / 90-day operational projection with uncertainty range</div></div>
+          <div class="pt3-tabs">
+            <button class="btn btn-ghost pt3-tab active" data-days="30" onclick="pt3ForecastDays(30,this)">30D</button>
+            <button class="btn btn-ghost pt3-tab" data-days="60" onclick="pt3ForecastDays(60,this)">60D</button>
+            <button class="btn btn-ghost pt3-tab" data-days="90" onclick="pt3ForecastDays(90,this)">90D</button>
+          </div>
+        </div>
+        <div class="pt3-kpis" id="pt3-forecast-kpis"></div>
+        <div id="pt3-forecast-table" style="margin-top:14px"></div>
+        <div class="pt3-method" id="pt3-forecast-method"></div>
+      </div>
+      <div class="pt3-card pt3-col-4">
+        <div class="pt3-head"><div><div class="pt3-title">Forecast vs Target</div><div class="pt3-sub">Projection is compared with configured targets when available</div></div></div>
+        <div id="pt3-target-view"></div>
+      </div>
+    </div>
+
+    <div class="pt3-card" style="margin-top:14px">
+      <div class="pt3-head">
+        <div><div class="pt3-title">Sales Anomaly Detection</div><div class="pt3-sub">Neutral statistical flags — unusual does not mean misconduct</div></div>
+        <div class="pt3-control" style="min-width:150px"><label>Minimum z-score</label><select id="pt3-z"><option value="2">2.0</option><option value="2.5">2.5</option><option value="3">3.0</option></select></div>
+      </div>
+      <div id="pt3-anomaly-table"></div>
+      <div class="pt3-method">Method: monthly/entity observations are compared with their own mean and standard deviation. A z-score at or above the selected threshold is flagged. Small samples (fewer than 4 observations) use a conservative percentage-change fallback and are explicitly labelled.</div>
+    </div>
+
+    <div class="pt3-card" style="margin-top:14px">
+      <div class="pt3-head">
+        <div><div class="pt3-title">Smart Alert Center</div><div class="pt3-sub">Data-driven operational alerts with review state</div></div>
+        <div class="pt3-controls">
+          <div class="pt3-control"><label>Category</label><select id="pt3-alert-category"><option value="">All</option><option>Sales</option><option>Product</option><option>Customer</option><option>Rep</option><option>Region</option><option>Inventory</option><option>Forecast</option><option>Target</option><option>Anomaly</option></select></div>
+          <div class="pt3-control"><label>Severity</label><select id="pt3-alert-severity"><option value="">All</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+          <div class="pt3-control"><label>Date</label><input id="pt3-alert-date" type="date"></div>
+          <div class="pt3-control"><label>Region</label><select id="pt3-alert-region"><option value="">All</option></select></div>
+          <div class="pt3-control"><label>Product</label><select id="pt3-alert-product"><option value="">All</option></select></div>
+          <div class="pt3-control"><label>Customer</label><select id="pt3-alert-customer"><option value="">All</option></select></div>
+          <div class="pt3-control"><label>Rep</label><select id="pt3-alert-rep"><option value="">All</option></select></div>
+          <button class="btn btn-ghost" onclick="pt3RenderAlerts()">Apply</button>
+        </div>
+      </div>
+      <div id="pt3-alert-table"></div>
+    </div>
+
+    <div class="pt3-card" style="margin-top:14px">
+      <div class="pt3-head"><div><div class="pt3-title">Operational Data Requirements</div><div class="pt3-sub">Optional import fields are now supported for future datasets</div></div></div>
+      <div id="pt3-data-requirements"></div>
+    </div>
+  </div>
+</div>
+
+<script id="pt-part3-script">
+(function(){
+  'use strict';
+  const state = { days:30, alerts:[], anomalies:[], geoDrill:{field:'',value:''} };
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v==null?'':v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const n = v => Number(v)||0;
+  const txt = v => String(v==null?'':v).trim();
+  const key = v => txt(v).toLowerCase().replace(/\s+/g,' ');
+  const dateObj = r => { const d=new Date(r?.invoiceDate||r?.date); return isNaN(d)?null:d; };
+  const dateKey = r => { const d=dateObj(r); return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''; };
+  const money = v => typeof fmt==='function' ? fmt(v) : Number(v||0).toLocaleString();
+  const revenue = r => n(r?.netAmount ?? r?.grossAmount ?? r?.amount);
+  const units = r => n(r?.stock);
+  const rows = () => {
+    try { return typeof getBaseData==='function' ? (getBaseData()||[]) : []; } catch(e){ return Array.isArray(rawData)?rawData:[]; }
+  };
+  const filtered = () => rows().filter(r =>
+    (!$('pt3-region')?.value || key(r.regionName)==key($('pt3-region').value)) &&
+    (!$('pt3-product')?.value || key(r.itemName)==key($('pt3-product').value)) &&
+    (!$('pt3-rep')?.value || key(r.bookingMan)==key($('pt3-rep').value)) &&
+    (!$('pt3-customer')?.value || key(r.customerName)==key($('pt3-customer').value)) &&
+    (!state.geoDrill.field || key(r[state.geoDrill.field])===key(state.geoDrill.value))
+  );
+  const uniq = (rs, fn) => [...new Map(rs.map(r=>[key(fn(r)),txt(fn(r))||'Unassigned']).filter(x=>x[0])).entries()].map(x=>x[1]).sort((a,b)=>a.localeCompare(b));
+  const sum = (rs, fn) => rs.reduce((a,r)=>a+n(fn(r)),0);
+  const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
+  const stdev = a => { if(a.length<2) return 0; const m=avg(a); return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1)); };
+  const daysAgo = d => Math.floor((Date.now()-d.getTime())/86400000);
+  const recentDays = (rs, days) => rs.filter(r=>{const d=dateObj(r);return d && daysAgo(d)>=0 && daysAgo(d)<=days;});
+  const lastNMonths = (rs, count=12) => {
+    const map={}; rs.forEach(r=>{const d=dateObj(r);if(d) {const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;map[k]=(map[k]||0)+revenue(r);}});
+    return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0])).slice(-count);
+  };
+  function options(id, vals, label){ const el=$(id); if(!el)return; const old=el.value; el.innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); if(vals.includes(old))el.value=old; }
+  function populateFilters(){
+    const rs=rows(); options('pt3-region',uniq(rs,r=>r.regionName),'All regions'); options('pt3-product',uniq(rs,r=>r.itemName),'All products'); options('pt3-rep',uniq(rs,r=>r.bookingMan),'All reps'); options('pt3-customer',uniq(rs,r=>r.customerName),'All customers');
+  }
+  function groupMap(rs, field){
+    const m={}; rs.forEach(r=>{const label=txt(r[field])||'Unassigned', k=key(label); if(!m[k])m[k]={label,rows:[],revenue:0,units:0};m[k].rows.push(r);m[k].revenue+=revenue(r);m[k].units+=units(r);}); return Object.values(m);
+  }
+  function entityStats(rs){
+    const customers=new Set(rs.map(r=>key(r.customerCode||r.customerName)).filter(Boolean)).size;
+    const products=new Set(rs.map(r=>key(r.itemName)).filter(Boolean)).size;
+    const reps=new Set(rs.map(r=>key(r.bookingMan)).filter(Boolean)).size;
+    return {revenue:sum(rs,revenue),customers,products,reps};
+  }
+  function growth(rs){
+    const months=lastNMonths(rs,2); if(months.length<2)return null;
+    const a=months[months.length-2][1], b=months[months.length-1][1]; return a?((b-a)/a*100):null;
+  }
+  function territoryLevel(rs){
+    const fields=[['country','Country'],['province','Province / State'],['regionName','Region'],['city','City'],['territory','Territory']];
+    const supported=fields.filter(([f])=>rs.some(r=>txt(r[f])));
+    return supported.length?supported[supported.length-1]:['regionName','Region'];
+  }
+  function renderTerritory(rs){
+    const [field,label]=territoryLevel(rs);
+    const groups=groupMap(rs,field).sort((a,b)=>b.revenue-a.revenue);
+    $('pt3-territory-caption').textContent=`Active geographic level: ${label}. Higher geographic levels are used only when those fields are present in imported data.`;
+    const st=entityStats(rs), g=growth(rs);
+    $('pt3-territory-kpis').innerHTML=[
+      ['Revenue',money(st.revenue)],['Growth',g==null?'—':`${g>=0?'+':''}${g.toFixed(1)}%`],['Customers',st.customers.toLocaleString()],['Products',st.products.toLocaleString()],['Sales reps',st.reps.toLocaleString()],['Territories',groups.length.toLocaleString()]
+    ].map(x=>`<div class="pt3-kpi"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+    const total=st.revenue||1;
+    $('pt3-territory-table').innerHTML=groups.length?`<div class="pt3-table-wrap"><table><thead><tr><th>${label}</th><th>Revenue</th><th>Growth %</th><th>Customers</th><th>Products</th><th>Reps</th><th>Share</th><th>Trend</th></tr></thead><tbody>${groups.map(g=>{
+      const gr=growth(g.rows), share=g.revenue/total*100;
+      return `<tr class="pt3-detail" onclick="pt3TerritoryDrill('${esc(g.label).replace(/'/g,"&#39;")}','${field}')"><td><b>${esc(g.label)}</b></td><td>${money(g.revenue)}</td><td>${gr==null?'—':(gr>=0?'+':'')+gr.toFixed(1)+'%'}</td><td>${new Set(g.rows.map(r=>key(r.customerCode||r.customerName)).filter(Boolean)).size}</td><td>${new Set(g.rows.map(r=>key(r.itemName)).filter(Boolean)).size}</td><td>${new Set(g.rows.map(r=>key(r.bookingMan)).filter(Boolean)).size}</td><td>${share.toFixed(1)}%</td><td>${trendText(g.rows)}</td></tr>`;
+    }).join('')}</tbody></table></div>`:'<div class="pt3-empty">No geographic data in the current filtered dataset.</div>';
+  }
+  function trendText(rs){ const ms=lastNMonths(rs,3); if(ms.length<2)return 'Insufficient history'; const vals=ms.map(x=>x[1]); const d=vals[vals.length-1]-vals[vals.length-2]; return d>0?'↑ Increasing':d<0?'↓ Decreasing':'→ Stable'; }
+  window.pt3TerritoryDrill = function(label,field){
+    state.geoDrill={field:field||territoryLevel(rows())[0],value:label};
+    pt3Refresh();
+    if(typeof showToast==='function')showToast(`Territory drill-down: ${label}`,'info');
+  };
+
+  function inventory(rs){
+    const today=new Date();
+    const recent=recentDays(rs,30), recent90=recentDays(rs,90);
+    const avgDaily={}; recent.forEach(r=>{const k=key(r.itemName);avgDaily[k]=(avgDaily[k]||0)+units(r)/30;});
+    const groups=groupMap(rs,'itemName').map(g=>{
+      const k=key(g.label), daily=Math.max(avgDaily[k]||0,0), coverage=daily>0?g.units/daily:null;
+      const sales90=recent90.filter(r=>key(r.itemName)===k).reduce((a,r)=>a+units(r),0);
+      const lastSale=recent90.filter(r=>key(r.itemName)===k).map(dateObj).filter(Boolean).sort((a,b)=>b-a)[0];
+      let risk='Normal', cls='pt3-ok', signal='Balanced';
+      if(g.units<=0){risk='High';cls='pt3-danger';signal='No stock';}
+      else if(coverage!==null && coverage<=7){risk='High';cls='pt3-danger';signal='Stock-out risk';}
+      else if(coverage!==null && coverage>90){risk='Medium';cls='pt3-warn';signal='Overstock signal';}
+      else if(sales90===0){risk='Medium';cls='pt3-warn';signal='Dead-stock signal';}
+      const cost=n(g.rows.find(r=>n(r.purchaseCost)>0)?.purchaseCost), value=cost>0?g.units*cost:null;
+      const expiry=g.rows.map(r=>txt(r.expiryDate)).filter(Boolean).map(x=>new Date(x)).filter(d=>!isNaN(d)).sort((a,b)=>a-b)[0];
+      const daysExpiry=expiry?Math.ceil((expiry-today)/86400000):null;
+      return {...g,daily,coverage,sales90,lastSale,cost,value,expiry,daysExpiry,risk,cls,signal};
+    }).sort((a,b)=>(b.risk==='High')-(a.risk==='High') || (b.units-a.units));
+    return groups;
+  }
+  function renderInventory(rs){
+    const gs=inventory(rs), totalStock=sum(rs,units), costRows=rs.filter(r=>n(r.purchaseCost)>0);
+    const high=gs.filter(g=>g.risk==='High').length, over=gs.filter(g=>g.signal==='Overstock signal').length, dead=gs.filter(g=>g.signal==='Dead-stock signal').length;
+    $('pt3-inv-kpis').innerHTML=[['Current stock',fmtN(totalStock)],['Products',gs.length.toLocaleString()],['High risk',high.toLocaleString()],['Overstock',over.toLocaleString()],['Dead-stock',dead.toLocaleString()],['Stock value',costRows.length?money(sum(gs,g=>g.value||0)):'Requires inventory data']].map(x=>`<div class="pt3-kpi"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+    $('pt3-inventory-table').innerHTML=gs.length?`<div class="pt3-table-wrap"><table><thead><tr><th>Product</th><th>Current Stock</th><th>Coverage</th><th>Signal</th><th>Stock Value</th><th>Expiry</th><th>Reorder recommendation</th></tr></thead><tbody>${gs.map(g=>{
+      const expiry=g.daysExpiry==null?'Requires expiry-date data':(g.daysExpiry<0?'Expired':g.daysExpiry<=90?`${g.daysExpiry} days`:`${g.daysExpiry} days`);
+      let rec='No immediate signal';
+      if(g.risk==='High') rec=g.units<=0?'Review replenishment':'Consider replenishment based on recent demand';
+      else if(g.signal==='Overstock signal') rec='Review purchasing and demand assumptions';
+      else if(g.signal==='Dead-stock signal') rec='Review slow/dead stock';
+      return `<tr><td><b>${esc(g.label)}</b></td><td>${fmtN(g.units)}</td><td>${g.coverage==null?'Requires sales history':g.coverage.toFixed(1)+' days'}</td><td><span class="pt3-pill ${g.cls}">${esc(g.signal)}</span></td><td>${g.value==null?'Requires cost data':money(g.value)}</td><td>${esc(expiry)}</td><td>${esc(rec)}</td></tr>`;
+    }).join('')}</tbody></table></div>`:'<div class="pt3-empty">No stock records in the current dataset.</div>';
+    renderHealth(gs,rs);
+    renderRequirements(rs);
+  }
+  function renderHealth(gs,rs){
+    if(!gs.length){$('pt3-health').innerHTML='No inventory records.';return;}
+    const scored=gs.filter(g=>g.coverage!=null);
+    if(!scored.length){$('pt3-health').innerHTML='<b>Requires inventory data</b><br><span class="pt3-small">Stock exists, but no usable recent sales history is available to calculate coverage-based health.</span>';return;}
+    const normal=gs.filter(g=>g.risk==='Normal').length/gs.length*100;
+    const coverageGood=scored.filter(g=>g.coverage>7&&g.coverage<=90).length/scored.length*100;
+    const movement=gs.filter(g=>g.sales90>0).length/gs.length*100;
+    const score=Math.round((normal+coverageGood+movement)/3);
+    $('pt3-health').innerHTML=`<div style="font-size:34px;font-weight:800">${score}<span style="font-size:13px;color:var(--muted)"> / 100</span></div><div style="margin-top:8px">Normal stock: ${normal.toFixed(0)}%<br>Healthy coverage: ${coverageGood.toFixed(0)}%<br>Active movement: ${movement.toFixed(0)}%</div><div style="margin-top:10px;font-size:10px;color:var(--muted)">Expiry, cost, supplier lead time, minimum stock and reorder level are not included unless present.</div>`;
+  }
+
+  function forecastSeries(rs){
+    const byDay={}; rs.forEach(r=>{const d=dateObj(r);if(d){const k=dateKey(r);byDay[k]=(byDay[k]||0)+revenue(r);}});
+    const days=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
+    if(days.length>=4){
+      const recent=days.slice(-90).map(x=>x[1]); const daily=avg(recent); const sd=stdev(recent);
+      return {method:'Recent daily run-rate: mean daily revenue over the available recent window (up to 90 dated observations). Confidence range uses approximately ±1.96 × daily standard deviation × √horizon. This is a statistical projection, not machine learning.',daily,sd,sample:days.length,fallback:false};
+    }
+    const months=lastNMonths(rs,12).map(x=>x[1]);
+    if(months.length>=2){const last=months[months.length-1], prev=months[months.length-2], delta=last-prev;return {method:'Fallback: existing simple two-period extrapolation because the dataset has insufficient dated history for the daily method.',daily:last/30+delta/30,sd:Math.abs(delta)/30,sample:months.length,fallback:true};}
+    return {method:'Insufficient historical data for a reliable projection. Add more dated sales history.',daily:0,sd:0,sample:months.length,fallback:true,insufficient:true};
+  }
+  function forecast(rs,days){
+    const f=forecastSeries(rs), val=f.daily*days, margin=1.96*f.sd*Math.sqrt(days);
+    return {...f,days,value:Math.max(0,val),low:Math.max(0,val-margin),high:Math.max(0,val+margin)};
+  }
+  function entityForecast(rs,field,days){
+    return groupMap(rs,field).map(g=>{const f=forecast(g.rows,days);return {...g,...f};}).sort((a,b)=>b.value-a.value);
+  }
+  function renderForecast(rs){
+    const f=forecast(rs,state.days), total=sum(rs,revenue), prev=lastNMonths(rs,2), previous=prev.length>1?prev[prev.length-2][1]:null;
+    const change=previous==null||previous===0?null:((f.value-previous)/previous*100);
+    $('pt3-forecast-kpis').innerHTML=[['Historical sales',money(total)],['Forecast',money(f.value)],['Low range',money(f.low)],['High range',money(f.high)],['vs last period',change==null?'—':`${change>=0?'+':''}${change.toFixed(1)}%`],['History',f.sample.toLocaleString()]].map(x=>`<div class="pt3-kpi"><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
+    const breakdown=(title,field)=>{const data=entityForecast(rs,field,state.days).slice(0,8);return `<div style="margin-bottom:12px"><div class="pt3-small" style="font-weight:700;margin-bottom:6px">${title}</div>${data.length?`<div class="pt3-table-wrap"><table><thead><tr><th>${title}</th><th>Historical</th><th>Forecast</th><th>Range</th></tr></thead><tbody>${data.map(g=>`<tr><td>${esc(g.label)}</td><td>${money(g.revenue)}</td><td>${money(g.value)}</td><td>${money(g.low)} – ${money(g.high)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="pt3-empty">No history available.</div>'}</div>`};
+    $('pt3-forecast-table').innerHTML=breakdown('Product','itemName')+breakdown('Region','regionName')+breakdown('Rep','bookingMan')+breakdown('Customer','customerName');
+    $('pt3-forecast-method').textContent=f.method;
+    renderTarget(rs,f);
+  }
+  function renderTarget(rs,f){
+    let target=0;
+    try{
+      const periods=(typeof targetState!=='undefined'&&targetState?.periods)||{};
+      const now=new Date(), p=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+      const reps=periods[p]||{}; target=Object.values(reps).reduce((a,v)=>a+n(v),0);
+    }catch(e){}
+    const current=sum(rs,revenue), projectedAchievement=target>0?(f.value/target*100):null, gap=target>0?Math.max(0,target-f.value):null;
+    $('pt3-target-view').innerHTML=`<div class="pt3-kpi"><span>Current sales</span><b>${money(current)}</b></div><div class="pt3-kpi" style="margin-top:8px"><span>Target</span><b>${target?money(target):'Requires target data'}</b></div><div class="pt3-kpi" style="margin-top:8px"><span>Forecast</span><b>${money(f.value)}</b></div><div style="margin-top:10px;font-size:11px">${target?`Projected achievement: <b>${projectedAchievement.toFixed(1)}%</b><br>Potential gap: <b>${money(gap)}</b><br><span class="pt3-muted">Gap = target − forecast, floored at zero.</span>`:'No current-period target is configured for the available target state.'}</div>`;
+  }
+
+  function buildAnomalies(rs){
+    const threshold=n($('pt3-z')?.value)||2, out=[];
+    const dimensions=[['Product','itemName'],['Customer','customerName'],['Rep','bookingMan'],['Region','regionName']];
+    const monthly={}; rs.forEach(r=>{const d=dateObj(r);if(!d)return;const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;dimensions.forEach(([name,field])=>{const ent=txt(r[field])||'Unassigned';const k=name+'|'+key(ent)+'|'+mk;(monthly[k] ||= {name,field,entity:ent,month:mk,value:0});monthly[k].value+=revenue(r);});});
+    const byEntity={}; Object.values(monthly).forEach(x=>{const k=x.name+'|'+key(x.entity);(byEntity[k] ||= []).push(x);});
+    Object.values(byEntity).forEach(series=>{
+      const vals=series.map(x=>x.value), m=avg(vals), sd=stdev(vals), latest=series.slice().sort((a,b)=>a.month.localeCompare(b.month)).slice(-1)[0];
+      if(!latest)return;
+      if(series.length>=4 && sd>0){const z=(latest.value-m)/sd;if(Math.abs(z)>=threshold)out.push({type:latest.name,entity:latest.entity,month:latest.month,metric:'Revenue',value:latest.value,z,method:'z-score',explanation:`Revenue was ${money(latest.value)}; z-score ${z.toFixed(2)} versus this entity's monthly history.`});}
+      else if(series.length>=2){const ordered=series.slice().sort((a,b)=>a.month.localeCompare(b.month)), prev=ordered[ordered.length-2].value, pct=prev?((latest.value-prev)/prev*100):null;if(pct!=null&&Math.abs(pct)>=50)out.push({type:latest.name,entity:latest.entity,month:latest.month,metric:'Revenue',value:latest.value,z:null,method:'percentage fallback',explanation:`Revenue changed ${pct>=0?'+':''}${pct.toFixed(1)}% versus the previous observed month; fewer than four observations were available.`});}
+    });
+    const days={}; rs.forEach(r=>{const d=dateKey(r);if(d)(days[d] ||=0),days[d]+=revenue(r);});
+    const vals=Object.values(days), m=avg(vals), sd=stdev(vals); Object.entries(days).forEach(([day,val])=>{if(vals.length>=4&&sd>0){const z=(val-m)/sd;if(Math.abs(z)>=threshold)out.push({type:'Sales',entity:'Overall',month:day,metric:'Daily revenue',value:val,z,method:'z-score',explanation:`Daily revenue was ${money(val)}; z-score ${z.toFixed(2)} versus the available daily history.`});}});
+    return out.sort((a,b)=>Math.abs(b.z||0)-Math.abs(a.z||0)).slice(0,100);
+  }
+  function renderAnomalies(rs){
+    state.anomalies=buildAnomalies(rs);
+    $('pt3-anomaly-table').innerHTML=state.anomalies.length?`<div class="pt3-table-wrap"><table><thead><tr><th>What happened</th><th>When</th><th>Where / Entity</th><th>Metric</th><th>How unusual</th></tr></thead><tbody>${state.anomalies.map(a=>`<tr><td><span class="pt3-pill pt3-warn">Unusual pattern detected</span><br><span class="pt3-small">${esc(a.explanation)}</span></td><td>${esc(a.month)}</td><td>${esc(a.type)} · ${esc(a.entity)}</td><td>${esc(a.metric)}<br>${money(a.value)}</td><td>${a.z==null?'≥50% change fallback':`z = ${a.z.toFixed(2)}`}</td></tr>`).join('')}</tbody></table></div>`:'<div class="pt3-empty">No unusual patterns met the current threshold.</div>';
+  }
+
+  function makeAlerts(rs){
+    const a=[];
+    const dimsForRows=(rlist)=>{const r=rlist?.[0]||{};return {region:txt(r.regionName),product:txt(r.itemName),customer:txt(r.customerName),rep:txt(r.bookingMan)};};
+    const push=(obj,rlist)=>a.push({...obj,...dimsForRows(rlist)});
+    const gs=inventory(rs);
+    gs.filter(g=>g.risk==='High').forEach(g=>push({category:'Inventory',severity:'High',date:dateKey(g.rows[g.rows.length-1])||'',metric:g.signal,entity:g.label,explanation:`${g.signal} based on current stock and recent sales coverage.`,action:g.units<=0?'Review replenishment availability':'Review replenishment against recent demand.'},g.rows));
+    gs.filter(g=>g.signal==='Overstock signal'||g.signal==='Dead-stock signal').forEach(g=>push({category:'Inventory',severity:'Medium',date:dateKey(g.rows[g.rows.length-1])||'',metric:g.signal,entity:g.label,explanation:g.signal==='Overstock signal'?`Estimated coverage is ${g.coverage?.toFixed(1)} days.`:'No unit sales were observed in the recent 90-day window.',action:'Review demand, stock policy and purchasing assumptions.'},g.rows));
+    const f=forecast(rs,state.days);
+    let target=0; try{const now=new Date(),p=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;target=Object.values((targetState?.periods||{})[p]||{}).reduce((x,y)=>x+n(y),0)}catch(e){}
+    if(target&&f.value<target)push({category:'Forecast',severity:'Medium',date:new Date().toISOString().slice(0,10),metric:'Projected gap',entity:'Current target',explanation:`${money(f.value)} forecast versus ${money(target)} configured target.`,action:'Review run-rate, target assumptions and planned activity.'},rs);
+    state.anomalies.forEach(x=>push({category:'Anomaly',severity:Math.abs(x.z||2)>=3?'High':'Medium',date:x.month,metric:x.metric,entity:x.entity,explanation:x.explanation,action:'Review the underlying transactions and context.'},rs.filter(r=>key(r[x.field||'itemName'])===key(x.entity)).slice(0,1)));
+    const seen=new Set(), dedup=[];
+    a.forEach(x=>{const id=key([x.category,x.severity,x.date,x.metric,x.entity].join('|'));if(!seen.has(id)){seen.add(id);dedup.push(x);}});
+    return dedup;
+  }
+  function renderRequirements(rs){
+    const fields=[['expiryDate','Expiry date'],['purchaseCost','Purchase cost'],['supplierLeadTime','Supplier lead time'],['minimumStock','Minimum stock'],['reorderLevel','Reorder level'],['country/province/city/territory','Geographic detail']];
+    $('pt3-data-requirements').innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px">'+fields.map(([f,l])=>{const ok=f.includes('/')?f.split('/').some(x=>rs.some(r=>txt(r[x]))):rs.some(r=>txt(r[f])||n(r[f])>0);return `<div class="pt3-kpi"><span>${esc(l)}</span><b style="font-size:13px">${ok?'Available':'Requires inventory/data'}</b></div>`}).join('')+'</div>';
+  }
+  function renderAlertsBase(rs){
+    state.alerts=makeAlerts(rs);
+    options('pt3-alert-region',uniq(rs,r=>r.regionName),'All');
+    options('pt3-alert-product',uniq(rs,r=>r.itemName),'All');
+    options('pt3-alert-customer',uniq(rs,r=>r.customerName),'All');
+    options('pt3-alert-rep',uniq(rs,r=>r.bookingMan),'All');
+    pt3RenderAlerts();
+  }
+  window.pt3RenderAlerts=function(){
+    const cat=$('pt3-alert-category')?.value||'', sev=$('pt3-alert-severity')?.value||'', dt=$('pt3-alert-date')?.value||'';
+    const ar=$('pt3-alert-region')?.value||'', ap=$('pt3-alert-product')?.value||'', ac=$('pt3-alert-customer')?.value||'', arep=$('pt3-alert-rep')?.value||'';
+    const reviewed=JSON.parse(localStorage.getItem('pt3_reviewed_alerts')||'{}'), dismissed=JSON.parse(localStorage.getItem('pt3_dismissed_alerts')||'{}');
+    let aa=state.alerts.filter(a=>(!cat||a.category===cat)&&(!sev||a.severity===sev)&&(!dt||a.date===dt)&&(!ar||key(a.region)===key(ar))&&(!ap||key(a.product)===key(ap))&&(!ac||key(a.customer)===key(ac))&&(!arep||key(a.rep)===key(arep)));
+    $('pt3-alert-table').innerHTML=aa.length?`<div class="pt3-table-wrap"><table><thead><tr><th>Category</th><th>Severity</th><th>Date</th><th>Metric</th><th>Entity</th><th>Explanation</th><th>Suggested next action</th><th>Status</th></tr></thead><tbody>${aa.map((a,i)=>{const id=key([a.category,a.date,a.metric,a.entity].join('|'));const status=dismissed[id]?'Dismissed':reviewed[id]?'Reviewed':'Open';return `<tr><td>${esc(a.category)}</td><td><span class="pt3-pill ${a.severity==='High'?'pt3-danger':a.severity==='Medium'?'pt3-warn':'pt3-ok'}">${a.severity}</span></td><td>${esc(a.date||'—')}</td><td>${esc(a.metric)}</td><td>${esc(a.entity)}</td><td>${esc(a.explanation)}</td><td>${esc(a.action)}</td><td><div class="pt3-alert-actions"><button class="btn btn-ghost pt3-small" onclick="pt3Review('${id}')">Mark reviewed</button><button class="btn btn-ghost pt3-small" onclick="pt3Dismiss('${id}')">Dismiss</button><button class="btn btn-ghost pt3-small" onclick="pt3Details('${id}')">View details</button><span class="pt3-muted pt3-small">${status}</span></div></td></tr>`}).join('')}</tbody></table></div>`:'<div class="pt3-empty">No alerts match the selected filters.</div>';
+  };
+  window.pt3Review=function(id){const x=JSON.parse(localStorage.getItem('pt3_reviewed_alerts')||'{}');x[id]=true;localStorage.setItem('pt3_reviewed_alerts',JSON.stringify(x));pt3RenderAlerts();};
+  window.pt3Dismiss=function(id){const x=JSON.parse(localStorage.getItem('pt3_dismissed_alerts')||'{}');x[id]=true;localStorage.setItem('pt3_dismissed_alerts',JSON.stringify(x));pt3RenderAlerts();};
+  window.pt3Details=function(id){const a=state.alerts.find(x=>key([x.category,x.date,x.metric,x.entity].join('|'))===id);if(a&&typeof showToast==='function')showToast(`${a.category}: ${a.explanation}`,'info');};
+  window.pt3ForecastDays=function(days,btn){state.days=days;document.querySelectorAll('#pt-part3 .pt3-tab').forEach(x=>x.classList.remove('active'));btn?.classList.add('active');pt3Refresh();};
+  window.pt3Refresh=function(){
+    const rs=filtered(); renderTerritory(rs); renderInventory(rs); renderForecast(rs,state.days); renderAnomalies(rs); renderAlertsBase(rs);
+  };
+  function injectNav(){
+    if(document.querySelector('.nav-item[data-page="part3"]'))return;
+    const nav=document.querySelector('.nav');
+    if(!nav)return;
+    const label=[...nav.querySelectorAll('.nav-label')].find(x=>txt(x.textContent)==='Intelligence');
+    const item=document.createElement('div'); item.className='nav-item'; item.dataset.page='part3'; item.innerHTML='<i class="fas fa-radar"></i><span>Operational Intelligence</span><span class="nav-badge" style="background:linear-gradient(135deg,#d6b265,#9b7a2e);color:#fff">NEW</span>';
+    if(label) label.parentNode.insertBefore(item,label.nextSibling); else nav.appendChild(item);
+    item.addEventListener('click',()=>{showPage('part3');pt3Refresh();});
+  }
+  function boot(){
+    try{
+      Object.assign(pageInfo,{part3:{title:'Operational Intelligence',desc:'Territory, inventory, forecasting, anomalies and smart alerts'}});
+      injectNav(); populateFilters(); pt3Refresh();
+      ['pt3-region','pt3-product','pt3-rep','pt3-customer'].forEach(id=>$(id)?.addEventListener('change',pt3Refresh));
+      ['pt3-alert-category','pt3-alert-severity','pt3-alert-date','pt3-alert-region','pt3-alert-product','pt3-alert-customer','pt3-alert-rep'].forEach(id=>$(id)?.addEventListener('change',pt3RenderAlerts));
+      $('pt3-z')?.addEventListener('change',pt3Refresh);
+      // Re-render after every existing global refresh so imports and existing filters stay live.
+      if(typeof updateAll==='function' && !window.__pt3Wrapped){
+        const oldUpdateAll=updateAll; window.__pt3Wrapped=true;
+        updateAll=function(){ const result=oldUpdateAll.apply(this,arguments); try{populateFilters();pt3Refresh();}catch(e){} return result; };
+      }
+      // Optional-field support for manually edited rows / future imports.
+      window.PharmatrackerPart3 = {refresh:pt3Refresh, getAnomalies:()=>state.anomalies.slice(), getAlerts:()=>state.alerts.slice()};
+    }catch(e){console.error('PharmaTracker Part 3 boot error',e);}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+
     <!-- ═══ SETTINGS PAGE ═══ -->
     <div class="page" id="page-approvals">
         <div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">
@@ -4600,6 +4980,15 @@ const FIELDS = {
     discount:   { label: 'Discount %',    variants: ['discount','disc','discount%','disc%'] },
     discountAmount:{label:'Discount Amt', variants: ['discount amount','discountamount','disc amount','disc amt'] },
     netAmount:  { label: 'Net Amount',    variants: ['net amount','netamount','net','net total','total','amount'] },
+    country:    { label: 'Country (Optional)', variants: ['country','country name','nation'] },
+    province:   { label: 'Province / State (Optional)', variants: ['province','province name','state','state name','state/province'] },
+    city:       { label: 'City (Optional)', variants: ['city','city name','town'] },
+    territory:  { label: 'Territory (Optional)', variants: ['territory','territory name','sales territory','territory code'] },
+    expiryDate: { label: 'Expiry Date (Optional)', variants: ['expiry date','expirydate','expiration date','expiry','exp date'] },
+    purchaseCost:{ label: 'Purchase Cost (Optional)', variants: ['purchase cost','purchasecost','cost','unit cost','buying cost','landed cost'] },
+    supplierLeadTime:{ label: 'Supplier Lead Time Days (Optional)', variants: ['supplier lead time','lead time','lead time days','supplier lead days'] },
+    minimumStock:{ label: 'Minimum Stock (Optional)', variants: ['minimum stock','min stock','minimum qty','min qty','safety stock'] },
+    reorderLevel:{ label: 'Reorder Level (Optional)', variants: ['reorder level','reorder point','reorder stock','reorder qty'] },
 };
 
 let currency = 'PKR';
@@ -5132,6 +5521,15 @@ function importData(headers, rows, mapping) {
                 discount: toNum(get(row,'discount')),
                 discountAmount: toNum(get(row,'discountAmount')),
                 netAmount: netAmt,
+                country: String(get(row,'country')).trim() || '',
+                province: String(get(row,'province')).trim() || '',
+                city: String(get(row,'city')).trim() || '',
+                territory: String(get(row,'territory')).trim() || '',
+                expiryDate: String(get(row,'expiryDate')).trim() || '',
+                purchaseCost: toNum(get(row,'purchaseCost')),
+                supplierLeadTime: toNum(get(row,'supplierLeadTime')),
+                minimumStock: toNum(get(row,'minimumStock')),
+                reorderLevel: toNum(get(row,'reorderLevel')),
             });
         }
 
