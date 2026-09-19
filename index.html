@@ -1076,7 +1076,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
     pointer-events:none;
 }
-#marketing-root .mkt-wrap{ max-width:1180px; margin:0 auto; padding:0 28px; position:relative; z-index:1; }
+#marketing-root .mkt-wrap{ max-width:none; width:100%; margin:0; padding:0; position:relative; z-index:1; }
 
 /* ── Nav ── */
 .mkt-nav{
@@ -1085,7 +1085,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     background:rgba(6,10,18,0.72);
     border-bottom:1px solid var(--hairline);
 }
-.mkt-nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:1180px; margin:0 auto; }
+.mkt-nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:16px 28px; max-width:none; width:100%; margin:0; box-sizing:border-box; }
 .mkt-logo{ display:flex; align-items:center; gap:11px; cursor:pointer; }
 .mkt-logo-icon{
     width:38px; height:38px; border-radius:11px;
@@ -1938,22 +1938,6 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
                 <h4>Our vision</h4>
                 <p>We're building toward a future where every distributor — not just the largest ones — has real-time visibility into their business. That means deeper forecasting, automated reorder alerts, and multi-branch support are next on the roadmap, all without losing the speed and simplicity you get today.</p>
             </div>
-        </div>
-    </section>
-
-    <!-- ═══ Customer feedback / social proof ═══ -->
-    <section class="mkt-section mkt-wrap" id="mkt-feedback">
-        <div class="mkt-section-head">
-            <div class="mkt-kicker">Customer feedback</div>
-            <h2>Built with feedback from the people who use it</h2>
-            <p>Share your experience after using PharmaTracker. Approved customer reviews can appear here to help future distributors evaluate the platform.</p>
-        </div>
-        <div class="pt-feedback-public" id="pt-feedback-public">
-            <div class="pt-feedback-loading"><i class="fas fa-spinner fa-spin"></i> Loading customer feedback…</div>
-        </div>
-        <div class="pt-feedback-cta">
-            <div><strong>Already using PharmaTracker?</strong><span>Rate your experience with a 1–5 star review.</span></div>
-            <button class="mkt-btn mkt-btn-gold" onclick="pharmaTrackerOpenFeedback()"><i class="fas fa-star"></i> Leave feedback</button>
         </div>
     </section>
 
