@@ -2339,7 +2339,7 @@ function changeSiteLanguage(language){
             <div class="auth-success" id="forgot-success"></div>
 
             <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">
-                Apna registered email darj karein — hum aapko ek 6-digit reset code bhejenge.
+                Apna registered email darj karein — hum aapko password reset ka link bhejenge.
             </p>
 
             <div class="auth-field">
@@ -2348,7 +2348,7 @@ function changeSiteLanguage(language){
             </div>
 
             <button class="auth-btn" id="forgot-btn" onclick="doForgotPassword()">
-                <i class="fas fa-paper-plane"></i> Send Reset Code
+                <i class="fas fa-paper-plane"></i> Send Reset Link
             </button>
 
             <div class="auth-terms">
@@ -8874,9 +8874,13 @@ const EMAILJS_CONFIG = {
     publicKey: 'EwHEfXfL6Ty_r_Bp_',
     adminEmail: 'ranawaseembkr91@gmail.com'
 };
-try {
-    if (window.emailjs && !EMAILJS_CONFIG.publicKey.startsWith('YOUR_')) emailjs.init(EMAILJS_CONFIG.publicKey);
-} catch (e) { console.warn('EmailJS init skipped:', e); }
+function initEmailJs() {
+    try {
+        if (window.emailjs && !EMAILJS_CONFIG.publicKey.startsWith('YOUR_')) emailjs.init(EMAILJS_CONFIG.publicKey);
+    } catch (e) { console.warn('EmailJS init skipped:', e); }
+}
+initEmailJs();
+window.addEventListener('load', initEmailJs); // the EmailJS script is deferred
 
 function sendAdminNotification(user, isRenewal) {
     if (!window.emailjs || EMAILJS_CONFIG.serviceId.startsWith('YOUR_') || EMAILJS_CONFIG.templateId.startsWith('YOUR_') || EMAILJS_CONFIG.publicKey.startsWith('YOUR_')) {
@@ -9844,7 +9848,7 @@ function backToMarketing(){
 
     function authErrorMessage(e) {
         const code = String(e && e.code || '');
-        if (code.includes('wrong-password') || code.includes('invalid-credential') || code.includes('user-not-found')) return 'Invalid email or password. Please try again.';
+        if (code.includes('wrong-password') || code.includes('invalid-credential') || code.includes('user-not-found')) return 'Invalid email or password. Please try again. (Agar password sahi hai to ye account Firebase Authentication mein nahi hai - admin se dobara create karwayen.)';
         if (code.includes('too-many-requests')) return 'Too many attempts. Please wait a little and try again.';
         if (code.includes('invalid-email')) return 'Please enter a valid email address.';
         if (code.includes('weak-password')) return 'Password must be at least 6 characters.';
@@ -9917,7 +9921,11 @@ function backToMarketing(){
                 await firebaseAuth.signInWithEmailAndPassword(email, pw);
             } catch (e) {
                 if (e && (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential')) {
-                    const migrated = await ensureLegacyAccountMigrated(email, pw);
+                    // Legacy migration needs a Firestore read while signed out, which secure
+                    // rules block. If it fails, report the real sign-in error instead.
+                    let migrated = false;
+                    try { migrated = await ensureLegacyAccountMigrated(email, pw); }
+                    catch (migErr) { console.warn('Legacy account migration skipped:', migErr); }
                     if (migrated) await firebaseAuth.signInWithEmailAndPassword(email, pw);
                     else throw e;
                 } else throw e;
@@ -10003,41 +10011,23 @@ function backToMarketing(){
     };
 
     window.doForgotPassword = async function () {
-        // Custom 6-digit reset-code flow. Firebase email-link reset is intentionally not used.
+        // Firebase sends a secure reset link to the user's email. This works while
+        // signed out and needs no Firestore access.
         const email = document.getElementById('forgot-email').value.trim().toLowerCase();
         const errEl = document.getElementById('forgot-error'); const okEl = document.getElementById('forgot-success');
         errEl.classList.remove('show'); okEl.classList.remove('show');
         if (!email) { errEl.textContent = 'Email address darj karein.'; errEl.classList.add('show'); return; }
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
         try {
-            const user = await getUserByEmail(email);
-            if (!user) {
-                okEl.textContent = 'Agar ye email registered hai, to reset code bhej diya gaya hai. Apna inbox/spam folder check karein.';
-                okEl.classList.add('show'); return;
-            }
-            const code = genResetCode();
-            user.resetCode = code;
-            user.resetCodeExpiry = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-            await saveUser(user);
-            const sent = sendResetCodeEmail(user, code);
-            resetTargetEmail = email;
-            document.getElementById('reset-error').classList.remove('show');
-            document.getElementById('reset-success').classList.remove('show');
-            document.getElementById('reset-code').value = '';
-            document.getElementById('reset-password').value = '';
-            document.getElementById('reset-confirm').value = '';
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            document.getElementById('form-reset').classList.add('active');
-            if (!sent) {
-                document.getElementById('reset-success').textContent = `Reset code: ${code} (EmailJS configured nahi hai — testing ke liye code yahan dikhaya gaya hai)`;
-                document.getElementById('reset-success').classList.add('show');
-            } else {
-                showToast('6-digit reset code aapke email par bhej diya gaya hai.', 'success');
-            }
+            await firebaseAuth.sendPasswordResetEmail(email);
+            okEl.textContent = 'Agar ye email registered hai, to password reset link bhej diya gaya hai. Apna inbox/spam folder check karein.';
+            okEl.classList.add('show');
         } catch (e) {
             console.error(e);
-            errEl.textContent = 'Reset code bhejne mein masla hua. Dobara koshish karein.';
+            const code = String(e && e.code || '');
+            errEl.textContent = code.includes('invalid-email') ? 'Please enter a valid email address.'
+                : code.includes('too-many-requests') ? 'Too many attempts. Please wait a little and try again.'
+                : 'Reset email bhejne mein masla hua. Dobara koshish karein.';
             errEl.classList.add('show');
         }
     };
