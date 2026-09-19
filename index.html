@@ -12023,8 +12023,7 @@ window.doSignup=async function(){
   if(pw.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.classList.add('show');return;}
   if(pw!==confirm){errEl.textContent='Passwords do not match.';errEl.classList.add('show');return;}
   try{
-    const existing=await db.collection('users').doc(email).get();
-    if(existing.exists){errEl.textContent='An account with this email already exists.';errEl.classList.add('show');return;}
+    
     const auth=firebase.auth();
     const cred=await auth.createUserWithEmailAndPassword(email,pw);
     const start=new Date(), expiry=new Date(start.getTime()+PT_SAAS.TRIAL_DAYS*86400000);
