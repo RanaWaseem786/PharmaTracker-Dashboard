@@ -11958,6 +11958,7 @@ function prepareDataSummary(catalogue, data) {
         if (_saveRunning || !cloudOn()) return;
         const reason = S.queued || 'data-change';
         _saveRunning = true; S.saving = true; S.queued = null;
+        setBadge('syncing', 'Cloud par save ho raha hai…');
         const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
         try {
             const meta = await cloudSaveSnapshot(reason);
@@ -11967,6 +11968,7 @@ function prepareDataSummary(catalogue, data) {
                 console.log('☁️ Cloud sync done — ' + meta.rowCount.toLocaleString() + ' records, ' +
                             meta.chunkCount + ' chunk(s), ' + mb + ' MB' + (meta.compressed ? ' (gzip)' : '') +
                             ' in ' + secs.toFixed(1) + 's');
+                setBadge('synced', 'Synced · ' + meta.rowCount.toLocaleString() + ' records');
                 const now = Date.now();
                 if (now - S.lastToast > 20000) {
                     S.lastToast = now;
@@ -11975,6 +11977,7 @@ function prepareDataSummary(catalogue, data) {
             }
         } catch (e) {
             handleCloudError(e, 'save');
+            setBadge('error', 'Cloud save failed — click');
         } finally {
             _saveRunning = false; S.saving = false;
             if (S.queued) runCloudSave();
@@ -11982,7 +11985,17 @@ function prepareDataSummary(catalogue, data) {
     }
 
     /* ------------------------------ load ------------------------------- */
-    async function cloudLoadSnapshot() {
+    async function cloudLoadSnapshot(isRetry) {
+        try {
+            return await cloudLoadSnapshotOnce();
+        } catch (e) {
+            if (isRetry) throw e;
+            console.warn('☁️ Cloud read failed, ek dafa dobara try:' + ((e && e.message) || e));
+            await new Promise(function (r) { setTimeout(r, 2000); });
+            return await cloudLoadSnapshotOnce();
+        }
+    }
+    async function cloudLoadSnapshotOnce() {
         if (!cloudOn()) return null;
         const metaDoc = await withTimeout(rootRef().get(), CLOUD_TIMEOUT, 'Cloud meta read');
         if (!metaDoc || !metaDoc.exists) return null;
@@ -12159,6 +12172,39 @@ function prepareDataSummary(catalogue, data) {
         } catch (e) { handleCloudError(e, 'settings-pull'); }
     }
 
+    /* --------------------- on-screen status badge ---------------------- */
+    /* Console kholne ki zarurat na ho: neeche right corner mein chhota badge
+       batata hai ke cloud sync chal raha hai ya nahi. Click = details. */
+    var badge = null;
+    function ensureBadge() {
+        if (badge) return badge;
+        badge = document.createElement('div');
+        badge.id = 'pt-cloud-badge';
+        badge.title = 'PharmaTracker cloud sync — details ke liye click karein';
+        badge.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:99999;padding:7px 13px;'
+            + 'border-radius:999px;font:600 12px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;'
+            + 'color:#fff;background:#4b5563;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;'
+            + 'display:flex;align-items:center;gap:7px;user-select:none;letter-spacing:.2px;';
+        badge.addEventListener('click', showBadgeDetails);
+        document.body.appendChild(badge);
+        return badge;
+    }
+    function setBadge(state, text) {
+        try {
+            const el = ensureBadge();
+            const bg = { syncing: '#b45309', synced: '#15803d', error: '#b91c1c', off: '#4b5563' }[state] || '#4b5563';
+            const ic = { syncing: '⟳', synced: '☁', error: '⚠', off: '○' }[state] || '○';
+            el.style.background = bg;
+            el.innerHTML = '<span style="font-size:13px">' + ic + '</span><span>' + text + '</span>';
+        } catch (e) {}
+    }
+    function showBadgeDetails() {
+        const st = window.__ptCloudSync.status();
+        console.log('☁️ Cloud sync status:', st);
+        toast('☁️ Cloud ' + (st.enabled ? 'ON' : 'OFF') + ' · ' + st.rows.toLocaleString() + ' records · live: '
+              + st.live + (st.blocked ? ' · RULES BLOCKED' : ''), st.blocked ? 'error' : 'success');
+    }
+
     /* --------------------------- wiring -------------------------------- */
     const _baseSave = saveDataToStorage;
     saveDataToStorage = function () {
@@ -12178,21 +12224,27 @@ function prepareDataSummary(catalogue, data) {
                     cacheLocally();
                     refreshDashboardUI();
                     console.log('☁️ Loaded ' + rawData.length.toLocaleString() + ' records from the cloud');
+                    setBadge('synced', 'Synced · ' + rawData.length.toLocaleString() + ' records');
                     attachMetaListener();
                     pullSettings();
                     return true;
                 }
+                console.log('☁️ Cloud par abhi koi data nahi — local data upload ki ja rahi hai');
                 // Nothing in the cloud yet: keep any local data and upload it once
                 // so this device's dataset becomes the shared one.
                 const local = await _baseLoad();
                 if (local && rawData.length) {
+                    setBadge('syncing', 'Pehli cloud upload…');
                     scheduleCloudSave('first-upload');
                     attachMetaListener();
+                } else {
+                    setBadge('off', 'Cloud khali — koi data nahi');
                 }
                 pullSettings();
                 return local;
             } catch (e) {
                 handleCloudError(e, 'load');
+                setBadge('error', 'Cloud read failed — click');
                 return await _baseLoad();
             }
         }
@@ -12203,6 +12255,7 @@ function prepareDataSummary(catalogue, data) {
     const _baseClearSession = clearSession;
     clearSession = function () {
         detachMetaListener();
+        try { if (badge) badge.style.display = 'none'; } catch (e) {}
         S.lastUpdatedAt = null;
         S.prevChunks = 0;
         return _baseClearSession.apply(this, arguments);
@@ -12236,6 +12289,7 @@ function prepareDataSummary(catalogue, data) {
             };
         },
         saveNow: function () { return runCloudSave(); },
+        badge: function (state, text) { setBadge(state, text); },
         refresh: function () { return reloadFromCloud(); },
         pullSettings: pullSettings
     };
