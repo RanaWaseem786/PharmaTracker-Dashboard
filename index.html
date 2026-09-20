@@ -3843,11 +3843,11 @@ function changeSiteLanguage(language){
                 <td class="rr-num">${num(r.invoices)}</td>
                 <td class="rr-num">${money(r.netAmount)}</td>
                 <td class="rr-num">${money(r.grossAmount)}</td>
-                <td class="rr-num">${r.discountPct.toFixed(1)}%</td>
+                <td class="rr-num">${Number(r.discountPct || 0).toFixed(1)}%</td>
                 <td class="rr-num">${num(r.customers)}</td>
                 <td class="rr-num">${num(r.products)}</td>
                 <td class="rr-num">${money(r.avgOrder)}</td>
-                <td class="rr-num">${r.sharePct.toFixed(1)}%<span class="rr-bar-track"><span class="rr-bar-fill" style="width:${Math.max(2, (r.netAmount / maxNet) * 100)}%"></span></span></td>
+                <td class="rr-num">${Number(r.sharePct || 0).toFixed(1)}%<span class="rr-bar-track"><span class="rr-bar-fill" style="width:${Math.max(2, (r.netAmount / maxNet) * 100)}%"></span></span></td>
             </tr>`).join('')}</tbody>`;
         wrap.innerHTML = `<table class="rr-table">${head}${body}</table>`;
         wrap.querySelectorAll('th[data-sort-key]').forEach(th => {
@@ -4306,17 +4306,20 @@ function changeSiteLanguage(language){
     host.innerHTML = cards.map(([icon, value, label, sub, accent]) => `<div class="stat-card" style="--card-accent:${accent}"><div class="stat-icon-wrap"><i class="fas ${icon}"></i></div><div class="stat-value">${value}</div><div class="stat-label">${label}</div><div class="stat-change neutral">${sub}</div></div>`).join('');
   }
   function performerRows(rows, type) {
-  const tracked = rows.filter(row => row.target > 0);
-  const byAchievement = tracked.length > 0;
-  const base = byAchievement ? tracked : rows;          // NAYI LINE
-  const sorted = base.slice().sort((a, b) => type === 'top'   // rows.slice() ki jagah base.slice()
-    ? (byAchievement ? (b.achievementPct ?? -Infinity) - (a.achievementPct ?? -Infinity) : b.netAmount - a.netAmount)
-    : (byAchievement ? (a.achievementPct ?? Infinity) - (b.achievementPct ?? Infinity) : a.netAmount - b.netAmount));
-  return { rows:sorted.slice(0, 3), byAchievement };
+    const tracked = rows.filter(row => row.target > 0);
+    const byAchievement = tracked.length > 0;
+    /* Jab ranking "achievement" ke hisaab se ho to sirf unhi reps ko rank karein
+       jin ka target set hai — warna bina target wale rep (achievementPct = null)
+       top/low 3 mein aa kar render crash kar dete hain (null.toFixed). */
+    const pool = byAchievement ? tracked : rows;
+    const sorted = pool.slice().sort((a, b) => type === 'top'
+      ? (byAchievement ? (b.achievementPct ?? -Infinity) - (a.achievementPct ?? -Infinity) : b.netAmount - a.netAmount)
+      : (byAchievement ? (a.achievementPct ?? Infinity) - (b.achievementPct ?? Infinity) : a.netAmount - b.netAmount));
+    return { rows:sorted.slice(0, 3), byAchievement };
   }
   function renderPerformers(list) {
-    set.byAchievement && row.achievementPct != null ? `${row.achievementPct.toFixed(1)}%` : money(row.netAmount)
-    const renderRows = (set, empty) => set.rows.length ? set.rows.map(row => `<div class="rr-performer"><span class="rr-performer-rank">${row.rank}</span><div class="rr-performer-main"><span class="rr-performer-name" title="${esc(row.name)}">${esc(row.name)}</span><span class="rr-performer-value">${set.byAchievement ? `${row.achievementPct.toFixed(1)}%` : money(row.netAmount)}</span></div></div>`).join('') : `<span class="rr-muted">${empty}</span>`;
+    const topHost = byId('rr-top-performers'), lowHost = byId('rr-low-performers'); if (!topHost || !lowHost) return;
+    const renderRows = (set, empty) => set.rows.length ? set.rows.map(row => `<div class="rr-performer"><span class="rr-performer-rank">${row.rank}</span><div class="rr-performer-main"><span class="rr-performer-name" title="${esc(row.name)}">${esc(row.name)}</span><span class="rr-performer-value">${(set.byAchievement && row.achievementPct != null) ? `${Number(row.achievementPct).toFixed(1)}%` : money(row.netAmount)}</span></div></div>`).join('') : `<span class="rr-muted">${empty}</span>`;
     const top = performerRows(list, 'top'), low = performerRows(list, 'low');
     topHost.innerHTML = renderRows(top, 'No rep data in this selection.');
     lowHost.innerHTML = renderRows(low, 'No rep data in this selection.');
@@ -11825,6 +11828,8 @@ function prepareDataSummary(catalogue, data) {
     function handleCloudError(e, context) {
         const code = String((e && e.code) || '');
         const msg = String((e && e.message) || e || '');
+        S.lastError = (code ? '[' + code + '] ' : '') + msg;
+        S.lastErrorAt = new Date().toISOString();
         const denied = code.indexOf('permission-denied') > -1 ||
                        msg.toLowerCase().indexOf('permission-denied') > -1 ||
                        msg.toLowerCase().indexOf('missing or insufficient permissions') > -1;
@@ -12193,6 +12198,8 @@ function prepareDataSummary(catalogue, data) {
     function setBadge(state, text) {
         try {
             const el = ensureBadge();
+            el.title = 'PharmaTracker cloud sync — click for details'
+                + (S.lastError ? '\nAakhri error: ' + S.lastError : '');
             const bg = { syncing: '#b45309', synced: '#15803d', error: '#b91c1c', off: '#4b5563' }[state] || '#4b5563';
             const ic = { syncing: '⟳', synced: '☁', error: '⚠', off: '○' }[state] || '○';
             el.style.background = bg;
@@ -12204,6 +12211,14 @@ function prepareDataSummary(catalogue, data) {
         console.log('☁️ Cloud sync status:', st);
         toast('☁️ Cloud ' + (st.enabled ? 'ON' : 'OFF') + ' · ' + st.rows.toLocaleString() + ' records · live: '
               + st.live + (st.blocked ? ' · RULES BLOCKED' : ''), st.blocked ? 'error' : 'success');
+        if (S.lastError) setTimeout(function () { toast('Aakhri error: ' + S.lastError, 'error'); }, 300);
+        // Click = force a sync (useful for testing without uploading again)
+        if (st.enabled && st.rows > 0 && !st.blocked) {
+            toast('☁️ Cloud sync dobara bhej rahe hain…', 'success');
+            runCloudSave();
+        } else if (st.rows <= 0) {
+            toast('Pehle Excel/CSV file upload karein — phir ye cloud par save ho gi.', 'warning');
+        }
     }
 
     /* --------------------------- wiring -------------------------------- */
@@ -12286,6 +12301,7 @@ function prepareDataSummary(catalogue, data) {
                 user: emailKey(),
                 live: S.metaUnsub ? 'listener' : (S.pollTimer ? 'polling' : 'off'),
                 listenFails: S.listenFails || 0,
+                lastError: S.lastError || null,
                 rows: (typeof rawData !== 'undefined' ? rawData.length : -1)
             };
         },
