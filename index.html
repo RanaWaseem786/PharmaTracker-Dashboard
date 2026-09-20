@@ -13178,4 +13178,1179 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
-</body></html>
+
+<style id="pt-enhancements-style">
+/* =====================================================================
+   PHARMATRACKER ENHANCEMENTS PACK — styles only for the NEW widgets
+   (bell, global search, dashboard alerts, activity log). Purely
+   additive: uses the app's existing CSS variables so every report
+   theme (modern-dark / light-clean / gradient-card / minimal) applies.
+   ===================================================================== */
+
+/* ── Notification bell ── */
+.pt-ens-bell-wrap { position: relative; }
+.pt-ens-bell-btn { position: relative; padding: 8px 11px !important; }
+.pt-ens-bell-badge {
+    position: absolute; top: -4px; right: -4px;
+    min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: 999px; background: #f85149; color: #fff;
+    font-size: 9.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px var(--surface, #161b22);
+}
+.pt-ens-bell-panel {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    width: 360px; max-width: 92vw; max-height: 65vh; overflow-y: auto;
+    background: var(--surface, #161b22);
+    border: 1px solid var(--border, #30363d);
+    border-radius: 12px; z-index: 260;
+    box-shadow: 0 18px 45px rgba(0,0,0,.35);
+}
+.pt-ens-bell-panel.show { display: block; }
+.pt-ens-bell-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; font-size: 12.5px; font-weight: 700;
+    border-bottom: 1px solid var(--border, #30363d);
+    position: sticky; top: 0; background: var(--surface, #161b22); z-index: 1;
+}
+.pt-ens-notif {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 11px 14px; cursor: pointer;
+    border-bottom: 1px solid var(--border, #30363d);
+    transition: background .15s ease;
+}
+.pt-ens-notif:last-child { border-bottom: none; }
+.pt-ens-notif:hover { background: var(--surface2, #21262d); }
+.pt-ens-notif.unread { background: rgba(88,166,255,0.05); }
+.pt-ens-notif-ico { font-size: 14px; margin-top: 2px; width: 18px; text-align: center; }
+.pt-ens-notif-title { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.pt-ens-notif-msg { font-size: 11px; color: var(--muted, #8b949e); margin-top: 3px; line-height: 1.45; }
+.pt-ens-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent, #58a6ff); flex-shrink: 0; }
+.pt-ens-read-btn {
+    background: none; border: 1px solid var(--border, #30363d); color: var(--muted, #8b949e);
+    width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-size: 10px; flex-shrink: 0;
+}
+.pt-ens-read-btn:hover { color: var(--accent2, #3fb950); border-color: var(--accent2, #3fb950); }
+
+/* ── Dashboard "Alerts & Attention Required" ── */
+.pt-ens-dash-list { display: flex; flex-direction: column; gap: 10px; }
+.pt-ens-dash-item {
+    display: flex; gap: 12px; align-items: center;
+    padding: 11px 14px; border-radius: 10px;
+    background: var(--surface2, #21262d);
+    border: 1px solid var(--border, #30363d);
+}
+
+/* ── Global search overlay ── */
+#pt-ens-gsearch-overlay {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(3px);
+    padding: 9vh 16px 16px; justify-content: center; align-items: flex-start;
+}
+#pt-ens-gsearch-overlay.show { display: flex; }
+.pt-ens-gsearch-box {
+    width: 640px; max-width: 100%;
+    background: var(--surface, #161b22);
+    border: 1px solid var(--border, #30363d);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 24px 70px rgba(0,0,0,.5);
+}
+.pt-ens-gsearch-inputwrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; border-bottom: 1px solid var(--border, #30363d);
+}
+.pt-ens-gsearch-inputwrap i { color: var(--muted, #8b949e); font-size: 14px; }
+.pt-ens-gsearch-inputwrap kbd {
+    font-size: 10px; color: var(--muted, #8b949e);
+    border: 1px solid var(--border, #30363d); border-radius: 5px; padding: 2px 6px;
+}
+#pt-ens-gsearch-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text, #e6edf3); font-size: 14px; font-family: inherit;
+}
+.pt-ens-gsearch-results { max-height: 56vh; overflow-y: auto; padding: 6px 0 10px; }
+.pt-ens-gsearch-cat {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted, #8b949e); padding: 12px 16px 5px;
+}
+.pt-ens-gsearch-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 8px 16px; cursor: pointer; font-size: 12.5px;
+    transition: background .12s ease;
+}
+.pt-ens-gsearch-item:hover { background: var(--surface2, #21262d); }
+.pt-ens-gsearch-item > i:first-child { width: 16px; text-align: center; color: var(--accent, #58a6ff); font-size: 12px; }
+.pt-ens-gsearch-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pt-ens-gsearch-sub { font-size: 11px; color: var(--muted, #8b949e); margin-left: auto; white-space: nowrap; }
+.pt-ens-gsearch-go { margin-left: auto; font-size: 10px; color: var(--muted, #8b949e); opacity: 0; transition: opacity .12s; }
+.pt-ens-gsearch-sub + .pt-ens-gsearch-go { margin-left: 8px; }
+.pt-ens-gsearch-item:hover .pt-ens-gsearch-go { opacity: 1; }
+.pt-ens-gsearch-hint { padding: 22px 18px; font-size: 12px; color: var(--muted, #8b949e); line-height: 1.6; }
+
+@media (max-width: 760px) {
+    .pt-ens-gsearch-lbl { display: none; }
+    .pt-ens-bell-panel { width: 310px; }
+}
+
+</style>
+<script id="pt-enhancements-script">
+/* =====================================================================
+   PHARMATRACKER ENHANCEMENTS PACK (additive module)
+   ---------------------------------------------------------------------
+   Adds: 1) Global Search (Ctrl+K)   2) Notification bell & alerts
+         3) Admin Activity/Audit Log 4) Dashboard "Alerts & Attention"
+         5) PDF export optimizer (≤ 1 MB target)
+   - Does NOT remove or alter any existing feature, style or workflow.
+   - All new persistent data (notification read-state, audit log) is
+     stored in Firestore (guarded by useFirestore) so the same user sees
+     the same state on any device; localStorage is only a fallback.
+   - Respects roles: Activity Log + approval alerts are admin-only.
+   - Never stores passwords or sensitive values.
+   ===================================================================== */
+(function () {
+    'use strict';
+
+    /* ─────────────────────────── helpers ─────────────────────────── */
+    var $id = function (x) { return document.getElementById(x); };
+    function ptEsc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+    function cu() { return (typeof currentUser !== 'undefined' && currentUser) ? currentUser : null; }
+    function cuEmail() { var u = cu(); return u && u.email ? String(u.email).toLowerCase() : ''; }
+    function isAdmin() { var u = cu(); return !!(u && u.role === 'admin'); }
+    function fsReady() {
+        return typeof useFirestore !== 'undefined' && useFirestore &&
+               typeof db !== 'undefined' && db && db.collection;
+    }
+    function toast(msg, type) { if (typeof showToast === 'function') showToast(msg, type); }
+    function safeRows() {
+        // rawData is declared with `let` in the app, so it is NOT a window
+        // property — reference the binding directly (guarded by typeof).
+        try {
+            if (typeof rawData !== 'undefined' && Array.isArray(rawData)) return rawData;
+        } catch (e) {}
+        try { return Array.isArray(window.rawData) ? window.rawData : []; } catch (e) {}
+        return [];
+    }
+    function moneyFmt(n) {
+        try { return typeof fmt === 'function' ? fmt(n) : Number(n || 0).toLocaleString(); }
+        catch (e) { return String(n); }
+    }
+    function wrapFn(name, opts) {
+        var orig = window[name];
+        if (typeof orig !== 'function' || orig.__ptWrapped) return;
+        var wrapped = function () {
+            var callArgs = Array.prototype.slice.call(arguments);
+            if (opts.before) { try { opts.before.apply(null, callArgs); } catch (e) {} }
+            var out = orig.apply(this, arguments);
+            var after = function (result) {
+                if (opts.after) { try { opts.after.apply(null, [result].concat(callArgs)); } catch (e) {} }
+                return result;
+            };
+            if (out && typeof out.then === 'function') return out.then(function (r) { return after(r); });
+            return after(out);
+        };
+        wrapped.__ptWrapped = true;
+        window[name] = wrapped;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       3) ACTIVITY / AUDIT LOG  (defined first so other features log)
+    ════════════════════════════════════════════════════════════════ */
+    var ACT_LS_KEY = 'pt_ens_activity_v1';
+    function localLogRead() {
+        try { return JSON.parse(localStorage.getItem(ACT_LS_KEY) || '[]'); } catch (e) { return []; }
+    }
+    function localLogWrite(rows) {
+        try { localStorage.setItem(ACT_LS_KEY, JSON.stringify(rows.slice(0, 500))); } catch (e) {}
+    }
+    window.ptLogActivity = function (action, section, details) {
+        try {
+            var u = cu();
+            var entry = {
+                ts: new Date().toISOString(),
+                tsn: Date.now(),
+                user: u ? (u.email || '') : 'anonymous',
+                userName: u ? ((u.fname || '') + ' ' + (u.lname || '')).trim() : '',
+                role: u ? (u.role || '') : '',
+                action: String(action || ''),
+                section: String(section || ''),
+                details: String(details == null ? '' : details).slice(0, 400)
+            };
+            // Never let secrets in, whatever the caller passed.
+            entry.details = entry.details.replace(/password|passwd|pwd|token|secret/gi, '[redacted]');
+            var rows = localLogRead(); rows.unshift(entry); localLogWrite(rows);
+            if (fsReady()) {
+                db.collection('activityLog').add(entry).catch(function () { /* rules may deny; local copy kept */ });
+            }
+        } catch (e) { /* never break the app for logging */ }
+    };
+
+    /* Activity Log page (admin-only) — injected using the app's own
+       page/nav pattern so showPage() works unchanged. */
+    function injectActivityPage() {
+        if ($id('page-activitylog')) return;
+        var main = document.querySelector('.main');
+        if (!main) return;
+        var page = document.createElement('div');
+        page.className = 'page';
+        page.id = 'page-activitylog';
+        page.innerHTML =
+            '<div class="section-pdf-toolbar" style="display:flex;justify-content:flex-end;margin-bottom:12px">' +
+            '  <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF(\'activitylog\')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>' +
+            '</div>' +
+            '<div class="card">' +
+            '  <div class="card-header"><div><div class="card-title"><i class="fas fa-clipboard-list"></i> Activity Log</div>' +
+            '  <div class="card-sub">Admin-only audit trail: logins, imports, exports, target &amp; account changes. Passwords are never recorded.</div></div>' +
+            '  <div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            '    <button type="button" class="btn btn-ghost" onclick="ptEnsExportLogCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>' +
+            '    <button type="button" class="btn btn-ghost" onclick="ptEnsRefreshLog()"><i class="fas fa-rotate"></i> Refresh</button>' +
+            '  </div></div>' +
+            '  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">' +
+            '    <select class="filter-select" id="pt-ens-log-user"><option value="">All users</option></select>' +
+            '    <select class="filter-select" id="pt-ens-log-action"><option value="">All actions</option></select>' +
+            '    <select class="filter-select" id="pt-ens-log-section"><option value="">All sections</option></select>' +
+            '    <input type="date" class="filter-select" id="pt-ens-log-from" title="From date">' +
+            '    <input type="date" class="filter-select" id="pt-ens-log-to" title="To date">' +
+            '    <button type="button" class="btn btn-ghost" onclick="ptEnsClearLogFilters()" style="font-size:11px">Clear filters</button>' +
+            '  </div>' +
+            '  <div id="pt-ens-log-source" style="font-size:11px;color:var(--muted);margin-bottom:8px"></div>' +
+            '  <div class="table-wrap" style="overflow:auto;max-height:600px" id="pt-ens-log-table"></div>' +
+            '</div>';
+        main.appendChild(page);
+        ['pt-ens-log-user', 'pt-ens-log-action', 'pt-ens-log-section', 'pt-ens-log-from', 'pt-ens-log-to'].forEach(function (id) {
+            var el = $id(id); if (el) el.addEventListener('change', renderLogTable);
+        });
+    }
+    function injectActivityNav() {
+        if (document.querySelector('.nav-item[data-page="activitylog"]')) return;
+        var nav = document.querySelector('.nav');
+        if (!nav) return;
+        var item = document.createElement('div');
+        item.className = 'nav-item';
+        item.dataset.page = 'activitylog';
+        item.id = 'nav-activitylog';
+        item.style.display = 'none';
+        item.innerHTML = '<i class="fas fa-clipboard-list"></i><span>Activity Log</span>';
+        var settingsItem = document.querySelector('.nav-item[data-page="settings"]');
+        if (settingsItem) nav.insertBefore(item, settingsItem); else nav.appendChild(item);
+        item.addEventListener('click', function () {
+            if (!isAdmin()) { toast('Activity Log is available to admins only.', 'error'); return; }
+            if (typeof showPage === 'function') showPage('activitylog');
+            ptEnsRefreshLog();
+        });
+        if (typeof pageInfo !== 'undefined') {
+            pageInfo.activitylog = { title: 'Activity Log', desc: 'Admin-only audit trail of important actions' };
+        }
+    }
+    var logCache = [];
+    var logSource = 'local';
+    window.ptEnsRefreshLog = function () {
+        if (!isAdmin()) return;
+        var render = function () { populateLogFilters(); renderLogTable(); };
+        if (fsReady()) {
+            db.collection('activityLog').orderBy('tsn', 'desc').limit(400).get().then(function (snap) {
+                var rows = [];
+                snap.forEach(function (d) { rows.push(d.data()); });
+                logCache = rows; logSource = 'cloud'; render();
+            }).catch(function () {
+                logCache = localLogRead(); logSource = 'local'; render();
+            });
+        } else {
+            logCache = localLogRead(); logSource = 'local'; render();
+        }
+    };
+    function populateLogFilters() {
+        var fill = function (id, values, label) {
+            var el = $id(id); if (!el) return;
+            var cur = el.value;
+            el.innerHTML = '<option value="">' + label + '</option>' +
+                values.map(function (v) { return '<option value="' + ptEsc(v) + '"' + (v === cur ? ' selected' : '') + '>' + ptEsc(v) + '</option>'; }).join('');
+        };
+        var uniq = function (key) {
+            var s = {}; logCache.forEach(function (r) { if (r[key]) s[r[key]] = 1; });
+            return Object.keys(s).sort();
+        };
+        fill('pt-ens-log-user', uniq('user'), 'All users');
+        fill('pt-ens-log-action', uniq('action'), 'All actions');
+        fill('pt-ens-log-section', uniq('section'), 'All sections');
+    }
+    function filteredLogRows() {
+        var u = $id('pt-ens-log-user') ? $id('pt-ens-log-user').value : '';
+        var a = $id('pt-ens-log-action') ? $id('pt-ens-log-action').value : '';
+        var s = $id('pt-ens-log-section') ? $id('pt-ens-log-section').value : '';
+        var from = $id('pt-ens-log-from') ? $id('pt-ens-log-from').value : '';
+        var to = $id('pt-ens-log-to') ? $id('pt-ens-log-to').value : '';
+        return logCache.filter(function (r) {
+            if (u && r.user !== u) return false;
+            if (a && r.action !== a) return false;
+            if (s && r.section !== s) return false;
+            var d = (r.ts || '').slice(0, 10);
+            if (from && d < from) return false;
+            if (to && d > to) return false;
+            return true;
+        });
+    }
+    function renderLogTable() {
+        var host = $id('pt-ens-log-table'); if (!host) return;
+        var src = $id('pt-ens-log-source');
+        if (src) src.textContent = logSource === 'cloud'
+            ? 'Source: central Firestore database (shared across devices) — showing latest ' + logCache.length + ' entries.'
+            : 'Source: this browser only (cloud log unavailable — check Firestore rules for the "activityLog" collection).';
+        var rows = filteredLogRows();
+        if (!rows.length) { host.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">No activity entries match the current filters.</div>'; return; }
+        host.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+            '<thead><tr>' +
+            ['Time', 'User', 'Role', 'Action', 'Section', 'Details'].map(function (h) {
+                return '<th style="text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:11px;position:sticky;top:0;background:var(--surface)">' + h + '</th>';
+            }).join('') + '</tr></thead><tbody>' +
+            rows.map(function (r) {
+                var t = r.ts ? new Date(r.ts).toLocaleString('en-GB') : '—';
+                return '<tr>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap">' + ptEsc(t) + '</td>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border)">' + ptEsc(r.user || '') + '</td>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border)">' + ptEsc(r.role || '') + '</td>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-weight:600">' + ptEsc(r.action || '') + '</td>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border)">' + ptEsc(r.section || '') + '</td>' +
+                    '<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted)">' + ptEsc(r.details || '') + '</td>' +
+                    '</tr>';
+            }).join('') + '</tbody></table>';
+    }
+    window.ptEnsClearLogFilters = function () {
+        ['pt-ens-log-user', 'pt-ens-log-action', 'pt-ens-log-section', 'pt-ens-log-from', 'pt-ens-log-to'].forEach(function (id) {
+            var el = $id(id); if (el) el.value = '';
+        });
+        renderLogTable();
+    };
+    window.ptEnsExportLogCSV = function () {
+        var rows = filteredLogRows();
+        if (!rows.length) { toast('No log entries to export.', 'error'); return; }
+        var head = ['Time', 'User', 'Role', 'Action', 'Section', 'Details'];
+        var csv = [head.join(',')].concat(rows.map(function (r) {
+            return [r.ts, r.user, r.role, r.action, r.section, r.details].map(function (v) {
+                return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+            }).join(',');
+        })).join('\n');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'activity_log_' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+        toast('Activity log exported as CSV.', 'success');
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       2 + 4) NOTIFICATIONS & DASHBOARD ALERTS (shared alert engine)
+    ════════════════════════════════════════════════════════════════ */
+    var readState = {};       // { alertId: timestamp }
+    var readLoadedFor = '';
+    function readLsKey() { return 'pt_ens_read_' + cuEmail(); }
+    function loadReadState() {
+        var email = cuEmail();
+        if (!email) { readState = {}; return; }
+        try { readState = JSON.parse(localStorage.getItem(readLsKey()) || '{}'); } catch (e) { readState = {}; }
+        if (fsReady() && readLoadedFor !== email) {
+            readLoadedFor = email;
+            db.collection('userNotifications').doc(email).get().then(function (doc) {
+                if (doc.exists && doc.data() && doc.data().read) {
+                    var cloud = doc.data().read;
+                    Object.keys(cloud).forEach(function (k) { readState[k] = cloud[k]; });
+                    try { localStorage.setItem(readLsKey(), JSON.stringify(readState)); } catch (e) {}
+                    refreshBell(); renderDashAlerts();
+                }
+            }).catch(function () {});
+        }
+    }
+    function persistReadState() {
+        try { localStorage.setItem(readLsKey(), JSON.stringify(readState)); } catch (e) {}
+        if (fsReady() && cuEmail()) {
+            db.collection('userNotifications').doc(cuEmail())
+                .set({ read: readState, email: cuEmail(), updatedAt: new Date().toISOString() }, { merge: true })
+                .catch(function () {});
+        }
+    }
+
+    function latestMonths(rows) {
+        var set = {};
+        rows.forEach(function (r) { if (r.invoiceDate) set[r.invoiceDate.substring(0, 7)] = 1; });
+        return Object.keys(set).sort();
+    }
+    function monthName(m) {
+        try { return typeof monthLabel === 'function' ? monthLabel(m) : m; } catch (e) { return m; }
+    }
+    function sumNet(rows, month) {
+        var s = 0;
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            if (!month || (r.invoiceDate && r.invoiceDate.indexOf(month) === 0)) s += Number(r.netAmount || 0);
+        }
+        return s;
+    }
+
+    /* Compute alerts relevant to the logged-in user's role. Deterministic
+       ids let the read-state map work across devices. */
+    function computeAlerts() {
+        var alerts = [];
+        var u = cu();
+        if (!u) return alerts;
+        var rows = safeRows();
+        var months = latestMonths(rows);
+        var curM = months[months.length - 1] || '';
+        var prevM = months[months.length - 2] || '';
+
+        // Target achievement / remaining (Projection & Target module data)
+        try {
+            var ps = (typeof projectionState !== 'undefined' && projectionState) ? projectionState : {};
+            var totalTarget = Number(String(ps.totalTarget || 0).replace(/[^0-9.-]/g, '')) || 0;
+            if (!totalTarget && ps.rowTargets) {
+                totalTarget = Object.keys(ps.rowTargets).reduce(function (s, k) {
+                    return s + (Number(String(ps.rowTargets[k]).replace(/[^0-9.-]/g, '')) || 0);
+                }, 0);
+            }
+            if (totalTarget > 0 && curM) {
+                var achieved = sumNet(rows, curM);
+                var pct = achieved / totalTarget * 100;
+                if (pct >= 100) {
+                    alerts.push({ id: 'target-hit-' + curM, sev: 'success', icon: 'fa-trophy',
+                        title: 'Target achieved for ' + monthName(curM),
+                        msg: moneyFmt(achieved) + ' booked vs target ' + moneyFmt(totalTarget) + ' (' + pct.toFixed(1) + '%).',
+                        page: 'projection' });
+                } else {
+                    alerts.push({ id: 'target-gap-' + curM, sev: pct < 60 ? 'warning' : 'info', icon: 'fa-bullseye',
+                        title: 'Remaining target for ' + monthName(curM),
+                        msg: moneyFmt(Math.max(0, totalTarget - achieved)) + ' remaining — ' + pct.toFixed(1) + '% achieved so far.',
+                        page: 'projection' });
+                }
+            }
+        } catch (e) {}
+
+        // Significant sales drop month-over-month
+        if (curM && prevM) {
+            var curV = sumNet(rows, curM), prevV = sumNet(rows, prevM);
+            if (prevV > 0 && curV < prevV * 0.8) {
+                var dropPct = ((prevV - curV) / prevV * 100).toFixed(1);
+                alerts.push({ id: 'salesdrop-' + curM, sev: 'error', icon: 'fa-arrow-trend-down',
+                    title: 'Sales drop detected in ' + monthName(curM),
+                    msg: 'Revenue is down ' + dropPct + '% vs ' + monthName(prevM) + ' (' + moneyFmt(curV) + ' vs ' + moneyFmt(prevV) + ').',
+                    page: 'analytics' });
+            }
+        }
+
+        // Low-performing products (declined > 40% vs prior month)
+        if (curM && prevM) {
+            try {
+                var byProd = {};
+                rows.forEach(function (r) {
+                    if (!r.itemName || !r.invoiceDate) return;
+                    var m = r.invoiceDate.substring(0, 7);
+                    if (m !== curM && m !== prevM) return;
+                    var b = byProd[r.itemName] || (byProd[r.itemName] = { cur: 0, prev: 0 });
+                    if (m === curM) b.cur += Number(r.netAmount || 0); else b.prev += Number(r.netAmount || 0);
+                });
+                var falling = Object.keys(byProd).filter(function (k) {
+                    var b = byProd[k];
+                    return b.prev > 0 && b.cur < b.prev * 0.6;
+                }).sort(function (a, b) { return (byProd[a].cur - byProd[a].prev) - (byProd[b].cur - byProd[b].prev); }).slice(0, 3);
+                if (falling.length) {
+                    alerts.push({ id: 'lowprod-' + curM, sev: 'warning', icon: 'fa-pills',
+                        title: falling.length + ' low-performing product' + (falling.length > 1 ? 's' : '') + ' in ' + monthName(curM),
+                        msg: falling.join(', ') + ' — each down more than 40% vs ' + monthName(prevM) + '.',
+                        page: 'products' });
+                }
+            } catch (e) {}
+        }
+
+        // Pending approvals — admin only (uses the badge the existing module maintains)
+        if (isAdmin()) {
+            var badge = $id('approvalsBadge');
+            var pend = badge ? parseInt(badge.textContent, 10) || 0 : 0;
+            if (pend > 0) {
+                alerts.push({ id: 'approvals-' + pend, sev: 'info', icon: 'fa-user-check',
+                    title: pend + ' registration/payment approval' + (pend > 1 ? 's' : '') + ' pending',
+                    msg: 'New registrations or renewals are waiting for your review.',
+                    page: 'approvals' });
+            }
+        }
+
+        // Subscription expiry — the logged-in user's own account
+        if (u.validUntil) {
+            var daysLeft = Math.ceil((new Date(u.validUntil) - new Date()) / 86400000);
+            if (daysLeft <= 0) {
+                alerts.push({ id: 'subexp-expired-' + String(u.validUntil).slice(0, 10), sev: 'error', icon: 'fa-triangle-exclamation',
+                    title: 'Subscription expired',
+                    msg: 'Your subscription expired on ' + new Date(u.validUntil).toLocaleDateString('en-GB') + '. Renew to keep full access.',
+                    page: 'settings' });
+            } else if (daysLeft <= 7) {
+                alerts.push({ id: 'subexp-' + String(u.validUntil).slice(0, 10), sev: 'warning', icon: 'fa-hourglass-half',
+                    title: 'Subscription expires in ' + daysLeft + ' day' + (daysLeft > 1 ? 's' : ''),
+                    msg: 'Valid until ' + new Date(u.validUntil).toLocaleDateString('en-GB') + '. Renew from Settings to avoid interruption.',
+                    page: 'settings' });
+            }
+        }
+
+        // No data yet — actionable nudge (upload permission respecting viewer role)
+        if (!rows.length && u.role !== 'viewer') {
+            alerts.push({ id: 'nodata', sev: 'info', icon: 'fa-cloud-arrow-up',
+                title: 'No sales data imported yet',
+                msg: 'Upload an Excel/CSV file to activate dashboards, analytics and targets.',
+                page: 'dashboard' });
+        }
+        return alerts;
+    }
+
+    /* ── Notification bell UI ── */
+    function injectBell() {
+        if ($id('pt-ens-bell')) return;
+        var actions = document.querySelector('.topbar-actions');
+        if (!actions) return;
+        var wrap = document.createElement('div');
+        wrap.id = 'pt-ens-bell';
+        wrap.className = 'pt-ens-bell-wrap';
+        wrap.innerHTML =
+            '<button type="button" class="btn btn-ghost pt-ens-bell-btn" onclick="ptEnsToggleBell(event)" title="Notifications" aria-haspopup="true" aria-expanded="false">' +
+            '  <i class="fas fa-bell"></i><span class="pt-ens-bell-badge" id="pt-ens-bell-badge" style="display:none">0</span>' +
+            '</button>' +
+            '<div class="pt-ens-bell-panel" id="pt-ens-bell-panel" role="region" aria-label="Notifications">' +
+            '  <div class="pt-ens-bell-head"><span><i class="fas fa-bell"></i> Notifications</span>' +
+            '  <button type="button" class="btn btn-ghost" style="padding:3px 8px;font-size:10.5px" onclick="ptEnsMarkAllRead()">Mark all read</button></div>' +
+            '  <div class="pt-ens-bell-list" id="pt-ens-bell-list"></div>' +
+            '</div>';
+        actions.insertBefore(wrap, actions.firstChild);
+        document.addEventListener('click', function (e) {
+            var panel = $id('pt-ens-bell-panel');
+            if (panel && panel.classList.contains('show') && !wrap.contains(e.target)) panel.classList.remove('show');
+        });
+    }
+    window.ptEnsToggleBell = function (evt) {
+        if (evt) evt.stopPropagation();
+        var panel = $id('pt-ens-bell-panel');
+        if (!panel) return;
+        var show = !panel.classList.contains('show');
+        panel.classList.toggle('show', show);
+        if (show) {
+            // Anchor under the bell with fixed positioning so the panel can
+            // never be clipped by the topbar or pushed off-screen.
+            var wrap = $id('pt-ens-bell');
+            if (wrap) {
+                var r = wrap.getBoundingClientRect();
+                var width = Math.min(360, window.innerWidth - 20);
+                var left = Math.max(10, Math.min(r.left, window.innerWidth - width - 10));
+                panel.style.position = 'fixed';
+                panel.style.top = (r.bottom + 8) + 'px';
+                panel.style.left = left + 'px';
+                panel.style.right = 'auto';
+                panel.style.width = width + 'px';
+            }
+            renderBellList();
+        }
+    };
+    function renderBellList() {
+        var host = $id('pt-ens-bell-list'); if (!host) return;
+        var alerts = computeAlerts();
+        if (!alerts.length) {
+            host.innerHTML = '<div style="padding:22px;text-align:center;color:var(--muted);font-size:12px"><i class="fas fa-circle-check" style="font-size:18px;margin-bottom:8px;display:block"></i>You are all caught up.</div>';
+            return;
+        }
+        var sevColor = { success: '#3fb950', info: '#58a6ff', warning: '#ffa657', error: '#f85149' };
+        host.innerHTML = alerts.map(function (a) {
+            var unread = !readState[a.id];
+            return '<div class="pt-ens-notif' + (unread ? ' unread' : '') + '" onclick="ptEnsOpenAlert(\'' + ptEsc(a.id) + '\',\'' + ptEsc(a.page) + '\')">' +
+                '<div class="pt-ens-notif-ico" style="color:' + sevColor[a.sev] + '"><i class="fas ' + a.icon + '"></i></div>' +
+                '<div style="flex:1;min-width:0">' +
+                '  <div class="pt-ens-notif-title">' + ptEsc(a.title) + (unread ? '<span class="pt-ens-dot"></span>' : '') + '</div>' +
+                '  <div class="pt-ens-notif-msg">' + ptEsc(a.msg) + '</div>' +
+                '</div>' +
+                (unread ? '<button type="button" class="pt-ens-read-btn" title="Mark as read" onclick="event.stopPropagation();ptEnsMarkRead(\'' + ptEsc(a.id) + '\')"><i class="fas fa-check"></i></button>' : '') +
+                '</div>';
+        }).join('');
+    }
+    window.ptEnsMarkRead = function (id) {
+        readState[id] = Date.now();
+        persistReadState();
+        renderBellList(); refreshBell(); renderDashAlerts();
+    };
+    window.ptEnsMarkAllRead = function () {
+        computeAlerts().forEach(function (a) { readState[a.id] = Date.now(); });
+        persistReadState();
+        renderBellList(); refreshBell(); renderDashAlerts();
+        toast('All notifications marked as read.', 'info');
+    };
+    window.ptEnsOpenAlert = function (id, page) {
+        readState[id] = Date.now();
+        persistReadState();
+        var panel = $id('pt-ens-bell-panel'); if (panel) panel.classList.remove('show');
+        if (page && typeof showPage === 'function' && $id('page-' + page)) showPage(page);
+        refreshBell(); renderDashAlerts();
+    };
+    function refreshBell() {
+        var badge = $id('pt-ens-bell-badge'); if (!badge) return;
+        if (!cu()) { badge.style.display = 'none'; return; }
+        var unread = computeAlerts().filter(function (a) { return !readState[a.id]; }).length;
+        badge.textContent = unread > 9 ? '9+' : String(unread);
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+
+    /* ── 4) Dashboard "Alerts & Attention Required" card ── */
+    function injectDashCard() {
+        if ($id('pt-ens-dash-alerts')) return;
+        var dash = $id('page-dashboard'); if (!dash) return;
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.id = 'pt-ens-dash-alerts';
+        card.style.marginBottom = '20px';
+        card.style.display = 'none';
+        var toolbar = dash.querySelector('.section-pdf-toolbar');
+        if (toolbar && toolbar.nextSibling) dash.insertBefore(card, toolbar.nextSibling);
+        else dash.insertBefore(card, dash.firstChild);
+    }
+    function renderDashAlerts() {
+        var card = $id('pt-ens-dash-alerts'); if (!card) return;
+        if (!cu()) { card.style.display = 'none'; return; }
+        var alerts = computeAlerts().filter(function (a) { return a.sev !== 'success' || !readState[a.id]; });
+        if (!alerts.length) { card.style.display = 'none'; return; }
+        card.style.display = 'block';
+        var sevColor = { success: '#3fb950', info: '#58a6ff', warning: '#ffa657', error: '#f85149' };
+        card.innerHTML =
+            '<div class="card-header"><div><div class="card-title"><i class="fas fa-triangle-exclamation" style="color:#ffa657"></i> Alerts &amp; Attention Required</div>' +
+            '<div class="card-sub">' + alerts.length + ' item' + (alerts.length > 1 ? 's' : '') + ' need' + (alerts.length > 1 ? '' : 's') + ' your attention</div></div></div>' +
+            '<div class="pt-ens-dash-list">' +
+            alerts.map(function (a) {
+                return '<div class="pt-ens-dash-item" style="border-left:3px solid ' + sevColor[a.sev] + '">' +
+                    '<i class="fas ' + a.icon + '" style="color:' + sevColor[a.sev] + ';width:18px;text-align:center"></i>' +
+                    '<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600">' + ptEsc(a.title) + '</div>' +
+                    '<div style="font-size:11.5px;color:var(--muted);margin-top:2px">' + ptEsc(a.msg) + '</div></div>' +
+                    '<button type="button" class="btn btn-ghost" style="padding:5px 12px;font-size:11px;white-space:nowrap" onclick="ptEnsOpenAlert(\'' + ptEsc(a.id) + '\',\'' + ptEsc(a.page) + '\')">Review <i class="fas fa-arrow-right" style="font-size:10px"></i></button>' +
+                    '</div>';
+            }).join('') + '</div>';
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       1) GLOBAL SEARCH  (Ctrl+K / topbar button, categorized results)
+    ════════════════════════════════════════════════════════════════ */
+    var PAGE_TARGETS = [
+        { label: 'Dashboard', page: 'dashboard', icon: 'fa-home' },
+        { label: 'Sales Ledger / Transactions', page: 'sales', icon: 'fa-receipt' },
+        { label: 'Customer Catalogue', page: 'customers', icon: 'fa-users' },
+        { label: 'Product Catalogue', page: 'products', icon: 'fa-pills' },
+        { label: 'Analytics & Insights', page: 'analytics', icon: 'fa-chart-pie' },
+        { label: 'Projection & Target', page: 'projection', icon: 'fa-bullseye' },
+        { label: 'Business Intelligence', page: 'bi', icon: 'fa-chart-line' },
+        { label: 'Rep Performance', page: 'repreport', icon: 'fa-user-tie' },
+        { label: 'Operational Intelligence', page: 'part3', icon: 'fa-radar' },
+        { label: 'Approvals (Admin)', page: 'approvals', icon: 'fa-user-check', admin: true },
+        { label: 'Activity Log (Admin)', page: 'activitylog', icon: 'fa-clipboard-list', admin: true },
+        { label: 'Settings', page: 'settings', icon: 'fa-cog' }
+    ];
+    var searchIndex = null, searchIndexRows = -1;
+    function buildSearchIndex() {
+        var rows = safeRows();
+        if (searchIndex && searchIndexRows === rows.length) return searchIndex;
+        var cats = {
+            customers: {}, products: {}, invoices: {}, companies: {},
+            groups: {}, bookingMen: {}, regions: {}
+        };
+        for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            if (r.customerName) cats.customers[r.customerName] = (r.customerCode || '');
+            if (r.itemName) cats.products[r.itemName] = (r.packSize || '');
+            if (r.invoiceId) cats.invoices[r.invoiceId] = (r.customerName || '') + (r.invoiceDate ? ' · ' + r.invoiceDate : '');
+            if (r.companyName) cats.companies[r.companyName] = 1;
+            if (r.companyGroup) cats.groups[r.companyGroup] = 1;
+            if (r.bookingMan) cats.bookingMen[r.bookingMan] = (r.regionName || '');
+            if (r.regionName) cats.regions[r.regionName] = 1;
+        }
+        searchIndex = cats; searchIndexRows = rows.length;
+        return cats;
+    }
+    function injectSearchUI() {
+        if ($id('pt-ens-gsearch-overlay')) return;
+        // topbar trigger — placed right after the bell for consistency
+        var actions = document.querySelector('.topbar-actions');
+        if (actions && !$id('pt-ens-gsearch-btn')) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.id = 'pt-ens-gsearch-btn';
+            btn.className = 'btn btn-ghost';
+            btn.title = 'Global search (Ctrl+K)';
+            btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> <span class="pt-ens-gsearch-lbl">Search all</span>';
+            var bell = $id('pt-ens-bell');
+            if (bell && bell.nextSibling) actions.insertBefore(btn, bell.nextSibling);
+            else actions.insertBefore(btn, actions.firstChild);
+            btn.addEventListener('click', function () { window.ptEnsOpenSearch(); });
+        }
+        var overlay = document.createElement('div');
+        overlay.id = 'pt-ens-gsearch-overlay';
+        overlay.innerHTML =
+            '<div class="pt-ens-gsearch-box" role="dialog" aria-label="Global search">' +
+            '  <div class="pt-ens-gsearch-inputwrap"><i class="fas fa-magnifying-glass"></i>' +
+            '    <input type="text" id="pt-ens-gsearch-input" placeholder="Search customers, products, invoices, companies, booking men, regions, pages…" autocomplete="off">' +
+            '    <kbd>Esc</kbd></div>' +
+            '  <div class="pt-ens-gsearch-results" id="pt-ens-gsearch-results"></div>' +
+            '</div>';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('mousedown', function (e) { if (e.target === overlay) window.ptEnsCloseSearch(); });
+        var input = $id('pt-ens-gsearch-input');
+        var t;
+        input.addEventListener('input', function () {
+            clearTimeout(t);
+            t = setTimeout(function () { renderSearchResults(input.value); }, 120);
+        });
+        document.addEventListener('keydown', function (e) {
+            if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
+                e.preventDefault(); window.ptEnsOpenSearch();
+            } else if (e.key === 'Escape') {
+                window.ptEnsCloseSearch();
+            }
+        });
+    }
+    window.ptEnsOpenSearch = function () {
+        if (!cu()) { toast('Please sign in to use global search.', 'info'); return; }
+        var overlay = $id('pt-ens-gsearch-overlay'); if (!overlay) return;
+        overlay.classList.add('show');
+        var input = $id('pt-ens-gsearch-input');
+        input.value = '';
+        renderSearchResults('');
+        setTimeout(function () { input.focus(); }, 30);
+    };
+    window.ptEnsCloseSearch = function () {
+        var overlay = $id('pt-ens-gsearch-overlay');
+        if (overlay) overlay.classList.remove('show');
+    };
+    function matchScore(name, q) {
+        var n = name.toLowerCase();
+        if (n === q) return 3;
+        if (n.indexOf(q) === 0) return 2;
+        if (n.indexOf(q) > -1) return 1;
+        return 0;
+    }
+    function topMatches(dict, q, limit) {
+        var out = [];
+        var keys = Object.keys(dict);
+        for (var i = 0; i < keys.length; i++) {
+            var s = matchScore(keys[i], q);
+            if (s > 0) out.push({ name: keys[i], sub: dict[keys[i]] === 1 ? '' : String(dict[keys[i]] || ''), score: s });
+        }
+        out.sort(function (a, b) { return b.score - a.score || a.name.localeCompare(b.name); });
+        return out.slice(0, limit || 6);
+    }
+    function renderSearchResults(query) {
+        var host = $id('pt-ens-gsearch-results'); if (!host) return;
+        var q = String(query || '').trim().toLowerCase();
+        if (!q) {
+            host.innerHTML = '<div class="pt-ens-gsearch-hint">Type at least 1 character — results are grouped by category. ' +
+                'Try a customer, product, invoice ID, company, booking man, region or a page name.</div>';
+            return;
+        }
+        var idx = buildSearchIndex();
+        var sections = [];
+        var CATMETA = [
+            ['customers', 'Customers', 'fa-users', 'customer'],
+            ['products', 'Products', 'fa-pills', 'product'],
+            ['invoices', 'Invoices / Sales', 'fa-receipt', 'invoice'],
+            ['companies', 'Companies', 'fa-building', 'company'],
+            ['groups', 'Company Groups', 'fa-layer-group', 'group'],
+            ['bookingMen', 'Booking Men', 'fa-user-tie', 'bookingman'],
+            ['regions', 'Regions', 'fa-map-location-dot', 'region']
+        ];
+        CATMETA.forEach(function (meta) {
+            var hits = topMatches(idx[meta[0]], q, 6);
+            if (!hits.length) return;
+            sections.push(
+                '<div class="pt-ens-gsearch-cat">' + meta[1] + '</div>' +
+                hits.map(function (h) {
+                    return '<div class="pt-ens-gsearch-item" onclick="ptEnsGoto(\'' + meta[3] + '\',\'' + ptEsc(h.name).replace(/'/g, '&#39;') + '\')">' +
+                        '<i class="fas ' + meta[2] + '"></i><span class="pt-ens-gsearch-name">' + ptEsc(h.name) + '</span>' +
+                        (h.sub ? '<span class="pt-ens-gsearch-sub">' + ptEsc(h.sub) + '</span>' : '') +
+                        '<i class="fas fa-arrow-right pt-ens-gsearch-go"></i></div>';
+                }).join('')
+            );
+        });
+        // Pages / sections
+        var pageHits = PAGE_TARGETS.filter(function (p) {
+            if (p.admin && !isAdmin()) return false;
+            return p.label.toLowerCase().indexOf(q) > -1 && $id('page-' + p.page);
+        }).slice(0, 5);
+        if (pageHits.length) {
+            sections.push('<div class="pt-ens-gsearch-cat">Pages &amp; Sections</div>' +
+                pageHits.map(function (p) {
+                    return '<div class="pt-ens-gsearch-item" onclick="ptEnsGoto(\'page\',\'' + p.page + '\')">' +
+                        '<i class="fas ' + p.icon + '"></i><span class="pt-ens-gsearch-name">' + ptEsc(p.label) + '</span>' +
+                        '<i class="fas fa-arrow-right pt-ens-gsearch-go"></i></div>';
+                }).join(''));
+        }
+        // Users (admin only, from the cached settings list if present)
+        if (isAdmin() && window.__ptEnsUsersCache) {
+            var uHits = window.__ptEnsUsersCache.filter(function (u) {
+                return (u.name + ' ' + u.email).toLowerCase().indexOf(q) > -1;
+            }).slice(0, 5);
+            if (uHits.length) {
+                sections.push('<div class="pt-ens-gsearch-cat">Users (Admin)</div>' +
+                    uHits.map(function (u) {
+                        return '<div class="pt-ens-gsearch-item" onclick="ptEnsGoto(\'page\',\'settings\')">' +
+                            '<i class="fas fa-user"></i><span class="pt-ens-gsearch-name">' + ptEsc(u.name) + '</span>' +
+                            '<span class="pt-ens-gsearch-sub">' + ptEsc(u.email) + '</span>' +
+                            '<i class="fas fa-arrow-right pt-ens-gsearch-go"></i></div>';
+                    }).join(''));
+            }
+        }
+        host.innerHTML = sections.length ? sections.join('') :
+            '<div class="pt-ens-gsearch-hint">No matches for “' + ptEsc(query) + '”. Partial words work too — try fewer letters.</div>';
+    }
+    /* Navigate to a categorized result using the app's own filter plumbing
+       so every existing page reacts exactly as it already does. */
+    window.ptEnsGoto = function (kind, value) {
+        window.ptEnsCloseSearch();
+        value = String(value || '').replace(/&#39;/g, "'");
+        var PAGE_FOR = { customer: 'customers', product: 'products', invoice: 'sales', company: 'sales', group: 'sales', bookingman: 'repreport', region: 'sales' };
+        try {
+            if (kind === 'page') {
+                if (typeof showPage === 'function' && $id('page-' + value)) showPage(value);
+                if (value === 'activitylog') ptEnsRefreshLog();
+                return;
+            }
+            var input = $id('searchInput');
+            if (kind === 'region' && $id('fRegion')) {
+                var fr = $id('fRegion');
+                if ([].some.call(fr.options, function (o) { return o.value === value; })) { fr.value = value; if (input) input.value = ''; }
+                else if (input) input.value = value;
+            } else if (kind === 'bookingman' && $id('fBookingMan')) {
+                var fb = $id('fBookingMan');
+                if ([].some.call(fb.options, function (o) { return o.value === value; })) { fb.value = value; if (input) input.value = ''; }
+                else if (input) input.value = value;
+            } else if (input) {
+                input.value = value;
+            }
+            if (typeof onSalesFilterChange === 'function') onSalesFilterChange();
+            else if (typeof updateAll === 'function') updateAll();
+            var page = PAGE_FOR[kind] || 'sales';
+            if (typeof showPage === 'function' && $id('page-' + page)) showPage(page);
+            toast('Showing records for “' + value + '”. Clear the search/filter box to reset.', 'info');
+        } catch (e) { console.warn('Global search navigation failed', e); }
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       5) PDF DOWNLOAD OPTIMIZATION  (≤ 1 MB target, readability first)
+    ════════════════════════════════════════════════════════════════ */
+    var PDF_MAX_BYTES = 1024 * 1024;
+    function buildPdfFromCanvas(canvas, quality) {
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF('p', 'pt', 'a4', true); // 'true' enables internal compression
+        var pageWidth = pdf.internal.pageSize.getWidth();
+        var pageHeight = pdf.internal.pageSize.getHeight();
+        var imgData = canvas.toDataURL('image/jpeg', quality);
+        var imgWidth = pageWidth;
+        var imgHeight = (canvas.height * imgWidth) / canvas.width;
+        var heightLeft = imgHeight;
+        var position = 0;
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pageHeight;
+        }
+        return pdf;
+    }
+    function pdfSize(pdf) {
+        try { return pdf.output('blob').size; } catch (e) { return Infinity; }
+    }
+    /* html2canvas 1.4.1 cannot parse modern `color(srgb …)` values (what
+       Chrome computes for CSS color-mix()) and crashes on zero-size chart
+       canvases. Convert/clean both in the capture clone so every section
+       — including Customers and Rep Performance — exports reliably. */
+    function fixModernColors(v) {
+        return String(v).replace(/color\(\s*(?:srgb|display-p3)\s+([0-9.]+%?)\s+([0-9.]+%?)\s+([0-9.]+%?)(?:\s*\/\s*([0-9.]+%?))?\s*\)/g,
+            function (m, r, g, b, a) {
+                var ch = function (x) { return Math.max(0, Math.min(255, Math.round(String(x).indexOf('%') > -1 ? parseFloat(x) * 2.55 : parseFloat(x) * 255))); };
+                var alpha = a == null ? 1 : (String(a).indexOf('%') > -1 ? parseFloat(a) / 100 : parseFloat(a));
+                return alpha >= 1 ? 'rgb(' + ch(r) + ',' + ch(g) + ',' + ch(b) + ')'
+                                  : 'rgba(' + ch(r) + ',' + ch(g) + ',' + ch(b) + ',' + alpha.toFixed(3) + ')';
+            });
+    }
+    /* Guard CanvasRenderingContext2D.createPattern against 0×0 sources while
+       html2canvas runs — hidden/empty chart canvases and zero-size gradient
+       pseudo-elements otherwise abort the whole capture. */
+    function withPatternGuard(fn) {
+        var proto = CanvasRenderingContext2D.prototype;
+        var orig = proto.createPattern;
+        proto.createPattern = function (img, rep) {
+            try {
+                var w = img && (img.width || (img.videoWidth || 0));
+                var h = img && (img.height || (img.videoHeight || 0));
+                if (!w || !h) {
+                    var stub = document.createElement('canvas');
+                    stub.width = 1; stub.height = 1; // transparent 1×1
+                    return orig.call(this, stub, rep);
+                }
+            } catch (e) {}
+            return orig.call(this, img, rep);
+        };
+        var restore = function () { proto.createPattern = orig; };
+        var out;
+        try { out = fn(); } catch (e) { restore(); throw e; }
+        if (out && typeof out.then === 'function') return out.then(function (r) { restore(); return r; }, function (e) { restore(); throw e; });
+        restore(); return Promise.resolve(out);
+    }
+    async function captureSection(pageEl, scale) {
+        var bodyBg = getComputedStyle(document.body).backgroundColor || '#ffffff';
+        if (bodyBg.indexOf('color(') > -1) bodyBg = fixModernColors(bodyBg);
+        return await withPatternGuard(function () { return html2canvas(pageEl, {
+            backgroundColor: bodyBg,
+            scale: scale,
+            useCORS: true,
+            logging: false,
+            ignoreElements: function (el) { return el.classList && el.classList.contains('section-pdf-toolbar'); },
+            onclone: function (clonedDoc) {
+                try {
+                    var win = clonedDoc.defaultView || window;
+                    var PROPS = ['color', 'background-color', 'border-top-color', 'border-right-color',
+                                 'border-bottom-color', 'border-left-color', 'outline-color',
+                                 'background-image', 'box-shadow', 'text-shadow'];
+                    var all = clonedDoc.querySelectorAll('*');
+                    var toRemove = [];
+                    for (var i = 0; i < all.length && i < 30000; i++) {
+                        var el = all[i];
+                        // 1) Zero-size canvases (hidden charts) crash the canvas renderer
+                        if (el.tagName === 'CANVAS' && (!el.width || !el.height)) { toRemove.push(el); continue; }
+                        var cs;
+                        try { cs = win.getComputedStyle(el); } catch (e) { continue; }
+                        if (!cs) continue;
+                        // 2) Gradient backgrounds on zero-size elements → createPattern(0×0) crash
+                        var bgi = cs.backgroundImage;
+                        if (bgi && bgi !== 'none' && bgi.indexOf('gradient') > -1 &&
+                            (!el.offsetWidth || !el.offsetHeight)) {
+                            el.style.setProperty('background-image', 'none', 'important');
+                        }
+                        // 3) Modern color() values (from CSS color-mix) → parse crash
+                        for (var p = 0; p < PROPS.length; p++) {
+                            var v = cs.getPropertyValue(PROPS[p]);
+                            if (v && v.indexOf('color(') > -1) {
+                                el.style.setProperty(PROPS[p], fixModernColors(v), 'important');
+                            }
+                        }
+                    }
+                    for (var r = 0; r < toRemove.length; r++) {
+                        if (toRemove[r].parentNode) toRemove[r].parentNode.removeChild(toRemove[r]);
+                    }
+                } catch (e) { /* capture proceeds with whatever could be cleaned */ }
+            }
+        }); });
+    }
+    window.downloadSectionPDF = async function (sectionId) {
+        var pageEl = $id('page-' + sectionId);
+        if (!pageEl) { toast('Section not found!', 'error'); return; }
+        if (typeof html2canvas === 'undefined' || !window.jspdf) {
+            if (typeof showLoading === 'function') showLoading(true);
+            if (typeof ensurePdfLibs === 'function') await ensurePdfLibs();
+            if (typeof showLoading === 'function') showLoading(false);
+            if (typeof html2canvas === 'undefined' || !window.jspdf) {
+                toast('PDF library failed to load. Check your connection and try again.', 'error');
+                return;
+            }
+        }
+        if (typeof showLoading === 'function') showLoading(true);
+        try {
+            if (typeof updateCharts === 'function') updateCharts();
+            await new Promise(function (r) { setTimeout(r, 320); });
+
+            // Render sharp enough for text (≈150 dpi on A4) without the huge
+            // 2x-PNG canvases the old exporter produced.
+            var elW = pageEl.scrollWidth || pageEl.offsetWidth || 1200;
+            var scale = Math.min(2, Math.max(1.25, 1600 / elW));
+            var canvas = await captureSection(pageEl, scale);
+
+            // Quality ladder: keep the best quality that fits in 1 MB.
+            var qualities = [0.85, 0.72, 0.6, 0.5];
+            var pdf = null, size = Infinity, usedQ = qualities[0];
+            for (var i = 0; i < qualities.length; i++) {
+                var candidate = buildPdfFromCanvas(canvas, qualities[i]);
+                var s = pdfSize(candidate);
+                pdf = candidate; size = s; usedQ = qualities[i];
+                if (s <= PDF_MAX_BYTES) break;
+            }
+            // Still too big? Re-render at progressively smaller scales —
+            // never below 1.0 so text stays crisp and readable.
+            var rescales = [Math.max(1.1, scale * 0.75), 1.0];
+            for (var rs = 0; rs < rescales.length && size > PDF_MAX_BYTES; rs++) {
+                if (rescales[rs] >= scale) continue;
+                var canvas2 = await captureSection(pageEl, rescales[rs]);
+                var qs2 = [0.62, 0.52, 0.45, 0.38];
+                for (var j = 0; j < qs2.length; j++) {
+                    var cand2 = buildPdfFromCanvas(canvas2, qs2[j]);
+                    var s2 = pdfSize(cand2);
+                    if (s2 < size) { pdf = cand2; size = s2; usedQ = qs2[j]; }
+                    if (s2 <= PDF_MAX_BYTES) break;
+                }
+            }
+            pdf.save(sectionId + '_section.pdf');
+            var kb = Math.round(size / 1024);
+            if (size > PDF_MAX_BYTES) {
+                toast('PDF downloaded (' + (size / 1048576).toFixed(2) + ' MB). It could not be reduced below 1 MB without making the content unreadable — this section is very large. Try applying a Month/Company filter first.', 'warning');
+            } else {
+                toast('PDF downloaded — ' + kb + ' KB (optimized, under 1 MB).', 'success');
+            }
+            window.ptLogActivity('PDF export', sectionId, 'Optimized PDF ' + kb + ' KB (quality ' + usedQ + ')');
+        } catch (err) {
+            console.error(err);
+            toast('Failed to generate PDF for this section.', 'error');
+        } finally {
+            if (typeof showLoading === 'function') showLoading(false);
+        }
+    };
+
+    /* ════════════════════════════════════════════════════════════════
+       AUDIT HOOKS — wrap existing global functions (never replace logic)
+    ════════════════════════════════════════════════════════════════ */
+    var lastKnownFiles = -1;
+    var projLogTimer = null;
+    function installHooks() {
+        // Wrap loginSuccess directly so we can read the newLogin flag:
+        // real logins are logged, session restores are not (but both refresh UI).
+        var origLogin = window.loginSuccess;
+        if (typeof origLogin === 'function' && !origLogin.__ptWrapped) {
+            window.loginSuccess = function (user, newLogin) {
+                var out = origLogin.apply(this, arguments);
+                try { if (newLogin !== false) window.ptLogActivity('Login', 'auth', 'User signed in'); } catch (e) {}
+                try { onLoginSide(); } catch (e) {}
+                return out;
+            };
+            window.loginSuccess.__ptWrapped = true;
+        }
+
+        wrapFn('doLogout', {
+            before: function () { window.ptLogActivity('Logout', 'auth', 'User signed out'); }
+        });
+        wrapFn('exportCSV', {
+            after: function () { window.ptLogActivity('Data export', 'sales', 'CSV export of sales records'); }
+        });
+        wrapFn('downloadSample', {
+            after: function () { window.ptLogActivity('Data export', 'dashboard', 'Sample Excel downloaded'); }
+        });
+        wrapFn('clearAllData', {
+            after: function () { window.ptLogActivity('Data deletion', 'dashboard', 'All imported data cleared'); }
+        });
+        wrapFn('removeFile', {
+            before: function (fileId) {
+                try {
+                    var info = uploadedFiles && uploadedFiles.get ? uploadedFiles.get(fileId) : null;
+                    window.ptLogActivity('Record deletion', 'dashboard', 'Removed imported file: ' + (info ? info.name : fileId));
+                } catch (e) {}
+            }
+        });
+        wrapFn('toggleFileStatus', {
+            after: function (r, fileId) {
+                try {
+                    var info = uploadedFiles && uploadedFiles.get ? uploadedFiles.get(fileId) : null;
+                    window.ptLogActivity('Record edit', 'dashboard', 'Toggled file: ' + (info ? info.name + ' → ' + (info.disabled ? 'disabled' : 'enabled') : fileId));
+                } catch (e) {}
+            }
+        });
+        wrapFn('saveProfile', {
+            after: function () { window.ptLogActivity('Account change', 'settings', 'Profile updated'); }
+        });
+        wrapFn('changePassword', {
+            after: function () { window.ptLogActivity('Account change', 'settings', 'Password changed'); }
+        });
+        wrapFn('approveUser', {
+            after: function (r, email) { window.ptLogActivity('Approval', 'approvals', 'Approved: ' + (email || '')); }
+        });
+        wrapFn('rejectUser', {
+            after: function (r, email) { window.ptLogActivity('Approval', 'approvals', 'Rejected: ' + (email || '')); }
+        });
+        wrapFn('deleteUser', {
+            after: function (r, email) { window.ptLogActivity('Account change', 'settings', 'User deleted: ' + (email || '')); }
+        });
+        wrapFn('saveAdminPaymentSettings', {
+            after: function () { window.ptLogActivity('Subscription change', 'settings', 'Subscription/payment settings updated'); }
+        });
+        wrapFn('saveProjectionAssignment', {
+            after: function () { window.ptLogActivity('Target change', 'projection', 'Booker target percentage saved'); }
+        });
+        wrapFn('projectionSaveState', {
+            after: function () {
+                clearTimeout(projLogTimer);
+                projLogTimer = setTimeout(function () {
+                    window.ptLogActivity('Target change', 'projection', 'Projection targets updated');
+                }, 3000);
+            }
+        });
+        // Data upload detection: updateFileListUI runs after every import.
+        wrapFn('updateFileListUI', {
+            after: function () {
+                try {
+                    var n = (typeof uploadedFiles !== 'undefined' && uploadedFiles.size) || 0;
+                    if (lastKnownFiles >= 0 && n > lastKnownFiles) {
+                        var newest = null;
+                        uploadedFiles.forEach(function (info) { newest = info; });
+                        window.ptLogActivity('Data upload', 'dashboard', 'Imported file: ' + (newest ? newest.name + ' (' + (newest.rowCount || 0).toLocaleString() + ' rows)' : ''));
+                    }
+                    lastKnownFiles = n;
+                } catch (e) {}
+            }
+        });
+        // Keep alerts fresh after any data refresh (debounced)
+        var alertTimer = null;
+        wrapFn('updateAll', {
+            after: function () {
+                clearTimeout(alertTimer);
+                alertTimer = setTimeout(function () {
+                    searchIndex = null; // data changed → rebuild search index lazily
+                    refreshBell(); renderDashAlerts();
+                }, 400);
+            }
+        });
+        // Cache users for admin global search whenever the settings tab renders
+        wrapFn('renderUsersTab', {
+            after: function () {
+                if (!isAdmin() || typeof getAllUsers !== 'function') return;
+                getAllUsers().then(function (all) {
+                    window.__ptEnsUsersCache = (all || []).map(function (u) {
+                        return { name: ((u.fname || '') + ' ' + (u.lname || '')).trim() || u.email, email: u.email || '' };
+                    });
+                }).catch(function () {});
+            }
+        });
+    }
+    function onLoginSideCore() {
+        loadReadState();
+        var nav = $id('nav-activitylog');
+        if (nav) nav.style.display = isAdmin() ? 'flex' : 'none';
+        refreshBell();
+        renderDashAlerts();
+        if (isAdmin() && typeof getAllUsers === 'function') {
+            getAllUsers().then(function (all) {
+                window.__ptEnsUsersCache = (all || []).map(function (u) {
+                    return { name: ((u.fname || '') + ' ' + (u.lname || '')).trim() || u.email, email: u.email || '' };
+                });
+            }).catch(function () {});
+        }
+    }
+    function onLoginSide() { setTimeout(onLoginSideCore, 250); }
+
+    /* ─────────────────────────── boot ─────────────────────────── */
+    function boot() {
+        try {
+            injectBell();
+            injectSearchUI();
+            injectDashCard();
+            injectActivityPage();
+            injectActivityNav();
+            installHooks();
+            try { lastKnownFiles = (typeof uploadedFiles !== 'undefined' && uploadedFiles.size) || 0; } catch (e) {}
+            // If a session is already restored by the time we boot:
+            if (cu()) onLoginSide();
+            // Periodic freshness (e.g. subscription day rollover) — light touch.
+            setInterval(function () { refreshBell(); renderDashAlerts(); }, 5 * 60 * 1000);
+        } catch (e) { console.error('PharmaTracker enhancements boot error', e); }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+})();
+
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e029db5f93721a',t:'MTc4OTkwMDMxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
