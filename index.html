@@ -4306,15 +4306,16 @@ function changeSiteLanguage(language){
     host.innerHTML = cards.map(([icon, value, label, sub, accent]) => `<div class="stat-card" style="--card-accent:${accent}"><div class="stat-icon-wrap"><i class="fas ${icon}"></i></div><div class="stat-value">${value}</div><div class="stat-label">${label}</div><div class="stat-change neutral">${sub}</div></div>`).join('');
   }
   function performerRows(rows, type) {
-    const tracked = rows.filter(row => row.target > 0);
-    const byAchievement = tracked.length > 0;
-    const sorted = rows.slice().sort((a, b) => type === 'top'
-      ? (byAchievement ? (b.achievementPct ?? -Infinity) - (a.achievementPct ?? -Infinity) : b.netAmount - a.netAmount)
-      : (byAchievement ? (a.achievementPct ?? Infinity) - (b.achievementPct ?? Infinity) : a.netAmount - b.netAmount));
-    return { rows:sorted.slice(0, 3), byAchievement };
+  const tracked = rows.filter(row => row.target > 0);
+  const byAchievement = tracked.length > 0;
+  const base = byAchievement ? tracked : rows;          // NAYI LINE
+  const sorted = base.slice().sort((a, b) => type === 'top'   // rows.slice() ki jagah base.slice()
+    ? (byAchievement ? (b.achievementPct ?? -Infinity) - (a.achievementPct ?? -Infinity) : b.netAmount - a.netAmount)
+    : (byAchievement ? (a.achievementPct ?? Infinity) - (b.achievementPct ?? Infinity) : a.netAmount - b.netAmount));
+  return { rows:sorted.slice(0, 3), byAchievement };
   }
   function renderPerformers(list) {
-    const topHost = byId('rr-top-performers'), lowHost = byId('rr-low-performers'); if (!topHost || !lowHost) return;
+    set.byAchievement && row.achievementPct != null ? `${row.achievementPct.toFixed(1)}%` : money(row.netAmount)
     const renderRows = (set, empty) => set.rows.length ? set.rows.map(row => `<div class="rr-performer"><span class="rr-performer-rank">${row.rank}</span><div class="rr-performer-main"><span class="rr-performer-name" title="${esc(row.name)}">${esc(row.name)}</span><span class="rr-performer-value">${set.byAchievement ? `${row.achievementPct.toFixed(1)}%` : money(row.netAmount)}</span></div></div>`).join('') : `<span class="rr-muted">${empty}</span>`;
     const top = performerRows(list, 'top'), low = performerRows(list, 'low');
     topHost.innerHTML = renderRows(top, 'No rep data in this selection.');
