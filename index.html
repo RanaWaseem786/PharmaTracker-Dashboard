@@ -8749,7 +8749,7 @@ try {
     if (window.firebase && !FIREBASE_CONFIG.apiKey.startsWith('YOUR_')) {
         firebase.initializeApp(FIREBASE_CONFIG);
         db = firebase.firestore();
-        try { db.settings({ experimentalAutoDetectLongPolling: true }); } catch (e) { console.warn('Firestore settings skipped:', e); }
+        try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) { console.warn('Firestore settings skipped:', e); }
         useFirestore = true;
         // Warm the Firestore connection in the background while the user is still
         // typing their credentials. Without this, the first profile read after
@@ -12048,24 +12048,52 @@ function prepareDataSummary(catalogue, data) {
     }
 
     /* --------------------- real-time cross-device ---------------------- */
+    // Live updates use Firestore's streaming "Listen" channel. Some networks,
+    // proxies and tracking blockers reject that request (HTTP 400), so failure
+    // is survivable: retry a couple of times, then fall back to slow polling.
+    function onRemoteChange(d) {
+        if (!d.updatedAt || d.updatedAt === S.lastUpdatedAt) return;
+        S.lastUpdatedAt = d.updatedAt;
+        if (d.writer === SESSION_ID) return;                  // our own write
+        if (S.saving || _saveRunning) { S.pendingReload = true; return; }
+        toast('☁️ Doosre system par data update hua — refresh ho raha hai…', 'success');
+        reloadFromCloud();
+    }
     function attachMetaListener() {
-        if (!cloudOn() || S.metaUnsub) return;
+        if (!cloudOn() || S.metaUnsub || S.pollTimer) return;
         try {
             S.metaUnsub = rootRef().onSnapshot(function (doc) {
                 if (!doc || !doc.exists) return;
-                const d = doc.data() || {};
-                if (!d.updatedAt || d.updatedAt === S.lastUpdatedAt) return;
-                S.lastUpdatedAt = d.updatedAt;
-                if (d.writer === SESSION_ID) return;          // our own write
-                if (S.saving || _saveRunning) { S.pendingReload = true; return; }
-                toast('☁️ Doosre system par data update hua — refresh ho raha hai…', 'success');
-                reloadFromCloud();
-            }, function (err) { handleCloudError(err, 'listener'); });
-        } catch (e) {}
+                onRemoteChange(doc.data() || {});
+            }, function (err) {
+                try { if (S.metaUnsub) S.metaUnsub(); } catch (e) {}
+                S.metaUnsub = null;
+                S.listenFails = (S.listenFails || 0) + 1;
+                const msg = (err && err.message) ? err.message : String(err || 'unknown error');
+                console.warn('☁️ Live-update listener failed (attempt ' + S.listenFails + '): ' + msg);
+                if (S.listenFails <= 2) setTimeout(attachMetaListener, 6000 * S.listenFails);
+                else startPolling();
+            });
+        } catch (e) { startPolling(); }
+    }
+    function startPolling() {
+        if (S.pollTimer) return;
+        console.warn('☁️ Live updates is network par kaam nahi kar rahe (Listen 400) — har 60 second mein check karein ge. Data save/load dono chal rahe hain.');
+        S.pollTimer = setInterval(checkRemoteUpdate, 60000);
+    }
+    async function checkRemoteUpdate() {
+        if (!cloudOn() || S.saving || _saveRunning) return;
+        try {
+            const doc = await withTimeout(rootRef().get(), 15000, 'poll');
+            if (!doc || !doc.exists) return;
+            onRemoteChange(doc.data() || {});
+        } catch (e) { /* silent — agle 60s mein dobara try */ }
     }
     function detachMetaListener() {
         try { if (S.metaUnsub) S.metaUnsub(); } catch (e) {}
+        try { if (S.pollTimer) clearInterval(S.pollTimer); } catch (e) {}
         S.metaUnsub = null;
+        S.pollTimer = null;
     }
 
     /* ------------------- small settings mirroring ---------------------- */
@@ -12143,6 +12171,7 @@ function prepareDataSummary(catalogue, data) {
     loadDataFromStorage = async function () {
         if (cloudOn()) {
             try {
+                console.log('☁️ Cloud dataset read: ' + emailKey());
                 const result = await cloudLoadSnapshot();
                 if (result && result.snapshot) {
                     applySnapshot(result.snapshot);
@@ -12198,7 +12227,13 @@ function prepareDataSummary(catalogue, data) {
 
     window.__ptCloudSync = {
         status: function () {
-            return { enabled: cloudOn(), blocked: S.blocked, saving: (S.saving || _saveRunning), user: emailKey() };
+            return {
+                enabled: cloudOn(), blocked: S.blocked, saving: (S.saving || _saveRunning),
+                user: emailKey(),
+                live: S.metaUnsub ? 'listener' : (S.pollTimer ? 'polling' : 'off'),
+                listenFails: S.listenFails || 0,
+                rows: (typeof rawData !== 'undefined' ? rawData.length : -1)
+            };
         },
         saveNow: function () { return runCloudSave(); },
         refresh: function () { return reloadFromCloud(); },
@@ -13053,4 +13088,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3de5f6f4d0d3fa5',t:'MTc4OTg4MTU0MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
+</body></html>
