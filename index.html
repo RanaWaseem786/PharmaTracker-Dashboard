@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- saved from url=(0059)file:///C:/Users/4MSERVER/Downloads/pharma_dashboard_1.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <script>
     /* Global Report Theme System — applies the user's saved report design
@@ -1780,7 +1779,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
 <div id="marketing-root">
     <nav class="mkt-nav">
         <div class="mkt-nav-inner">
-            <div class="mkt-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+            <div class="mkt-logo" onclick="mktShowPage('product')">
                 <div class="mkt-logo-icon">💊</div>
                 <div>
                     <div class="mkt-logo-text">PharmaTracker</div>
@@ -1788,10 +1787,11 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
                 </div>
             </div>
             <div class="mkt-nav-links">
-                <a onclick="mktScrollTo('mkt-product')">Product</a>
-                <a onclick="mktScrollTo('features')">Features</a>
-                <a onclick="mktScrollTo('mkt-vision')">Vision</a>
-                <a onclick="mktScrollTo('mkt-pricing')">Pricing</a>
+                <a onclick="mktShowPage('product')" data-mktlink="product" class="active">Product</a>
+                <a onclick="mktShowPage('features')" data-mktlink="features">Features</a>
+                <a onclick="mktShowPage('vision')" data-mktlink="vision">Vision</a>
+                <a onclick="mktShowPage('howto')" data-mktlink="howto">How to Use</a>
+                <a onclick="mktShowPage('pricing')" data-mktlink="pricing">Pricing</a>
             </div>
             <div class="mkt-nav-cta">
                 <select id="siteLanguageSelect" class="mkt-language-select" aria-label="Select website language" onchange="changeSiteLanguage(this.value)">
@@ -1804,7 +1804,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </nav>
 
     <!-- ═══ 1. HERO / INTRO ═══ -->
-    <header class="mkt-hero mkt-wrap" id="mkt-product">
+    <header class="mkt-hero mkt-wrap" data-mktpage="product" id="mkt-product">
         <div class="mkt-eyebrow"><i class="fas fa-circle"></i> Built for pharmaceutical distributors</div>
         <h1>Sales intelligence for teams who <span class="grad">refuse to guess.</span></h1>
         <p>PharmaTracker turns scattered sales sheets into a single source of truth — real-time dashboards, product-level analytics, and role-based control, built specifically for pharma distribution businesses.</p>
@@ -1831,7 +1831,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </header>
 
     <!-- ═══ Problems solved / who it's for ═══ -->
-    <section class="mkt-section mkt-wrap">
+    <section class="mkt-section mkt-wrap" data-mktpage="product">
         <div class="mkt-section-head">
             <div class="mkt-kicker">The problem</div>
             <h2>Spreadsheets weren't built to run a distribution business</h2>
@@ -1857,7 +1857,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
     <!-- ═══ Who should use it ═══ -->
-    <section class="mkt-section mkt-wrap" style="padding-top:0">
+    <section class="mkt-section mkt-wrap" data-mktpage="product" style="padding-top:0">
         <div class="mkt-section-head">
             <div class="mkt-kicker">Who it's for</div>
             <h2>One platform, every role that touches sales</h2>
@@ -1882,7 +1882,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
     <!-- ═══ 2. FEATURES PAGE ═══ -->
-    <section class="mkt-section mkt-wrap" id="features">
+    <section class="mkt-section mkt-wrap" data-mktpage="features" id="features">
         <div class="mkt-section-head">
             <div class="mkt-kicker">Features</div>
             <h2>Everything your sales operation runs on</h2>
@@ -1947,7 +1947,7 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
     <!-- ═══ Stats band ═══ -->
-    <section class="mkt-section tight mkt-wrap">
+    <section class="mkt-section tight mkt-wrap" data-mktpage="product">
         <div class="mkt-stats">
             <div class="mkt-stat"><div class="n">&lt; 1s</div><div class="l">Dashboard load time</div></div>
             <div class="mkt-stat"><div class="n">4</div><div class="l">Built-in access roles</div></div>
@@ -1957,27 +1957,350 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
     <!-- ═══ 3. VISION / WHY CHOOSE US ═══ -->
-    <section class="mkt-section mkt-wrap" id="mkt-vision">
-        <div class="mkt-vision">
-            <div>
-                <div class="mkt-kicker">Why PharmaTracker</div>
-                <h2 style="font-family:var(--serif);font-size:clamp(26px,3.2vw,36px);font-weight:600;letter-spacing:-.8px;line-height:1.2;">Purpose-built for pharma distribution, not bent to fit it</h2>
-                <ul class="mkt-vision-list">
-                    <li><i class="fas fa-check"></i> Designed around how distributors actually sell — by product, by customer, by rep — not a generic CRM template.</li>
-                    <li><i class="fas fa-check"></i> Local payment rails (JazzCash, EasyPaisa) and an admin-approval flow suited to how teams here actually manage access.</li>
-                    <li><i class="fas fa-check"></i> Fast by default — the whole dashboard runs client-side, so it stays quick even on modest connections.</li>
-                    <li><i class="fas fa-check"></i> Built to grow with you — from a one-person operation to a multi-role sales team, without switching tools.</li>
-                </ul>
+    <section class="mkt-section mkt-wrap" data-mktpage="vision" id="mkt-vision">
+        <div class="mkt-section-head">
+            <div class="mkt-kicker">Our Vision</div>
+            <h2>Every distributor deserves <span class="grad">enterprise-grade intelligence</span></h2>
+            <p>PharmaTracker exists to close the gap between the data pharmaceutical distributors already generate every day and the decisions they actually make with it.</p>
+        </div>
+
+        <div class="vision-mission">
+            <div class="vision-mission-label"><i class="fas fa-compass"></i> Our Mission</div>
+            <p>To give every pharmaceutical distributor — from a single-city operation to a multi-region network — the same real-time command over sales, customers, products and people that until now only the largest corporations could afford. No data team required, no consultants, no six-month implementation: upload your sales file and see your entire business clearly within minutes.</p>
+        </div>
+
+        <div class="vision-pillars-head">What PharmaTracker aims to achieve</div>
+        <div class="vision-pillars">
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-chart-line"></i></div>
+                <h4>End decision-making by guesswork</h4>
+                <p>Replace gut-feel with live evidence. Sales, targets, growth and product performance are computed the moment your data arrives — so every pricing, stocking and coverage decision is grounded in real numbers.</p>
             </div>
-            <div class="mkt-vision-card">
-                <h4>Our vision</h4>
-                <p>We're building toward a future where every distributor — not just the largest ones — has real-time visibility into their business. That means deeper forecasting, automated reorder alerts, and multi-branch support are next on the roadmap, all without losing the speed and simplicity you get today.</p>
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-database"></i></div>
+                <h4>One source of truth</h4>
+                <p>Eliminate the maze of scattered spreadsheets. Every invoice, customer, product and rep lives in one secure, cloud-synced record — the same numbers on every device, for every role, always.</p>
+            </div>
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-bullseye"></i></div>
+                <h4>Accountability at every level</h4>
+                <p>Give each Booker a clear, measurable target and track achievement daily. Performance conversations become objective, fair and fast — driven by data, not opinions.</p>
+            </div>
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-bell"></i></div>
+                <h4>Early warnings, not post-mortems</h4>
+                <p>Surface falling sales, at-risk customers and slow-moving products while there is still time to act. Problems should be caught by your dashboard — not discovered at month-end.</p>
+            </div>
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-clock"></i></div>
+                <h4>Give time back to selling</h4>
+                <p>Automate the reporting that consumes entire days. Board-ready PDF, Excel and CSV outputs are generated in one click — so your team spends its hours with customers, not with formulas.</p>
+            </div>
+            <div class="vision-pillar">
+                <div class="vp-icon"><i class="fas fa-seedling"></i></div>
+                <h4>Growth without complexity</h4>
+                <p>Start as a one-person operation and scale to a full multi-role team — Admin, Manager, Analyst, Viewer — without migrations, add-ons or switching tools. The platform grows with you.</p>
+            </div>
+        </div>
+
+        <div class="vision-roadmap">
+            <div class="vision-road">
+                <div class="vr-tag vr-now">Available today</div>
+                <p>Real-time dashboards · Sales ledger · Customer &amp; product catalogues · Targets &amp; projections · Business intelligence · Rep performance · Role-based access · Cloud sync across devices · PDF / Excel / CSV reporting</p>
+            </div>
+            <div class="vision-road">
+                <div class="vr-tag vr-next">Coming next</div>
+                <p>Deeper demand forecasting · Automated reorder alerts · Multi-branch consolidation — all without losing the speed and simplicity you get today.</p>
+            </div>
+            <div class="vision-road">
+                <div class="vr-tag vr-future">The horizon</div>
+                <p>A future where every distributor — not just the largest — runs on real-time visibility, and where "how is the business doing?" is answered in seconds, not in spreadsheets.</p>
             </div>
         </div>
     </section>
 
+    <!-- ═══ Pricing plans ═══ (admin-controlled: see renderMktPricing()) -->
+    <!-- ═══ HOW TO USE — complete user manual ═══ -->
+    <style id="mkt-howto-style">
+    #mkt-howto .howto-step{ display:flex; gap:18px; padding:22px 24px; background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:14px; align-items:flex-start; }
+    #mkt-howto .howto-step-num{ flex-shrink:0; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; background:linear-gradient(135deg,#f0cf8e,#a8823f); color:#1a1406; }
+    #mkt-howto .howto-step h4{ font-size:15px; font-weight:700; margin:2px 0 8px; }
+    #mkt-howto .howto-step p, #mkt-howto .howto-step li{ font-size:13px; color:var(--muted); line-height:1.7; }
+    #mkt-howto .howto-step ul{ margin:8px 0 0 16px; padding:0; }
+    #mkt-howto .howto-step li{ margin-bottom:5px; }
+    #mkt-howto .howto-modules{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-top:26px; }
+    #mkt-howto .howto-mod{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px; }
+    #mkt-howto .howto-mod h4{ font-size:14.5px; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:9px; }
+    #mkt-howto .howto-mod h4 i{ color:#d4af5a; font-size:13px; width:18px; text-align:center; }
+    #mkt-howto .howto-mod .hm-purpose{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#d4af5a; margin-bottom:8px; }
+    #mkt-howto .howto-mod p{ font-size:12.5px; color:var(--muted); line-height:1.65; margin-bottom:8px; }
+    #mkt-howto .howto-mod .hm-benefit{ font-size:12px; color:var(--muted); line-height:1.6; border-left:3px solid #d4af5a; padding-left:10px; margin:10px 0; }
+    #mkt-howto .howto-chart{ background:var(--surface2, rgba(255,255,255,0.03)); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:12px; }
+    #mkt-howto .howto-chart svg{ width:100%; height:auto; display:block; }
+    #mkt-howto .howto-chart .hc-caption{ font-size:11.5px; color:var(--muted); line-height:1.6; margin-top:8px; }
+    #mkt-howto .howto-chart .hc-caption b{ color:var(--text); }
+    #mkt-howto .howto-subhead{ font-family:var(--serif); font-size:22px; font-weight:600; letter-spacing:-.5px; margin:44px 0 18px; text-align:center; }
+    @media (max-width:900px){ #mkt-howto .howto-modules{ grid-template-columns:1fr; } }
+    </style>
+    <section class="mkt-section mkt-wrap" data-mktpage="howto" id="mkt-howto">
+        <div class="mkt-section-head">
+            <div class="mkt-eyebrow"><i class="fas fa-book-open"></i> Complete User Guide</div>
+            <h2>How to use PharmaTracker</h2>
+            <p>A step-by-step manual for the entire application — from your first file upload to advanced targets, catalogues and business intelligence. New here? Follow the steps below and you will be fully productive in minutes.</p>
+        </div>
+
+        <!-- ── Getting started steps ── -->
+        <div class="howto-step">
+            <div class="howto-step-num">1</div>
+            <div>
+                <h4>Create your account &amp; sign in</h4>
+                <p>Click <b>Get Started</b>, fill in your name, company and email, and choose your role. New accounts begin with a 7-day free trial with complete access. After the trial, pick a plan, select your preferred payment method (EasyPaisa, JazzCash, or Bank Transfer / Card), submit your transaction reference, and the admin activates your account. You can then sign in from any computer or device — your data follows you through the secure cloud database.</p>
+            </div>
+        </div>
+        <div class="howto-step">
+            <div class="howto-step-num">2</div>
+            <div>
+                <h4>Upload your sales files (Excel / CSV)</h4>
+                <p>Click <b>Upload Excel / CSV</b> in the top bar. You can also click <b>Sample File</b> first to download a template that shows the expected columns:</p>
+                <ul>
+                    <li><b>Required columns:</b> Invoice ID, Invoice Date, Customer Name, Company, Item Name, Qty/Stock, Rate, Net Amount.</li>
+                    <li><b>Recommended columns:</b> Region, Booking Man, Company Group, Pack Size, Bonus, Gross Amount, Discount.</li>
+                    <li>Column names are matched flexibly — "Customer", "Party Name" and "Account Name" all work.</li>
+                    <li>You can upload multiple files; each file can be enabled/disabled or removed from the <b>Slicer</b> panel.</li>
+                    <li>Everything is saved automatically — locally and to the cloud — so your dashboards are ready every time you sign in.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="howto-step">
+            <div class="howto-step-num">3</div>
+            <div>
+                <h4>Filter everything with the global slicers</h4>
+                <p>The top bar contains slicers that filter every page at once: <b>Company</b>, <b>Company Group</b>, <b>Period</b> (All Time / Month / Quarter — multi-select), <b>Value-wise vs Unit-wise</b>, and <b>Top N</b>. Inside pages you also get Region, Booking Man, Month and free-text search filters. Set a slicer once and the dashboard, catalogues, analytics and reports all follow it.</p>
+            </div>
+        </div>
+        <div class="howto-step">
+            <div class="howto-step-num">4</div>
+            <div>
+                <h4>Set targets &amp; track achievement</h4>
+                <p>Open <b>Projection &amp; Target</b>. Enter your total monthly target, then assign each Booker a percentage of it (1–100%) — the tool divides the target automatically. The page shows target achieved %, remaining target and end-of-month projection based on the current run-rate. Rep-level targets can also be set inline in <b>Rep Performance</b>; they save locally and sync to the cloud.</p>
+            </div>
+        </div>
+        <div class="howto-step">
+            <div class="howto-step-num">5</div>
+            <div>
+                <h4>Search, alerts &amp; exports</h4>
+                <ul>
+                    <li><b>Global Search (Ctrl+K):</b> find any customer, product, invoice, company, booking man, region or page instantly.</li>
+                    <li><b>Notification bell:</b> alerts for target progress, sales drops, low-performing products, pending approvals and subscription expiry.</li>
+                    <li><b>Exports:</b> every major section offers CSV / Excel export and an optimized <b>Download PDF</b> (kept under 1&nbsp;MB, print-ready).</li>
+                    <li><b>Admin tools:</b> Approvals for registrations/renewals, user management, subscription settings, and a full Activity Log.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ── Module-by-module manual ── -->
+        <div class="howto-subhead">Every module explained</div>
+        <div class="howto-modules">
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-home"></i> Dashboard</h4>
+                <div class="hm-purpose">Purpose · Daily business snapshot</div>
+                <p>Your landing page after sign-in. KPI cards show Total Sales, Net Revenue, Unique Customers, Average Order Value, Total Discount and Unique Products — each with a month-over-month change indicator. Below them: an "Alerts &amp; Attention Required" panel and the latest transactions table.</p>
+                <div class="hm-benefit"><b>Benefit:</b> one glance tells you whether the business is up or down versus last month and what needs action today.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 90" role="img" aria-label="KPI trend sparkline example">
+                        <rect x="0" y="0" width="300" height="90" rx="8" fill="none"/>
+                        <text x="12" y="20" fill="#8b949e" font-size="9" font-family="sans-serif">NET REVENUE</text>
+                        <text x="12" y="42" fill="#d4af5a" font-size="18" font-weight="bold" font-family="sans-serif">₨ 4.82M</text>
+                        <text x="12" y="58" fill="#3fb950" font-size="9" font-family="sans-serif">▲ 12.4% vs last month</text>
+                        <polyline points="150,70 170,58 190,64 210,45 230,50 250,32 270,38 288,22" fill="none" stroke="#d4af5a" stroke-width="2"/>
+                        <circle cx="288" cy="22" r="3" fill="#d4af5a"/>
+                    </svg>
+                    <div class="hc-caption"><b>KPI card with trend sparkline</b> — the line shows the recent direction of the metric; rising means growth. The ▲/▼ percentage compares this month with the previous month so you immediately see momentum.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-receipt"></i> Sales Ledger</h4>
+                <div class="hm-purpose">Purpose · Every transaction, searchable</div>
+                <p>The complete list of imported invoices with pagination. Filter by Region, Booking Man, Month or free text (invoice, customer, product…). Export the filtered view to CSV/Excel or PDF.</p>
+                <div class="hm-benefit"><b>Benefit:</b> answers "show me all sales of product X in region Y last month" in seconds — no more digging through Excel sheets.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 74" role="img" aria-label="Table example">
+                        <rect x="6" y="6" width="288" height="16" rx="4" fill="#d4af5a" opacity="0.25"/>
+                        <text x="12" y="17" fill="#8b949e" font-size="8" font-family="sans-serif">INVOICE</text><text x="80" y="17" fill="#8b949e" font-size="8" font-family="sans-serif">CUSTOMER</text><text x="170" y="17" fill="#8b949e" font-size="8" font-family="sans-serif">ITEM</text><text x="250" y="17" fill="#8b949e" font-size="8" font-family="sans-serif">NET</text>
+                        <text x="12" y="36" fill="#8b949e" font-size="8" font-family="monospace">INV-0117</text><text x="80" y="36" fill="#8b949e" font-size="8" font-family="sans-serif">City Pharma</text><text x="170" y="36" fill="#8b949e" font-size="8" font-family="sans-serif">Amoxicillin</text><text x="250" y="36" fill="#8b949e" font-size="8" font-family="monospace">1,262</text>
+                        <line x1="6" y1="44" x2="294" y2="44" stroke="#444" stroke-width="0.5"/>
+                        <text x="12" y="58" fill="#8b949e" font-size="8" font-family="monospace">INV-0118</text><text x="80" y="58" fill="#8b949e" font-size="8" font-family="sans-serif">MediCare</text><text x="170" y="58" fill="#8b949e" font-size="8" font-family="sans-serif">Paracetamol</text><text x="250" y="58" fill="#8b949e" font-size="8" font-family="monospace">610</text>
+                    </svg>
+                    <div class="hc-caption"><b>Transaction table</b> — sortable, filterable rows of every invoice line. Use it for audits, dispute checks and detailed record keeping.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-users"></i> Customer Catalogue</h4>
+                <div class="hm-purpose">Purpose · Know your buyers</div>
+                <p>Aggregates sales per customer: total value, units, order count and share. Includes a customer-by-region chart, YTD catalogue and month-vs-month comparison with growth %.</p>
+                <div class="hm-benefit"><b>Benefit:</b> spot your best customers to protect, and declining customers to win back — before revenue is lost.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 88" role="img" aria-label="Horizontal bar chart example">
+                        <text x="8" y="16" fill="#8b949e" font-size="8" font-family="sans-serif">Pak Pharma</text><rect x="80" y="9" width="190" height="9" rx="3" fill="#d4af5a"/>
+                        <text x="8" y="36" fill="#8b949e" font-size="8" font-family="sans-serif">MediCare</text><rect x="80" y="29" width="140" height="9" rx="3" fill="#d4af5a" opacity="0.75"/>
+                        <text x="8" y="56" fill="#8b949e" font-size="8" font-family="sans-serif">City Pharma</text><rect x="80" y="49" width="95" height="9" rx="3" fill="#d4af5a" opacity="0.55"/>
+                        <text x="8" y="76" fill="#8b949e" font-size="8" font-family="sans-serif">Health Plus</text><rect x="80" y="69" width="60" height="9" rx="3" fill="#d4af5a" opacity="0.4"/>
+                    </svg>
+                    <div class="hc-caption"><b>Top customers bar chart</b> — the longest bar is your biggest customer. If one bar dominates, your revenue is concentrated (a risk); many similar bars mean a healthy, diversified customer base.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-pills"></i> Product Catalogue</h4>
+                <div class="hm-purpose">Purpose · Product performance &amp; mix</div>
+                <p>Aggregates sales per product/item: value, units sold, bonus given and region split. Switch between Value-wise and Unit-wise using the global slicer to see revenue vs volume leaders.</p>
+                <div class="hm-benefit"><b>Benefit:</b> identify hero products to push, slow movers to discount or discontinue, and bonus-heavy items eating your margin.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 96" role="img" aria-label="Donut chart example">
+                        <g transform="translate(60,48)">
+                            <circle r="30" fill="none" stroke="#d4af5a" stroke-width="14" stroke-dasharray="85 104" transform="rotate(-90)"/>
+                            <circle r="30" fill="none" stroke="#58a6ff" stroke-width="14" stroke-dasharray="47 142" stroke-dashoffset="-85" transform="rotate(-90)"/>
+                            <circle r="30" fill="none" stroke="#3fb950" stroke-width="14" stroke-dasharray="33 156" stroke-dashoffset="-132" transform="rotate(-90)"/>
+                            <circle r="30" fill="none" stroke="#8b949e" stroke-width="14" stroke-dasharray="24 165" stroke-dashoffset="-165" transform="rotate(-90)"/>
+                        </g>
+                        <text x="120" y="34" fill="#8b949e" font-size="9" font-family="sans-serif">■ Antibiotics 45%</text>
+                        <text x="120" y="52" fill="#8b949e" font-size="9" font-family="sans-serif">■ Analgesics 25%</text>
+                        <text x="120" y="70" fill="#8b949e" font-size="9" font-family="sans-serif">■ Vitamins 17% · Others 13%</text>
+                    </svg>
+                    <div class="hc-caption"><b>Product mix donut</b> — each slice is a product's (or group's) share of total sales. A balanced donut means a resilient portfolio; one giant slice means you depend heavily on a single product.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-chart-pie"></i> Analytics &amp; Insights</h4>
+                <div class="hm-purpose">Purpose · Trends over time</div>
+                <p>Monthly revenue trend, region contribution, top booking men, discount analysis and auto-generated insight text. All charts respect the global slicers, so you can analyze one company or one quarter in isolation.</p>
+                <div class="hm-benefit"><b>Benefit:</b> see seasonality, growth trajectory and where sales actually come from — the foundation for planning.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 96" role="img" aria-label="Line and bar trend chart example">
+                        <line x1="20" y1="80" x2="292" y2="80" stroke="#444" stroke-width="0.7"/>
+                        <rect x="30" y="56" width="18" height="24" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="66" y="48" width="18" height="32" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="102" y="60" width="18" height="20" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="138" y="40" width="18" height="40" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="174" y="34" width="18" height="46" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="210" y="42" width="18" height="38" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <rect x="246" y="26" width="18" height="54" rx="2" fill="#58a6ff" opacity="0.55"/>
+                        <polyline points="39,52 75,44 111,56 147,36 183,30 219,38 255,22" fill="none" stroke="#d4af5a" stroke-width="2"/>
+                        <text x="30" y="92" fill="#8b949e" font-size="7" font-family="sans-serif">Jan</text><text x="138" y="92" fill="#8b949e" font-size="7" font-family="sans-serif">Apr</text><text x="246" y="92" fill="#8b949e" font-size="7" font-family="sans-serif">Jul</text>
+                    </svg>
+                    <div class="hc-caption"><b>Monthly trend (bars + line)</b> — bars show each month's revenue; the line shows the running direction. A dip after a peak is normal; a falling line across 3+ months is a warning to act on pricing, coverage or stock.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-bullseye"></i> Projection &amp; Target</h4>
+                <div class="hm-purpose">Purpose · Plan and hit your numbers</div>
+                <p>Enter the month's total target, split it across Bookers by percentage, and track: Target vs Sales vs Projection. The projection multiplies the current daily run-rate by the working days configured. Import/export product-level unit targets via Excel.</p>
+                <div class="hm-benefit"><b>Benefit:</b> know by mid-month whether you will hit the target — while there is still time to push.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 84" role="img" aria-label="Target progress gauge example">
+                        <text x="10" y="18" fill="#8b949e" font-size="9" font-family="sans-serif">Target ₨ 5.0M · Achieved ₨ 3.4M</text>
+                        <rect x="10" y="28" width="280" height="14" rx="7" fill="#30363d"/>
+                        <rect x="10" y="28" width="190" height="14" rx="7" fill="#3fb950"/>
+                        <text x="10" y="62" fill="#3fb950" font-size="10" font-weight="bold" font-family="sans-serif">68% achieved</text>
+                        <text x="150" y="62" fill="#8b949e" font-size="9" font-family="sans-serif">Projection: ₨ 5.1M (on track ✓)</text>
+                    </svg>
+                    <div class="hc-caption"><b>Target progress bar</b> — green fill shows achievement against the full-width target. The projection figure estimates the month-end result from today's pace: green means on track, amber/red means the remaining daily requirement is above your usual pace.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-chart-line"></i> Business Intelligence</h4>
+                <div class="hm-purpose">Purpose · Deep, cross-dimensional analysis</div>
+                <p>Interactive BI board combining company, group, region, rep, customer and product dimensions with drill-down charts, growth matrices and ranked leaderboards.</p>
+                <div class="hm-benefit"><b>Benefit:</b> answers complex questions ("which company group is growing fastest in the North region?") without exporting anything to Excel.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 92" role="img" aria-label="Heatmap example">
+                        <text x="8" y="14" fill="#8b949e" font-size="8" font-family="sans-serif">Region × Month sales heatmap</text>
+                        <g font-family="sans-serif" font-size="7" fill="#8b949e">
+                            <text x="8" y="34">North</text><text x="8" y="52">South</text><text x="8" y="70">East</text>
+                        </g>
+                        <g>
+                            <rect x="46" y="24" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.9"/><rect x="88" y="24" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.65"/><rect x="130" y="24" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.95"/><rect x="172" y="24" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.5"/><rect x="214" y="24" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.8"/>
+                            <rect x="46" y="42" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.4"/><rect x="88" y="42" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.55"/><rect x="130" y="42" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.35"/><rect x="172" y="42" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.6"/><rect x="214" y="42" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.45"/>
+                            <rect x="46" y="60" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.25"/><rect x="88" y="60" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.3"/><rect x="130" y="60" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.5"/><rect x="172" y="60" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.28"/><rect x="214" y="60" width="38" height="14" rx="3" fill="#d4af5a" opacity="0.35"/>
+                        </g>
+                        <text x="46" y="86" fill="#8b949e" font-size="7" font-family="sans-serif">Darker = more sales in that region &amp; month</text>
+                    </svg>
+                    <div class="hc-caption"><b>Heatmap</b> — colour intensity encodes sales volume for each region-month cell. Dark clusters reveal your strongholds; pale rows show under-served regions worth targeting.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-user-tie"></i> Rep Performance</h4>
+                <div class="hm-purpose">Purpose · Manage your sales force</div>
+                <p>Ranks every Booking Man by net sales, target achievement, customers covered and products sold. Set individual targets inline; identify the top performer and those needing coaching. Export to CSV/Excel/PDF.</p>
+                <div class="hm-benefit"><b>Benefit:</b> fair, data-based performance reviews — and early warning when a good rep starts slipping.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 90" role="img" aria-label="Rep comparison chart example">
+                        <line x1="20" y1="74" x2="292" y2="74" stroke="#444" stroke-width="0.7"/>
+                        <rect x="36" y="22" width="26" height="52" rx="3" fill="#3fb950"/><text x="34" y="86" fill="#8b949e" font-size="7" font-family="sans-serif">Ahmed</text>
+                        <rect x="96" y="34" width="26" height="40" rx="3" fill="#d4af5a"/><text x="94" y="86" fill="#8b949e" font-size="7" font-family="sans-serif">Fatima</text>
+                        <rect x="156" y="44" width="26" height="30" rx="3" fill="#d4af5a" opacity="0.7"/><text x="152" y="86" fill="#8b949e" font-size="7" font-family="sans-serif">Usman</text>
+                        <rect x="216" y="58" width="26" height="16" rx="3" fill="#f85149" opacity="0.8"/><text x="216" y="86" fill="#8b949e" font-size="7" font-family="sans-serif">Sara</text>
+                        <line x1="20" y1="38" x2="292" y2="38" stroke="#58a6ff" stroke-width="1.2" stroke-dasharray="5 4"/>
+                        <text x="240" y="33" fill="#58a6ff" font-size="7" font-family="sans-serif">Target line</text>
+                    </svg>
+                    <div class="hc-caption"><b>Rep vs target bars</b> — each bar is one rep's net sales; the dashed line is the target. Green = above target, gold = close, red = needs attention. Instantly shows who to reward and who to support.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-radar"></i> Operational Intelligence</h4>
+                <div class="hm-purpose">Purpose · Forecasts, anomalies &amp; smart alerts</div>
+                <p>Territory drill-downs, inventory signals (expiry, reorder levels), sales forecasting for the next 30/60/90 days, anomaly detection and a categorized smart-alert feed.</p>
+                <div class="hm-benefit"><b>Benefit:</b> catches unusual spikes/drops and stock risks automatically — problems surface before customers complain.</div>
+                <div class="howto-chart">
+                    <svg viewBox="0 0 300 90" role="img" aria-label="Forecast chart example">
+                        <line x1="20" y1="74" x2="292" y2="74" stroke="#444" stroke-width="0.7"/>
+                        <polyline points="24,58 60,50 96,54 132,42 168,36" fill="none" stroke="#58a6ff" stroke-width="2"/>
+                        <polyline points="168,36 204,32 240,26 284,20" fill="none" stroke="#d4af5a" stroke-width="2" stroke-dasharray="6 4"/>
+                        <polygon points="168,36 204,24 240,14 284,6 284,34 240,38 204,40 168,36" fill="#d4af5a" opacity="0.12"/>
+                        <circle cx="168" cy="36" r="3" fill="#58a6ff"/>
+                        <text x="30" y="20" fill="#58a6ff" font-size="8" font-family="sans-serif">— Actual sales</text>
+                        <text x="120" y="20" fill="#d4af5a" font-size="8" font-family="sans-serif">- - Forecast (with confidence band)</text>
+                    </svg>
+                    <div class="hc-caption"><b>Forecast line</b> — the solid line is history; the dashed line is the projected path with a shaded confidence band. Use it for purchasing, cash-flow and target planning for the next 30–90 days.</div>
+                </div>
+            </div>
+
+            <div class="howto-mod">
+                <h4><i class="fas fa-cog"></i> Settings, Approvals &amp; Activity Log</h4>
+                <div class="hm-purpose">Purpose · Administration &amp; security</div>
+                <p><b>Settings:</b> profile, password, currency, report theme and (for admins) users, plans and payment configuration. <b>Approvals</b> (admin): verify and approve/reject registrations, renewals and recharges. <b>Activity Log</b> (admin): full audit trail of logins, uploads, exports, edits and account changes.</p>
+                <div class="hm-benefit"><b>Benefit:</b> complete control with role-based access — Admin, Manager, Analyst and Viewer roles each see exactly what they should.</div>
+                <div class="howto-chart">
+                    <div class="hc-caption" style="margin-top:0"><b>Roles at a glance:</b><br>
+                    • <b>Admin</b> — everything, incl. approvals, users, plans, activity log.<br>
+                    • <b>Manager / Analyst</b> — full data, uploads, targets and reports.<br>
+                    • <b>Viewer</b> — read-only dashboards and reports (no uploads or target edits).</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="mkt-section mkt-wrap" data-mktpage="pricing" id="mkt-pricing">
+        <div class="mkt-section-head">
+            <div class="mkt-kicker">Pricing</div>
+            <h2 id="mkt-pricing-headline">One plan. Every feature. <span class="grad">Only $5/month.</span></h2>
+            <p id="mkt-pricing-sub">No tiers, no feature-gating — every distributor gets the full platform. Pick whichever payment rail works where you are.</p>
+        </div>
+        <div class="mkt-pricing-grid" id="mkt-pricing-grid">
+        </div>
+    </section>
+
     <!-- ═══ FAQ ═══ -->
-    <section class="mkt-section mkt-wrap" id="mkt-faq">
+    <section class="mkt-section mkt-wrap" data-mktpage="pricing" id="mkt-faq">
         <div class="mkt-section-head">
             <div class="mkt-kicker">FAQ</div>
             <h2>Clear answers before you get started</h2>
@@ -1990,19 +2313,8 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
         </div>
     </section>
 
-    <!-- ═══ Pricing plans ═══ (admin-controlled: see renderMktPricing()) -->
-    <section class="mkt-section mkt-wrap" id="mkt-pricing">
-        <div class="mkt-section-head">
-            <div class="mkt-kicker">Pricing</div>
-            <h2 id="mkt-pricing-headline">One plan. Every feature. <span class="grad">Only $5/month.</span></h2>
-            <p id="mkt-pricing-sub">No tiers, no feature-gating — every distributor gets the full platform. Pick whichever payment rail works where you are.</p>
-        </div>
-        <div class="mkt-pricing-grid" id="mkt-pricing-grid">
-        </div>
-    </section>
-
     <!-- ═══ Final CTA ═══ -->
-    <section class="mkt-section mkt-wrap">
+    <section class="mkt-section mkt-wrap" data-mktpage="product pricing howto vision features">
         <div class="mkt-cta-band">
             <div class="mkt-price-pill"><span class="amt" id="mkt-cta-price-amt">$5</span><span class="per">/ month, per distributor</span></div>
             <h2>Run your sales on one screen you can trust</h2>
@@ -2269,7 +2581,7 @@ function changeSiteLanguage(language){
                     <label>Transaction ID / Reference No.</label>
                     <input class="auth-input" type="text" id="signup-txnid" placeholder="e.g. 123456789012">
                 </div>
-                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text">Payment bhejne ke baad Transaction ID yahan darj karein. Admin verify karne ke baad aapka account activate ho jayega (1 month valid).</span></div>
+                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text">After sending your payment, enter the Transaction ID here. Your account will be activated once the admin verifies the payment (valid for 1 month).</span></div>
             </div>
 
             <button class="auth-btn" id="signup-btn" onclick="doSignup()">
@@ -2286,7 +2598,7 @@ function changeSiteLanguage(language){
             <div class="auth-pending-box">
                 <div class="auth-pending-icon"><i class="fas fa-hourglass-half"></i></div>
                 <h3 id="pending-title">Registration Submitted!</h3>
-                <p id="pending-text">Aapki registration request admin ko bhej di gayi hai. Payment verify hone ke baad aapka account activate ho jayega aur aapko email par confirmation mil jayegi.</p>
+                <p id="pending-text">Your registration request has been sent to the admin. Your account will be activated after the payment is verified, and you will receive a confirmation email.</p>
             </div>
             <button class="auth-btn" onclick="backToLogin()">
                 <i class="fas fa-arrow-left"></i> Back to Sign In
@@ -2295,7 +2607,7 @@ function changeSiteLanguage(language){
 
         <!-- SUBSCRIPTION EXPIRED / RENEWAL SCREEN -->
         <div class="auth-form" id="form-renew">
-            <div class="auth-error show" style="margin-bottom:16px" id="renew-notice">Aapki subscription khatam ho chuki hai. Renew karne ke liye payment karein.</div>
+            <div class="auth-error show" style="margin-bottom:16px" id="renew-notice">Your subscription has expired. Please make a payment to renew.</div>
 
             <div class="payment-box">
                 <div class="payment-box-title"><i class="fas fa-wallet"></i> <span id="renew-plan-name">Renew Subscription</span> <span class="amt" id="pay-amt-display-renew">Rs. 1,000 / month</span></div>
@@ -2321,7 +2633,7 @@ function changeSiteLanguage(language){
                     <label>Transaction ID / Reference No.</label>
                     <input class="auth-input" type="text" id="renew-txnid" placeholder="e.g. 123456789012">
                 </div>
-                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text-renew">Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account 1 month ke liye dobara activate ho jayega.</span></div>
+                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text-renew">After sending your payment, enter the Transaction ID. Your account will be reactivated for 1 month once the admin verifies the payment.</span></div>
             </div>
 
             <button class="auth-btn" onclick="doRenew()">
@@ -2341,7 +2653,7 @@ function changeSiteLanguage(language){
                 <label>Registered Email Address</label>
                 <div class="auth-input-wrap">
                     <i class="fas fa-envelope auth-ico"></i>
-                    <input class="auth-input" type="email" id="recharge-email" placeholder="wasim.rana.x@gmail.com">
+                    <input class="auth-input" type="email" id="recharge-email" placeholder="your@email.com">
                 </div>
             </div>
 
@@ -2369,7 +2681,7 @@ function changeSiteLanguage(language){
                     <label>Transaction ID / Reference No.</label>
                     <input class="auth-input" type="text" id="recharge-txnid" placeholder="e.g. 123456789012">
                 </div>
-                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text-recharge">Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account dobara activate ho jayega.</span></div>
+                <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text-recharge">After sending your payment, enter the Transaction ID. Your account will be reactivated once the admin verifies the payment.</span></div>
             </div>
 
             <button class="auth-btn" onclick="doAccountRecharge()">
@@ -2399,12 +2711,12 @@ function changeSiteLanguage(language){
             <div class="auth-success" id="forgot-success"></div>
 
             <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">
-                Apna registered email darj karein — hum aapko password reset ka link bhejenge.
+                Enter your registered email address — we will send you a password reset code.
             </p>
 
             <div class="auth-field">
                 <label>Email Address</label>
-                <input class="auth-input" type="email" id="forgot-email" placeholder="wasim.rana.x@gmail.com" autocomplete="email">
+                <input class="auth-input" type="email" id="forgot-email" placeholder="your@email.com" autocomplete="email">
             </div>
 
             <button class="auth-btn" id="forgot-btn" onclick="doForgotPassword()">
@@ -2422,7 +2734,7 @@ function changeSiteLanguage(language){
             <div class="auth-success" id="reset-success"></div>
 
             <p style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6">
-                Email par bheja gaya 6-digit code darj karein aur apna naya password set karein. Code 30 minute ke liye valid hai.
+                Enter the 6-digit code sent to your email and set a new password. The code is valid for 30 minutes.
             </p>
 
             <div class="auth-field">
@@ -2446,7 +2758,7 @@ function changeSiteLanguage(language){
             </button>
 
             <div class="auth-terms">
-                Code nahi mila? <span onclick="showForgotForm()">Dobara bhejein</span> &nbsp;·&nbsp; <span onclick="backToLogin()">Back to Sign In</span>
+                Didn&#39;t receive the code? <span onclick="showForgotForm()">Resend code</span> &nbsp;·&nbsp; <span onclick="backToLogin()">Back to Sign In</span>
             </div>
             </div>
         </div>
@@ -4839,7 +5151,7 @@ function changeSiteLanguage(language){
             <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('approvals')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
         </div>
         <div class="page-heading">
-            <div><h2>Pending Approvals</h2><p style="font-size:12.5px;color:var(--muted)">Naye registrations aur renewals jinki payment verify karni hai</p></div>
+            <div><h2>Pending Approvals</h2><p style="font-size:12.5px;color:var(--muted)">New registrations and renewals awaiting payment verification</p></div>
         </div>
         <div id="approvals-list-container"></div>
     </div>
@@ -9113,8 +9425,8 @@ function selectPayMethod(method, ctx) {
         noteEl.textContent = isBank
             ? `Send your bank transfer, then enter the transaction/reference number below. Your account activates once an admin verifies it.`
             : (ctx === 'signup'
-                ? 'Payment bhejne ke baad Transaction ID yahan darj karein. Admin verify karne ke baad aapka account activate ho jayega.'
-                : 'Payment bhejne ke baad Transaction ID darj karein. Admin verify karne ke baad account dobara activate ho jayega.');
+                ? 'After sending your payment, enter the Transaction ID here. Your account will be activated once the admin verifies the payment.'
+                : 'After sending your payment, enter the Transaction ID. Your account will be reactivated once the admin verifies the payment.');
     }
     const disp = document.getElementById('pay-number-display' + suffix);
     if (disp && !isBank) disp.textContent = payNumbersFromSettings()[method];
@@ -9228,7 +9540,7 @@ async function doAccountRecharge() {
     const email = document.getElementById('recharge-email').value.trim().toLowerCase();
     const txnId = document.getElementById('recharge-txnid').value.trim();
     if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { errEl.textContent = 'Please enter a valid registered email address.'; errEl.classList.add('show'); return; }
-    if (!txnId) { errEl.textContent = 'Transaction ID darj karna zaroori hai.'; errEl.classList.add('show'); return; }
+    if (!txnId) { errEl.textContent = 'Transaction ID is required.'; errEl.classList.add('show'); return; }
 
     const user = await getUserByEmail(email);
     if (!user) { errEl.textContent = 'No account found with this email address.'; errEl.classList.add('show'); return; }
@@ -9245,7 +9557,7 @@ async function doAccountRecharge() {
     sendAdminNotification(user, true);
 
     document.getElementById('pending-title').textContent = 'Recharge Request Submitted!';
-    document.getElementById('pending-text').textContent = 'Aapki recharge request admin ko bhej di gayi hai. Payment verify hone ke baad account dobara activate ho jayega.';
+    document.getElementById('pending-text').textContent = 'Your recharge request has been sent to the admin. Your account will be reactivated after the payment is verified.';
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
     document.getElementById('form-pending').classList.add('active');
@@ -9388,7 +9700,7 @@ async function doLogin() {
     document.getElementById('login-password').classList.remove('error');
 
     if (user.status === 'pending') {
-        errEl.textContent = 'Aapka account abhi admin approval ka intezar kar raha hai. Payment verify hone tak sabar karein.';
+        errEl.textContent = 'Your account is awaiting admin approval. Please wait until the payment is verified.';
         errEl.classList.add('show');
         return;
     }
@@ -9423,12 +9735,12 @@ async function doForgotPassword() {
     errEl.classList.remove('show');
     okEl.classList.remove('show');
 
-    if (!email) { errEl.textContent = 'Email address darj karein.'; errEl.classList.add('show'); return; }
+    if (!email) { errEl.textContent = 'Please enter your email address.'; errEl.classList.add('show'); return; }
 
     const user = await getUserByEmail(email);
     if (!user) {
         // Don't reveal whether the email exists — just show a generic message either way.
-        okEl.textContent = 'Agar ye email registered hai, to reset code bhej diya gaya hai. Apna inbox check karein.';
+        okEl.textContent = 'If this email is registered, a reset code has been sent. Please check your inbox.';
         okEl.classList.add('show');
         return;
     }
@@ -9452,10 +9764,10 @@ async function doForgotPassword() {
 
     if (!sent) {
         // Email not configured yet — show the code directly so testing still works.
-        document.getElementById('reset-success').textContent = `Reset code: ${code} (email abhi configure nahi hua — code seedha yahan dikha diya gaya hai)`;
+        document.getElementById('reset-success').textContent = `Reset code: ${code} (email is not configured yet — the code is shown here directly)`;
         document.getElementById('reset-success').classList.add('show');
     } else {
-        showToast('Reset code aapke email par bhej diya gaya hai.', 'success');
+        showToast('A reset code has been sent to your email.', 'success');
     }
 }
 
@@ -9467,15 +9779,15 @@ async function doResetPassword() {
     const okEl = document.getElementById('reset-success');
     errEl.classList.remove('show');
 
-    if (!resetTargetEmail) { errEl.textContent = 'Session expire ho gaya, dobara koshish karein.'; errEl.classList.add('show'); return; }
-    if (!code) { errEl.textContent = 'Reset code darj karein.'; errEl.classList.add('show'); return; }
-    if (!pw || pw.length < 6) { errEl.textContent = 'Password kam az kam 6 characters ka hona chahiye.'; errEl.classList.add('show'); return; }
-    if (pw !== confirm) { errEl.textContent = 'Password match nahi ho raha.'; errEl.classList.add('show'); return; }
+    if (!resetTargetEmail) { errEl.textContent = 'Session expired. Please try again.'; errEl.classList.add('show'); return; }
+    if (!code) { errEl.textContent = 'Please enter the reset code.'; errEl.classList.add('show'); return; }
+    if (!pw || pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
 
     const user = await getUserByEmail(resetTargetEmail);
-    if (!user || !user.resetCode) { errEl.textContent = 'Reset request nahi mila. Dobara code mangwayein.'; errEl.classList.add('show'); return; }
-    if (user.resetCode !== code) { errEl.textContent = 'Reset code ghalat hai.'; errEl.classList.add('show'); return; }
-    if (new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'Reset code expire ho chuka hai. Dobara mangwayein.'; errEl.classList.add('show'); return; }
+    if (!user || !user.resetCode) { errEl.textContent = 'No reset request found. Please request a new code.'; errEl.classList.add('show'); return; }
+    if (user.resetCode !== code) { errEl.textContent = 'The reset code is incorrect.'; errEl.classList.add('show'); return; }
+    if (new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'The reset code has expired. Please request a new one.'; errEl.classList.add('show'); return; }
 
     user.pw = hashPw(pw);
     delete user.resetCode;
@@ -9483,7 +9795,7 @@ async function doResetPassword() {
     await saveUser(user);
 
     resetTargetEmail = null;
-    okEl.textContent = 'Password reset ho gaya! Ab naye password se sign in karein.';
+    okEl.textContent = 'Password reset successful! Sign in with your new password.';
     okEl.classList.add('show');
     setTimeout(() => {
         backToLogin();
@@ -9493,11 +9805,11 @@ async function doResetPassword() {
 
 function showRenewForm(user) {
     renewTargetEmail = user.email.toLowerCase();
-    const expDate = user.validUntil ? new Date(user.validUntil).toLocaleDateString('en-GB') : 'jald';
+    const expDate = user.validUntil ? new Date(user.validUntil).toLocaleDateString('en-GB') : 'soon';
     const daysLeft = user.validUntil ? Math.ceil((new Date(user.validUntil) - new Date()) / (24*60*60*1000)) : 0;
     document.getElementById('renew-notice').textContent = daysLeft > 0
-        ? `Aapki subscription ${expDate} ko khatam ho rahi hai. Time se pehle renew karein.`
-        : `Aapki subscription ${expDate} ko khatam ho chuki hai. Renew karne ke liye payment karein.`;
+        ? `Your subscription expires on ${expDate}. Please renew before it ends.`
+        : `Your subscription expired on ${expDate}. Please make a payment to renew.`;
     document.getElementById('auth-overlay').classList.remove('hidden');
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -9509,10 +9821,10 @@ function showRenewForm(user) {
 
 async function doRenew() {
     const txnId = document.getElementById('renew-txnid').value.trim();
-    if (!txnId) { showToast('Transaction ID darj karein.', 'error'); return; }
+    if (!txnId) { showToast('Please enter the Transaction ID.', 'error'); return; }
 
     const user = await getUserByEmail(renewTargetEmail);
-    if (!user) { showToast('Account nahi mila.', 'error'); return; }
+    if (!user) { showToast('Account not found.', 'error'); return; }
 
     const plan = ensureSelectedPlan('renew');
     user.status = 'pending';
@@ -9526,7 +9838,7 @@ async function doRenew() {
 
     document.getElementById('renew-txnid').value = '';
     document.getElementById('pending-title').textContent = 'Renewal Submitted!';
-    document.getElementById('pending-text').textContent = 'Aapki renewal request admin ko bhej di gayi hai. Payment verify hone ke baad account dobara 1 month ke liye activate ho jayega.';
+    document.getElementById('pending-text').textContent = 'Your renewal request has been sent to the admin. Your account will be reactivated for 1 month after the payment is verified.';
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
     document.getElementById('form-pending').classList.add('active');
@@ -9551,7 +9863,7 @@ function doSignup() {
     if (!company) { errEl.textContent = 'Company name is required.'; errEl.classList.add('show'); return; }
     if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
     if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
-    if (!txnId) { errEl.textContent = 'Payment ka Transaction ID darj karna zaroori hai.'; errEl.classList.add('show'); return; }
+    if (!txnId) { errEl.textContent = 'Payment Transaction ID is required.'; errEl.classList.add('show'); return; }
 
     (async () => {
         const existing = await getUserByEmail(email);
@@ -9580,7 +9892,7 @@ function doSignup() {
         okEl.textContent = '✅ Registration submitted! Waiting for approval…';
         okEl.classList.add('show');
         document.getElementById('pending-title').textContent = 'Registration Submitted!';
-        document.getElementById('pending-text').textContent = 'Aapki registration request admin ko bhej di gayi hai. Payment verify hone ke baad aapka account activate ho jayega.';
+        document.getElementById('pending-text').textContent = 'Your registration request has been sent to the admin. Your account will be activated after the payment is verified.';
         setTimeout(() => {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -9731,7 +10043,7 @@ async function renderApprovals() {
     }
 
     if (pending.length === 0) {
-        el.innerHTML = `<div class="empty-approvals"><i class="fas fa-circle-check"></i>Koi pending registration ya renewal nahi hai.</div>`;
+        el.innerHTML = `<div class="empty-approvals"><i class="fas fa-circle-check"></i>No pending registrations or renewals.</div>`;
         return;
     }
 
@@ -9782,7 +10094,7 @@ async function approveUser(email) {
     if (currentUser && currentUser.email === email) { currentUser = user; renderSubscriptionBox(); }
     renderApprovals();
     renderUsersTab();
-    showToast(`${user.fname} ka account approve ho gaya (valid till ${validUntil.toLocaleDateString('en-GB')}).`, 'success');
+    showToast(`${user.fname}'s account has been approved (valid till ${validUntil.toLocaleDateString('en-GB')}).`, 'success');
 }
 
 function rejectUser(email) {
@@ -9791,7 +10103,7 @@ function rejectUser(email) {
         await deleteUserByEmail(email);
         renderApprovals();
         renderUsersTab();
-        showToast('Registration reject kar di gayi.', 'info');
+        showToast('Registration has been rejected.', 'info');
     })();
 }
 
@@ -10010,7 +10322,7 @@ function backToMarketing(){
 
     function authErrorMessage(e) {
         const code = String(e && e.code || '');
-        if (code.includes('wrong-password') || code.includes('invalid-credential') || code.includes('user-not-found')) return 'Invalid email or password. Please try again. (Agar password sahi hai to ye account Firebase Authentication mein nahi hai - admin se dobara create karwayen.)';
+        if (code.includes('wrong-password') || code.includes('invalid-credential') || code.includes('user-not-found')) return 'Invalid email or password. Please try again. (If your password is correct, this account may not exist in Firebase Authentication — please ask the admin to recreate it.)';
         if (code.includes('too-many-requests')) return 'Too many attempts. Please wait a little and try again.';
         if (code.includes('invalid-email')) return 'Please enter a valid email address.';
         if (code.includes('weak-password')) return 'Password must be at least 6 characters.';
@@ -10147,7 +10459,7 @@ function backToMarketing(){
             if (!profile) { await firebaseAuth.signOut(); throw new Error('No PharmaTracker profile found for this account.'); }
             profile.firebaseUid = authUser.uid;
             if (profile.status === 'pending') {
-                errEl.textContent = 'Aapka account abhi admin approval ka intezar kar raha hai. Payment verify hone tak sabar karein.';
+                errEl.textContent = 'Your account is awaiting admin approval. Please wait until the payment is verified.';
                 errEl.classList.add('show');
                 await firebaseAuth.signOut(); return;
             }
@@ -10184,7 +10496,7 @@ function backToMarketing(){
         if (!company) { errEl.textContent = 'Company name is required.'; errEl.classList.add('show'); return; }
         if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
         if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
-        if (!txnId) { errEl.textContent = 'Payment ka Transaction ID darj karna zaroori hai.'; errEl.classList.add('show'); return; }
+        if (!txnId) { errEl.textContent = 'Payment Transaction ID is required.'; errEl.classList.add('show'); return; }
         try {
             // Do not read Firestore before Firebase Auth is created. With secure
             // self-read rules, an anonymous signup cannot read users/{email}.
@@ -10204,7 +10516,7 @@ function backToMarketing(){
             sendAdminNotification(newUser, false);
             okEl.textContent = '✅ Registration submitted! Waiting for approval…'; okEl.classList.add('show');
             document.getElementById('pending-title').textContent = 'Registration Submitted!';
-            document.getElementById('pending-text').textContent = 'Aapki registration request admin ko bhej di gayi hai. Payment verify hone ke baad aapka account activate ho jayega.';
+            document.getElementById('pending-text').textContent = 'Your registration request has been sent to the admin. Your account will be activated after the payment is verified.';
             setTimeout(() => { document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active')); document.getElementById('form-pending').classList.add('active'); }, 500);
         } catch (e) {
             console.error(e);
@@ -10229,18 +10541,18 @@ function backToMarketing(){
         const email = document.getElementById('forgot-email').value.trim().toLowerCase();
         const errEl = document.getElementById('forgot-error'); const okEl = document.getElementById('forgot-success');
         errEl.classList.remove('show'); okEl.classList.remove('show');
-        if (!email) { errEl.textContent = 'Email address darj karein.'; errEl.classList.add('show'); return; }
+        if (!email) { errEl.textContent = 'Please enter your email address.'; errEl.classList.add('show'); return; }
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
         try {
             await firebaseAuth.sendPasswordResetEmail(email);
-            okEl.textContent = 'Agar ye email registered hai, to password reset link bhej diya gaya hai. Apna inbox/spam folder check karein.';
+            okEl.textContent = 'If this email is registered, a password reset link has been sent. Please check your inbox/spam folder.';
             okEl.classList.add('show');
         } catch (e) {
             console.error(e);
             const code = String(e && e.code || '');
             errEl.textContent = code.includes('invalid-email') ? 'Please enter a valid email address.'
                 : code.includes('too-many-requests') ? 'Too many attempts. Please wait a little and try again.'
-                : 'Reset email bhejne mein masla hua. Dobara koshish karein.';
+                : 'There was a problem sending the reset email. Please try again.';
             errEl.classList.add('show');
         }
     };
@@ -10251,25 +10563,25 @@ function backToMarketing(){
         const confirm = document.getElementById('reset-confirm').value;
         const errEl = document.getElementById('reset-error'); const okEl = document.getElementById('reset-success');
         errEl.classList.remove('show'); okEl.classList.remove('show');
-        if (!resetTargetEmail) { errEl.textContent = 'Session expire ho gaya, dobara code mangwayein.'; errEl.classList.add('show'); return; }
-        if (!/^\d{6}$/.test(code)) { errEl.textContent = '6-digit reset code darj karein.'; errEl.classList.add('show'); return; }
-        if (!pw || pw.length < 6) { errEl.textContent = 'Password kam az kam 6 characters ka hona chahiye.'; errEl.classList.add('show'); return; }
-        if (pw !== confirm) { errEl.textContent = 'Password match nahi ho raha.'; errEl.classList.add('show'); return; }
+        if (!resetTargetEmail) { errEl.textContent = 'Session expired. Please request a new code.'; errEl.classList.add('show'); return; }
+        if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Please enter the 6-digit reset code.'; errEl.classList.add('show'); return; }
+        if (!pw || pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+        if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
         try {
             const user = await getUserByEmail(resetTargetEmail);
-            if (!user || !user.resetCode) { errEl.textContent = 'Reset request nahi mila. Dobara code mangwayein.'; errEl.classList.add('show'); return; }
-            if (user.resetCode !== code) { errEl.textContent = 'Reset code ghalat hai.'; errEl.classList.add('show'); return; }
-            if (!user.resetCodeExpiry || new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'Reset code expire ho chuka hai. Dobara mangwayein.'; errEl.classList.add('show'); return; }
+            if (!user || !user.resetCode) { errEl.textContent = 'No reset request found. Please request a new code.'; errEl.classList.add('show'); return; }
+            if (user.resetCode !== code) { errEl.textContent = 'The reset code is incorrect.'; errEl.classList.add('show'); return; }
+            if (!user.resetCodeExpiry || new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'The reset code has expired. Please request a new one.'; errEl.classList.add('show'); return; }
             user.pw = hashPw(pw);
             delete user.resetCode; delete user.resetCodeExpiry;
             await saveUser(user);
             resetTargetEmail = null;
-            okEl.textContent = 'Password reset ho gaya! Ab naye password se sign in karein.';
+            okEl.textContent = 'Password reset successful! Sign in with your new password.';
             okEl.classList.add('show');
             setTimeout(() => { backToLogin(); document.getElementById('login-email').value = user.email; }, 1200);
         } catch (e) {
             console.error(e);
-            errEl.textContent = 'Password reset nahi ho saka. Dobara koshish karein.';
+            errEl.textContent = 'Could not reset the password. Please try again.';
             errEl.classList.add('show');
         }
     };
@@ -11838,13 +12150,13 @@ function prepareDataSummary(catalogue, data) {
             S.blocked = true;
             if (!S.warned) {
                 S.warned = true;
-                toast('Cloud sync blocked: Firestore Rules mein userData allow karein (notes dekhein). Data is device par hi save hoga.', 'error');
+                toast('Cloud sync blocked: allow the userData collection in your Firestore Rules (see notes). Data will be saved on this device only.', 'error');
             }
             return true;
         }
         if (!S.warned && /timed out|unavailable|network/i.test(msg + ' ' + code)) {
             S.warned = true;
-            toast('Cloud sync fail (network). Data device par save hai — online aane par sync hoga.', 'warning');
+            toast('Cloud sync failed (network). Data is saved on this device and will sync when you are back online.', 'warning');
         }
         return false;
     }
@@ -11983,7 +12295,7 @@ function prepareDataSummary(catalogue, data) {
         if (_saveRunning || !cloudOn()) return;
         const reason = S.queued || 'data-change';
         _saveRunning = true; S.saving = true; S.queued = null;
-        setBadge('syncing', 'Cloud par save ho raha hai…');
+        setBadge('syncing', 'Saving to cloud…');
         const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
         try {
             const meta = await cloudSaveSnapshot(reason);
@@ -12015,7 +12327,7 @@ function prepareDataSummary(catalogue, data) {
             return await cloudLoadSnapshotOnce();
         } catch (e) {
             if (isRetry) throw e;
-            console.warn('☁️ Cloud read failed, ek dafa dobara try:' + ((e && e.message) || e));
+            console.warn('☁️ Cloud read failed, retrying once:' + ((e && e.message) || e));
             await new Promise(function (r) { setTimeout(r, 2000); });
             return await cloudLoadSnapshotOnce();
         }
@@ -12094,7 +12406,7 @@ function prepareDataSummary(catalogue, data) {
         S.lastUpdatedAt = d.updatedAt;
         if (d.writer === SESSION_ID) return;                  // our own write
         if (S.saving || _saveRunning) { S.pendingReload = true; return; }
-        toast('☁️ Doosre system par data update hua — refresh ho raha hai…', 'success');
+        toast('☁️ Data was updated on another device — refreshing…', 'success');
         reloadFromCloud();
     }
     function attachMetaListener() {
@@ -12116,7 +12428,7 @@ function prepareDataSummary(catalogue, data) {
     }
     function startPolling() {
         if (S.pollTimer) return;
-        console.warn('☁️ Live updates is network par kaam nahi kar rahe (Listen 400) — har 60 second mein check karein ge. Data save/load dono chal rahe hain.');
+        console.warn('☁️ Live updates are not available on this network (Listen 400) — checking every 60 seconds instead. Saving and loading both work.');
         S.pollTimer = setInterval(checkRemoteUpdate, 60000);
     }
     async function checkRemoteUpdate() {
@@ -12205,7 +12517,7 @@ function prepareDataSummary(catalogue, data) {
         if (badge) return badge;
         badge = document.createElement('div');
         badge.id = 'pt-cloud-badge';
-        badge.title = 'PharmaTracker cloud sync — details ke liye click karein';
+        badge.title = 'PharmaTracker cloud sync — click for details';
         badge.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:99999;padding:7px 13px;'
             + 'border-radius:999px;font:600 12px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;'
             + 'color:#fff;background:#4b5563;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer;'
@@ -12233,10 +12545,10 @@ function prepareDataSummary(catalogue, data) {
         if (S.lastError) setTimeout(function () { toast('Aakhri error: ' + S.lastError, 'error'); }, 300);
         // Click = force a sync (useful for testing without uploading again)
         if (st.enabled && st.rows > 0 && !st.blocked) {
-            toast('☁️ Cloud sync dobara bhej rahe hain…', 'success');
+            toast('☁️ Retrying cloud sync…', 'success');
             runCloudSave();
         } else if (st.rows <= 0) {
-            toast('Pehle Excel/CSV file upload karein — phir ye cloud par save ho gi.', 'warning');
+            toast('Upload an Excel/CSV file first — it will then be saved to the cloud.', 'warning');
         }
     }
 
@@ -12264,16 +12576,16 @@ function prepareDataSummary(catalogue, data) {
                     pullSettings();
                     return true;
                 }
-                console.log('☁️ Cloud par abhi koi data nahi — local data upload ki ja rahi hai');
+                console.log('☁️ No data in the cloud yet — uploading local data');
                 // Nothing in the cloud yet: keep any local data and upload it once
                 // so this device's dataset becomes the shared one.
                 const local = await _baseLoad();
                 if (local && rawData.length) {
-                    setBadge('syncing', 'Pehli cloud upload…');
+                    setBadge('syncing', 'First cloud upload…');
                     scheduleCloudSave('first-upload');
                     attachMetaListener();
                 } else {
-                    setBadge('off', 'Cloud khali — koi data nahi');
+                    setBadge('off', 'Cloud empty — no data yet');
                 }
                 pullSettings();
                 return local;
@@ -12300,7 +12612,7 @@ function prepareDataSummary(catalogue, data) {
     window.addEventListener('beforeunload', function (e) {
         if (S.saving || _saveRunning || S.queued) {
             e.preventDefault();
-            e.returnValue = 'Data is still syncing to the cloud — thoda wait karein.';
+            e.returnValue = 'Data is still syncing to the cloud — please wait a moment.';
             return e.returnValue;
         }
     });
@@ -14353,4 +14665,225 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e029db5f93721a',t:'MTc4OTkwMDMxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
+
+<style id="pt-update2-style">
+/* ── UPDATE-2: Intro/landing page desktop optimization (scoped, additive) ──
+   Centers the marketing content in a proper desktop container instead of
+   letting it stretch edge-to-edge on wide monitors. Mobile is untouched. */
+#marketing-root { width: 100% !important; flex: 0 0 100% !important; max-width: none !important; }
+#marketing-root .mkt-wrap { max-width: none; width: 100%; margin: 0; padding: 0 clamp(20px, 4vw, 72px); box-sizing: border-box; }
+#marketing-root .mkt-nav-inner { max-width: none; width: 100%; margin: 0; padding: 16px clamp(20px, 4vw, 72px); box-sizing: border-box; }
+@media (min-width: 1024px) {
+    #marketing-root .mkt-hero { padding-top: 72px; }
+}
+/* The Executive Dashboard launcher must never appear on the intro page /
+   before sign-in (JS controls it too; this is a CSS safety net). */
+#marketing-root ~ #ex-launch { }
+body:has(#marketing-root:not(.hidden)) #ex-launch,
+body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
+</style>
+<style id="pt-update3-style">
+/* ── UPDATE-3: intro nav behaves as real pages ── */
+#marketing-root [data-mktpage]{ display:none; }
+#marketing-root [data-mktpage].mkt-page-on{ display:block; }
+#marketing-root .mkt-page-first{ border-top:none !important; }
+#marketing-root section.mkt-page-first{ padding-top:64px; }
+#marketing-root .mkt-nav-links a.active{ color:var(--gold-bright); position:relative; }
+#marketing-root .mkt-nav-links a.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:-8px; height:2px; border-radius:2px;
+    background:linear-gradient(90deg, var(--gold-bright), transparent);
+}
+/* Vision page */
+.vision-mission{ max-width:980px; margin:0 auto 56px; background:var(--surface); border:1px solid var(--border);
+    border-left:4px solid var(--gold-bright); border-radius:18px; padding:30px 36px; }
+.vision-mission-label{ font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--gold-bright); margin-bottom:12px; }
+.vision-mission-label i{ margin-right:7px; }
+.vision-mission p{ font-size:15.5px; line-height:1.85; color:var(--text); }
+.vision-pillars-head{ font-family:var(--serif); font-size:clamp(20px,2.2vw,27px); font-weight:600; letter-spacing:-.5px; text-align:center; margin:0 0 26px; }
+.vision-pillars{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:56px; }
+.vision-pillar{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:26px; transition:transform .15s, border-color .15s; }
+.vision-pillar:hover{ transform:translateY(-3px); border-color:var(--gold-bright); }
+.vision-pillar .vp-icon{ width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(232,185,92,.22), rgba(124,140,255,.14)); color:var(--gold-bright); font-size:16px; margin-bottom:16px; }
+.vision-pillar h4{ font-size:15px; font-weight:700; margin-bottom:9px; }
+.vision-pillar p{ font-size:13px; color:var(--muted); line-height:1.7; }
+.vision-roadmap{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.vision-road{ background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.vision-road p{ font-size:12.5px; color:var(--muted); line-height:1.75; }
+.vr-tag{ display:inline-block; font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; border-radius:999px; padding:6px 14px; margin-bottom:14px; }
+.vr-now{ background:rgba(52,211,153,.14); color:#34d399; border:1px solid rgba(52,211,153,.35); }
+.vr-next{ background:rgba(232,185,92,.13); color:var(--gold-bright); border:1px solid rgba(232,185,92,.35); }
+.vr-future{ background:rgba(124,140,255,.13); color:#9aa8ff; border:1px solid rgba(124,140,255,.35); }
+@media (max-width:1000px){ .vision-pillars, .vision-roadmap{ grid-template-columns:1fr 1fr; } }
+@media (max-width:640px){ .vision-pillars, .vision-roadmap{ grid-template-columns:1fr; } }
+</style>
+<script id="pt-update3-script">
+/* ── UPDATE-3: intro nav as real pages ── */
+(function () {
+    'use strict';
+    window.mktShowPage = function (name) {
+        var secs = document.querySelectorAll('#marketing-root [data-mktpage]');
+        var first = true;
+        secs.forEach(function (s) {
+            var pages = s.getAttribute('data-mktpage').split(/\s+/);
+            var on = pages.indexOf(name) !== -1;
+            s.classList.toggle('mkt-page-on', on);
+            s.classList.remove('mkt-page-first');
+            if (on && first) { s.classList.add('mkt-page-first'); first = false; }
+        });
+        document.querySelectorAll('#marketing-root .mkt-nav-links a[data-mktlink]').forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('data-mktlink') === name);
+        });
+        try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+    };
+    /* Legacy anchors (hero buttons, plan cards…) map onto the new pages. */
+    var MAP = { 'mkt-product': 'product', 'features': 'features', 'mkt-vision': 'vision',
+                'mkt-howto': 'howto', 'mkt-pricing': 'pricing', 'mkt-faq': 'pricing' };
+    var origScrollTo = window.mktScrollTo;
+    window.mktScrollTo = function (id) {
+        if (MAP[id]) {
+            mktShowPage(MAP[id]);
+            var el = document.getElementById(id);
+            if (el && !el.classList.contains('mkt-page-first')) {
+                setTimeout(function () { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+            }
+            return;
+        }
+        if (typeof origScrollTo === 'function') origScrollTo(id);
+    };
+    function boot() { try { mktShowPage('product'); } catch (e) { console.error('mkt pages boot', e); } }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+})();
+</script>
+<script id="pt-update2-script">
+/* =====================================================================
+   UPDATE-2 PACK (additive) —
+   a) Executive Dashboard launcher is hidden on the intro/landing page
+      and before sign-in; it appears only after login and is draggable.
+   b) Keeps the intro page clean on desktop (no app widgets overlaying
+      the marketing content).
+   No existing functionality is modified or removed.
+   ===================================================================== */
+(function () {
+    'use strict';
+    function $(id) { return document.getElementById(id); }
+
+    function isSignedIn() {
+        try {
+            var overlay = $('auth-overlay');
+            var mkt = $('marketing-root');
+            var overlayHidden = !overlay || overlay.classList.contains('hidden');
+            var mktHidden = !mkt || mkt.classList.contains('hidden');
+            var user = (typeof currentUser !== 'undefined') ? currentUser : null;
+            return !!(user && user.email) && overlayHidden && mktHidden;
+        } catch (e) { return false; }
+    }
+
+    /* ── visibility control ── */
+    function updateWidgets() {
+        var signedIn = isSignedIn();
+        var launch = $('ex-launch');
+        if (launch) {
+            // If the Executive Suite is open, its own open/close logic controls
+            // the button; otherwise show it only after sign-in.
+            var suite = $('ex-suite');
+            var suiteOpen = suite && suite.style.display === 'block';
+            if (!signedIn) { launch.style.display = 'none'; }
+            else if (!suiteOpen && launch.style.display === 'none') { launch.style.display = 'block'; }
+        }
+        // Cloud sync badge belongs to the app, not the marketing page.
+        var badge = $('pt-cloud-badge');
+        if (badge) badge.style.display = signedIn ? '' : 'none';
+    }
+
+    /* ── draggable Executive Dashboard button (after sign-in) ── */
+    var POS_KEY = 'pt_exlaunch_pos_v1';
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function applySavedPos(btn) {
+        try {
+            var p = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+            if (!p) return;
+            positionAt(btn, p.x, p.y);
+        } catch (e) {}
+    }
+    function positionAt(btn, x, y) {
+        var w = btn.offsetWidth || 180, h = btn.offsetHeight || 48;
+        x = clamp(x, 6, window.innerWidth - w - 6);
+        y = clamp(y, 6, window.innerHeight - h - 6);
+        btn.style.left = x + 'px';
+        btn.style.top = y + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+    }
+    function makeDraggable(btn) {
+        if (btn.__ptDraggable) return;
+        btn.__ptDraggable = true;
+        btn.style.touchAction = 'none';
+        btn.title = 'Executive Dashboard — drag to move';
+        var startX = 0, startY = 0, origX = 0, origY = 0, dragging = false, moved = false;
+        btn.addEventListener('pointerdown', function (e) {
+            dragging = true; moved = false;
+            var r = btn.getBoundingClientRect();
+            startX = e.clientX; startY = e.clientY;
+            origX = r.left; origY = r.top;
+            try { btn.setPointerCapture(e.pointerId); } catch (err) {}
+        });
+        btn.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            var dx = e.clientX - startX, dy = e.clientY - startY;
+            if (!moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+            moved = true;
+            positionAt(btn, origX + dx, origY + dy);
+        });
+        btn.addEventListener('pointerup', function (e) {
+            if (!dragging) return;
+            dragging = false;
+            if (moved) {
+                var r = btn.getBoundingClientRect();
+                try { localStorage.setItem(POS_KEY, JSON.stringify({ x: r.left, y: r.top })); } catch (err) {}
+                // Suppress only the click generated by this drag, then reset
+                // so the next intentional click opens the suite normally.
+                setTimeout(function () { moved = false; }, 0);
+            }
+        });
+        // Suppress the click that follows a drag so the suite doesn't open accidentally.
+        btn.addEventListener('click', function (e) {
+            if (moved) { e.stopImmediatePropagation(); e.preventDefault(); moved = false; }
+        }, true);
+        window.addEventListener('resize', function () {
+            var r = btn.getBoundingClientRect();
+            positionAt(btn, r.left, r.top);
+        });
+    }
+
+    function hookAuthFlows() {
+        ['loginSuccess', 'doLogout'].forEach(function (name) {
+            var orig = window[name];
+            if (typeof orig !== 'function' || orig.__ptU2) return;
+            window[name] = function () {
+                var out = orig.apply(this, arguments);
+                setTimeout(updateWidgets, 60);
+                setTimeout(updateWidgets, 600);
+                return out;
+            };
+            window[name].__ptU2 = true;
+        });
+    }
+
+    function boot() {
+        try {
+            var btn = $('ex-launch');
+            if (btn) { makeDraggable(btn); applySavedPos(btn); }
+            hookAuthFlows();
+            updateWidgets();
+            // Safety net: session restores / async auth flows also hide/show correctly.
+            setInterval(updateWidgets, 2000);
+        } catch (e) { console.error('Update-2 boot error', e); }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
