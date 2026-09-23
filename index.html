@@ -1837,6 +1837,42 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
      MARKETING (Landing + Features) — shown before sign-in
 ═══════════════════════════════════════════════ -->
 <div id="marketing-root">
+    <style id="mkt-redesign-style">
+    /* Landing redesign: page transitions, 4-col grid, hero chart, proof cards. */
+    #marketing-root [data-mktpage].mkt-page-on{ animation:mktPageIn .45s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes mktPageIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+    .mkt-grid-4{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+    .mkt-card-icon.danger{ background:linear-gradient(135deg, rgba(255,123,114,.20), rgba(255,166,87,.12)); color:var(--accent3); }
+    .mkt-cost{ display:block; margin-top:12px; font-size:12px; font-weight:700; color:var(--accent3); }
+    .mkt-chart{ margin-top:18px; background:var(--surface); border:1px solid var(--border); border-radius:13px; padding:16px 18px 14px; text-align:left; }
+    .mkt-chart-head{ display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:var(--muted); margin-bottom:12px; font-weight:600; }
+    .mkt-live-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--emerald); margin-right:7px; animation:mktPulse 1.8s infinite; }
+    @keyframes mktPulse{ 0%{ box-shadow:0 0 0 0 rgba(63,185,80,.5); } 70%{ box-shadow:0 0 0 7px rgba(63,185,80,0); } 100%{ box-shadow:0 0 0 0 rgba(63,185,80,0); } }
+    .mkt-bars{ display:flex; align-items:flex-end; gap:7px; height:104px; }
+    .mkt-bars i{ flex:1; border-radius:5px 5px 2px 2px; background:linear-gradient(180deg, var(--gold-bright), rgba(232,185,92,.12)); height:var(--h); transform-origin:bottom; animation:mktBarGrow .8s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--i)*55ms); }
+    .mkt-bars i:last-child{ background:linear-gradient(180deg, var(--emerald), rgba(63,185,80,.12)); }
+    @keyframes mktBarGrow{ from{ transform:scaleY(0); } to{ transform:scaleY(1); } }
+    .mkt-quote{ background:var(--glass); border:1px solid var(--hairline); border-radius:var(--premium-radius); padding:28px; display:flex; flex-direction:column; gap:14px; transition:all .2s; }
+    .mkt-quote:hover{ transform:translateY(-3px); border-color:rgba(232,185,92,.3); background:var(--glass-strong); }
+    .mkt-quote .stars{ color:var(--gold-bright); font-size:13px; letter-spacing:2px; }
+    .mkt-quote blockquote{ font-family:var(--serif); font-size:16.5px; line-height:1.6; font-weight:500; }
+    .mkt-quote .who{ display:flex; align-items:center; gap:12px; margin-top:auto; padding-top:6px; }
+    .mkt-quote .avatar{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, var(--gold), var(--royal)); color:#141008; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .mkt-quote .who b{ display:block; font-size:13.5px; }
+    .mkt-quote .who span{ font-size:12px; color:var(--muted); }
+    .mkt-case{ margin-top:26px; display:grid; grid-template-columns:170px 1fr; gap:30px; align-items:center; background:linear-gradient(135deg, rgba(63,185,80,.10), rgba(232,185,92,.06)); border:1px solid rgba(63,185,80,.25); border-radius:24px; padding:38px 40px; }
+    .mkt-case .big{ font-family:var(--serif); font-size:64px; font-weight:600; letter-spacing:-2px; background:linear-gradient(120deg, #4ade80, var(--emerald)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .mkt-case h3{ font-size:19px; font-weight:700; margin-bottom:8px; letter-spacing:-.3px; }
+    .mkt-case p{ font-size:14px; color:var(--muted); line-height:1.7; }
+    .mkt-chip-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:30px; }
+    .mkt-chip{ padding:8px 18px; border-radius:999px; border:1px solid var(--hairline); background:var(--glass); font-size:12.5px; color:var(--muted); font-weight:600; }
+    .mkt-link-cta{ display:inline-flex; align-items:center; gap:8px; margin-top:22px; color:var(--gold-bright); font-weight:700; font-size:14px; cursor:pointer; }
+    .mkt-link-cta:hover{ text-decoration:underline; }
+    @media (max-width:1250px){ .mkt-nav-links{ gap:20px; } .mkt-nav-links a{ font-size:12.5px; } }
+    @media (max-width:1100px){ .mkt-grid-4{ grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:640px){ .mkt-grid-4{ grid-template-columns:1fr; } .mkt-case{ grid-template-columns:1fr; gap:14px; padding:30px 26px; } .mkt-case .big{ font-size:52px; } }
+    @media (prefers-reduced-motion:reduce){ #marketing-root [data-mktpage].mkt-page-on, .mkt-bars i, .mkt-live-dot{ animation:none !important; } }
+    </style>
     <nav class="mkt-nav">
         <div class="mkt-nav-inner">
             <div class="mkt-logo" onclick="mktShowPage('product')">
@@ -1849,8 +1885,10 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
             <div class="mkt-nav-links">
                 <a onclick="mktShowPage('product')" data-mktlink="product" class="active">Product</a>
                 <a onclick="mktShowPage('features')" data-mktlink="features">Features</a>
+                <a onclick="mktShowPage('problem')" data-mktlink="problem">Problem</a>
                 <a onclick="mktShowPage('vision')" data-mktlink="vision">Vision</a>
                 <a onclick="mktShowPage('howto')" data-mktlink="howto">How to Use</a>
+                <a onclick="mktShowPage('proof')" data-mktlink="proof">Social Proof</a>
                 <a onclick="mktShowPage('pricing')" data-mktlink="pricing">Pricing</a>
             </div>
             <div class="mkt-nav-cta">
@@ -1866,8 +1904,8 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     <!-- ═══ 1. HERO / INTRO ═══ -->
     <header class="mkt-hero mkt-wrap" data-mktpage="product" id="mkt-product">
         <div class="mkt-eyebrow"><i class="fas fa-circle"></i> Built for pharmaceutical distributors</div>
-        <h1>Sales intelligence for teams who <span class="grad">refuse to guess.</span></h1>
-        <p>PharmaTracker turns scattered sales sheets into a single source of truth — real-time dashboards, product-level analytics, and role-based control, built specifically for pharma distribution businesses.</p>
+        <h1>Every distributor deserves <span class="grad">enterprise-grade intelligence</span></h1>
+        <p>PharmaTracker turns scattered sales sheets into one live source of truth — real-time dashboards, product-level analytics, and role-based control, purpose-built for pharmaceutical distribution.</p>
         <div class="mkt-hero-actions">
             <div class="mkt-btn mkt-btn-gold mkt-btn-lg" onclick="pharmaTrackerStartTrial()"><i class="fas fa-rocket"></i> Start free trial</div>
             <div class="mkt-btn mkt-btn-ghost mkt-btn-lg" onclick="mktScrollTo('features')"><i class="fas fa-play"></i> See features</div>
@@ -1886,6 +1924,10 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
                 <div class="mkt-kpi"><div class="l">Active Products</div><div class="v">318</div><div class="t">▲ Growing catalog</div></div>
                 <div class="mkt-kpi"><div class="l">Customers</div><div class="v">1,204</div><div class="t">▲ 6.1% MoM</div></div>
                 <div class="mkt-kpi"><div class="l">Fulfilment Rate</div><div class="v">98.7%</div><div class="t">▲ On target</div></div>
+            </div>
+            <div class="mkt-chart">
+                <div class="mkt-chart-head"><span><span class="mkt-live-dot"></span>Live sales pulse</span><span>Last 12 weeks</span></div>
+                <div class="mkt-bars"><i style="--h:34%;--i:0"></i><i style="--h:52%;--i:1"></i><i style="--h:44%;--i:2"></i><i style="--h:63%;--i:3"></i><i style="--h:58%;--i:4"></i><i style="--h:71%;--i:5"></i><i style="--h:66%;--i:6"></i><i style="--h:80%;--i:7"></i><i style="--h:74%;--i:8"></i><i style="--h:88%;--i:9"></i><i style="--h:82%;--i:10"></i><i style="--h:96%;--i:11"></i></div>
             </div>
         </div>
     </header>
@@ -1938,6 +1980,45 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
                 <h3>Field reps &amp; viewers</h3>
                 <p>A clean, read-friendly view of the numbers that matter to them — with nothing they shouldn't touch.</p>
             </div>
+        </div>
+    </section>
+
+    <!-- ═══ PROBLEM PAGE ═══ -->
+    <section class="mkt-section mkt-wrap" data-mktpage="problem" id="mkt-problem">
+        <div class="mkt-section-head">
+            <div class="mkt-kicker">The Problem</div>
+            <h2>Challenges pharmaceutical distributors face</h2>
+            <p>These four problems show up in almost every distribution business we talk to — and they all have the same root cause: decisions made without live, trustworthy data.</p>
+        </div>
+        <div class="mkt-grid-4">
+            <div class="mkt-card">
+                <div class="mkt-card-icon danger"><i class="fas fa-diagram-project"></i></div>
+                <h3>Scattered Data</h3>
+                <p>Sales data spread across multiple systems and spreadsheets — no unified view of the business.</p>
+                <span class="mkt-cost">Cost: conflicting numbers in every meeting.</span>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-card-icon danger"><i class="fas fa-person-circle-question"></i></div>
+                <h3>Manual Decision Making</h3>
+                <p>Guesswork instead of real data. Gut-feel pricing, stocking, and coverage calls.</p>
+                <span class="mkt-cost">Cost: delayed decisions cost money.</span>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-card-icon danger"><i class="fas fa-clock"></i></div>
+                <h3>No Real-Time Visibility</h3>
+                <p>By the time you analyze the data, market conditions have already changed.</p>
+                <span class="mkt-cost">Cost: problems found at month-end, not in time.</span>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-card-icon danger"><i class="fas fa-arrow-trend-up"></i></div>
+                <h3>Limited Scalability</h3>
+                <p>Current tools can't handle multi-region, multi-team operations efficiently.</p>
+                <span class="mkt-cost">Cost: growth multiplies the chaos.</span>
+            </div>
+        </div>
+        <div class="mkt-hero-actions" style="margin-top:38px">
+            <div class="mkt-btn mkt-btn-gold mkt-btn-lg" onclick="mktShowPage('vision')">See the solution <i class="fas fa-arrow-right"></i></div>
+            <div class="mkt-btn mkt-btn-ghost mkt-btn-lg" onclick="pharmaTrackerStartTrial()"><i class="fas fa-rocket"></i> Start free trial</div>
         </div>
     </section>
 
@@ -2002,6 +2083,27 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
                 <i class="fas fa-wallet mkt-fi"></i>
                 <h4>JazzCash &amp; EasyPaisa Billing</h4>
                 <p>EasyPaisa &amp; JazzCash for local users, plus secure online card checkout for international users.</p>
+            </div>
+        </div>
+        <div class="mkt-section-head" style="margin:56px auto 30px">
+            <div class="mkt-kicker">In practice</div>
+            <h2 style="font-size:clamp(24px,2.8vw,32px)">Made for real distributor days</h2>
+        </div>
+        <div class="mkt-grid-3">
+            <div class="mkt-card">
+                <div class="mkt-card-icon"><i class="fas fa-mug-saucer"></i></div>
+                <h3>The 5-minute morning review</h3>
+                <p>Yesterday's sales, today's targets, and anything off-track — on one screen before your first tea.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-card-icon"><i class="fas fa-bullseye"></i></div>
+                <h3>Rep targets on autopilot</h3>
+                <p>Set booker targets once; achievement, projections, and rankings update themselves daily.</p>
+            </div>
+            <div class="mkt-card">
+                <div class="mkt-card-icon"><i class="fas fa-file-export"></i></div>
+                <h3>Month-end reports in one click</h3>
+                <p>Board-ready PDF, Excel, and CSV exports — no copy-paste marathons, no formula errors.</p>
             </div>
         </div>
     </section>
@@ -2350,6 +2452,53 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
 
+    <!-- ═══ SOCIAL PROOF PAGE ═══ -->
+    <!-- TODO: replace the placeholder testimonials, metrics, and case study below with real customer data. -->
+    <section class="mkt-section mkt-wrap" data-mktpage="proof" id="mkt-proof">
+        <div class="mkt-section-head">
+            <div class="mkt-kicker">Social Proof</div>
+            <h2>Trusted by leading pharmaceutical distributors</h2>
+            <p>From single-city operations to multi-region networks — distributors run their numbers on PharmaTracker.</p>
+        </div>
+        <div class="mkt-stats" style="margin-bottom:54px">
+            <div class="mkt-stat"><div class="n">500+</div><div class="l">Distributors</div></div>
+            <div class="mkt-stat"><div class="n">2M+</div><div class="l">SKUs tracked daily</div></div>
+            <div class="mkt-stat"><div class="n">99.9%</div><div class="l">Uptime</div></div>
+        </div>
+        <div class="mkt-grid-3">
+            <div class="mkt-quote">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <blockquote>&ldquo;Month-end closing used to take my accountant three days. Now I open the dashboard on the 1st and the numbers are already there.&rdquo;</blockquote>
+                <div class="who"><div class="avatar">AR</div><div><b>Ahmed Raza</b><span>Owner · City Pharma Distributors, Lahore</span></div></div>
+            </div>
+            <div class="mkt-quote">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <blockquote>&ldquo;For the first time I can see which reps are hitting target and which products are dying — while there is still time to act.&rdquo;</blockquote>
+                <div class="who"><div class="avatar">FK</div><div><b>Fatima Khan</b><span>Sales Manager · Pharma network, Karachi</span></div></div>
+            </div>
+            <div class="mkt-quote">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <blockquote>&ldquo;We uploaded two years of Excel sheets in one afternoon. If your team can read a chart, they can use PharmaTracker.&rdquo;</blockquote>
+                <div class="who"><div class="avatar">BH</div><div><b>Bilal Hussain</b><span>Director · Regional distribution, Islamabad</span></div></div>
+            </div>
+        </div>
+        <div class="mkt-case">
+            <div class="big">40%</div>
+            <div>
+                <div class="mkt-kicker" style="margin-bottom:8px">Case study snapshot</div>
+                <h3>Faster fulfilment in one quarter</h3>
+                <p>A 25-rep distributor in central Punjab replaced manual registers with PharmaTracker: reporting time fell from 3 days to under an hour, stock-outs dropped, and order fulfilment rose 40% within the first quarter.</p>
+            </div>
+        </div>
+        <div class="mkt-chip-row">
+            <span class="mkt-chip">Retail pharmacy chains</span>
+            <span class="mkt-chip">Hospital suppliers</span>
+            <span class="mkt-chip">Multi-city distributors</span>
+            <span class="mkt-chip">Veterinary &amp; agri-vet</span>
+            <span class="mkt-chip">Surgical &amp; disposables</span>
+        </div>
+    </section>
+
     <section class="mkt-section mkt-wrap" data-mktpage="pricing" id="mkt-pricing">
         <div class="mkt-section-head">
             <div class="mkt-kicker">Pricing</div>
@@ -2375,15 +2524,16 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     </section>
 
     <!-- ═══ Final CTA ═══ -->
-    <section class="mkt-section mkt-wrap" data-mktpage="product pricing howto vision features">
+    <section class="mkt-section mkt-wrap" data-mktpage="product pricing howto vision features problem proof">
         <div class="mkt-cta-band">
             <div class="mkt-price-pill"><span class="amt" id="mkt-cta-price-amt">$5</span><span class="per">/ month, per distributor</span></div>
-            <h2>Run your sales on one screen you can trust</h2>
-            <p>Create your account in minutes — an admin verifies payment and you're in.</p>
+            <h2>Ready to transform your distribution business?</h2>
+            <p>Create your account in minutes — upload one sales file and see your entire business clearly.</p>
             <div class="mkt-hero-actions" style="margin-bottom:0">
-                <div class="mkt-btn mkt-btn-gold mkt-btn-lg" onclick="pharmaTrackerStartTrial()"><i class="fas fa-rocket"></i> Start 7-day free trial</div>
-                <div class="mkt-btn mkt-btn-ghost mkt-btn-lg" onclick="enterAuth('login')"><i class="fas fa-right-to-bracket"></i> I already have one</div>
+                <div class="mkt-btn mkt-btn-gold mkt-btn-lg" onclick="pharmaTrackerStartTrial()"><i class="fas fa-rocket"></i> Start Free Trial</div>
+                <div class="mkt-btn mkt-btn-ghost mkt-btn-lg" onclick="mktShowPage('howto')"><i class="fas fa-calendar-check"></i> Schedule Demo</div>
             </div>
+            <a class="mkt-link-cta" onclick="mktShowPage('pricing')">Contact Sales <i class="fas fa-arrow-right"></i></a>
         </div>
     </section>
 
@@ -5230,7 +5380,18 @@ function changeSiteLanguage(language){
             <button type="button" class="btn btn-ghost section-pdf-btn" onclick="downloadSectionPDF('approvals')" title="Download this section as PDF"><i class="fas fa-file-pdf"></i> Download PDF</button>
         </div>
         <div class="page-heading">
-            <div><h2>Pending Approvals</h2><p style="font-size:12.5px;color:var(--muted)">New registrations and renewals awaiting payment verification</p></div>
+            <div><h2>Pending Approvals</h2><p style="font-size:12.5px;color:var(--muted)">New registrations and renewals awaiting admin approval</p></div>
+        </div>
+        <div class="card" style="margin-bottom:14px" id="wa-admin-card">
+            <div class="card-header"><div><div class="card-title">Admin WhatsApp Notifications</div><div class="card-sub">New signups automatically notify this number (needs the backend deployed)</div></div></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+                <div style="flex:1;min-width:200px">
+                    <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px">Admin WhatsApp number (country code + number, no +)</label>
+                    <input type="text" class="filter-select" style="width:100%;padding:8px 10px" id="wa-admin-number" placeholder="e.g. 923001234567">
+                </div>
+                <button class="btn btn-primary" style="padding:8px 16px" onclick="ptSaveAdminWhatsApp()">Save</button>
+            </div>
+            <div id="wa-admin-status" style="font-size:11.5px;color:var(--muted);margin-top:8px"></div>
         </div>
         <div id="approvals-list-container"></div>
     </div>
@@ -10267,6 +10428,21 @@ async function initAuth() {
 }
 
 function loginSuccess(user, newLogin = true) {
+    /* Approval backstop: only active accounts (or admins) may enter the app,
+       no matter which code path calls this. */
+    if (user && user.role !== 'admin' && user.status !== 'active') {
+        try { if (typeof clearSession === 'function') clearSession(); } catch (e) {}
+        currentUser = null;
+        showToast('Your account is pending admin approval.', 'warning');
+        try {
+            document.getElementById('auth-overlay')?.classList.remove('hidden');
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('pending-title').textContent = 'Pending Approval';
+            document.getElementById('pending-text').textContent = 'Your account is awaiting admin approval. The admin has been notified on WhatsApp. Please sign in after your account is approved.';
+            document.getElementById('form-pending').classList.add('active');
+        } catch (e) {}
+        return;
+    }
     currentUser = user;
     if (newLogin) saveSession(user.email);
 
@@ -10363,7 +10539,13 @@ async function doLogin() {
     document.getElementById('login-password').classList.remove('error');
 
     if (user.status === 'pending') {
-        errEl.textContent = 'Your account is awaiting admin approval. Please wait until the payment is verified.';
+        errEl.textContent = 'Your account is pending admin approval. You can sign in after the admin approves your registration.';
+        errEl.classList.add('show');
+        return;
+    }
+
+    if (user.status !== 'active') {
+        errEl.textContent = 'This account is not active. Please contact the administrator.';
         errEl.classList.add('show');
         return;
     }
@@ -10698,6 +10880,7 @@ async function renderApprovals() {
     const el = document.getElementById('approvals-list-container');
     const badge = document.getElementById('approvalsBadge');
     if (!el) return;
+    try { if (typeof ptLoadAdminWhatsApp === 'function') ptLoadAdminWhatsApp(); } catch (e) {}
 
     const all = await getAllUsers();
     const pending = all.filter(u => u.status === 'pending');
@@ -10722,18 +10905,21 @@ async function renderApprovals() {
                 <div class="user-row-avatar" style="background:linear-gradient(135deg,${col},#bc8cff)">${initials}</div>
                 <div class="user-row-info">
                     <div class="approval-card-name">${u.fname} ${u.lname||''}</div>
-                    <div class="approval-card-meta">${u.email} · ${u.company||'—'} · ${requestedOn}</div>
+                    <div class="approval-card-meta">${u.email} · ${u.company||'—'} · ${requestedOn}${u.whatsappNotifiedAt ? ' · <span style="color:var(--accent2)">WhatsApp ✓</span>' : ''}</div>
                 </div>
                 <span class="approval-tag ${u.isRenewal ? 'renewal' : ''}">${u.isRenewal ? 'Renewal' : 'New Registration'}</span>
             </div>
-            <div class="approval-pay-row">
+            ${u.paymentMethod ? `<div class="approval-pay-row">
                 <i class="${u.paymentMethod === 'card' ? 'fas fa-credit-card' : 'fas fa-mobile-alt'}"></i>
                 <span>${u.paymentMethod === 'card' ? 'Card (Intl.)' : (u.paymentMethod === 'easypaisa' ? 'EasyPaisa' : 'JazzCash')}</span>
                 <span>·</span>
                 <span>Ref: <b>${u.transactionId || '—'}</b></span>
                 <span>·</span>
                 <span>${(() => { const p = u.planId ? getPlanById(u.planId) : null; return u.paymentMethod === 'card' ? `$${p ? p.priceIntl : 20}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; })()}${(() => { const p = u.planId ? getPlanById(u.planId) : null; return p ? ' · ' + p.name : ''; })()}</span>
-            </div>
+            </div>` : `<div class="approval-pay-row">
+                <i class="fas fa-gift"></i>
+                <span>Free trial signup — no payment</span>
+            </div>`}
             <div class="approval-actions">
                 <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveUser('${emailAttr}')"><i class="fas fa-check"></i> Approve</button>
                 <button class="btn btn-danger" style="padding:7px 14px;font-size:12px" onclick="rejectUser('${emailAttr}')"><i class="fas fa-xmark"></i> Reject</button>
@@ -10770,6 +10956,31 @@ function rejectUser(email) {
         renderUsersTab();
         showToast('Registration has been rejected.', 'info');
     })();
+}
+
+/* Admin WhatsApp number (appSettings/admin — admin-only read/write in rules).
+   The backend trigger reads it on every new signup. */
+async function ptLoadAdminWhatsApp() {
+    const inp = document.getElementById('wa-admin-number'), st = document.getElementById('wa-admin-status');
+    if (!inp) return;
+    try {
+        if (typeof useFirestore !== 'undefined' && useFirestore && typeof db !== 'undefined' && db) {
+            const doc = await db.collection('appSettings').doc('admin').get();
+            const num = doc.exists ? String((doc.data() || {}).whatsappAdminNumber || '') : '';
+            inp.value = num;
+            if (st) st.textContent = num ? 'WhatsApp notifications will be sent to +' + num + '.' : 'No number saved yet — enter your WhatsApp number and Save.';
+        } else if (st) st.textContent = 'Cloud sync is off — the number is stored when online.';
+    } catch (e) { if (st) st.textContent = 'Could not load the saved number.'; }
+}
+async function ptSaveAdminWhatsApp() {
+    const inp = document.getElementById('wa-admin-number'), st = document.getElementById('wa-admin-status');
+    const num = String(inp ? inp.value : '').replace(/\D/g, '');
+    if (num.length < 10 || num.length > 15) { showToast('Please enter a valid WhatsApp number (10–15 digits, e.g. 923001234567).', 'error'); return; }
+    try {
+        await db.collection('appSettings').doc('admin').set({ whatsappAdminNumber: num, updatedAt: new Date().toISOString(), updatedBy: (typeof currentUser !== 'undefined' && currentUser && currentUser.email) || null }, { merge: true });
+        if (st) st.textContent = 'Saved. New signups will notify +' + num + ' on WhatsApp.';
+        showToast('Admin WhatsApp number saved.', 'success');
+    } catch (e) { showToast('Could not save (admin only, cloud required).', 'error'); }
 }
 
 /* ═══════════════════════════════════════════════
@@ -11117,7 +11328,7 @@ function backToMarketing(){
             if (!profile) { await firebaseAuth.signOut(); throw new Error('No PharmaTracker profile found for this account.'); }
             profile.firebaseUid = authUser.uid;
             if (profile.status === 'pending') {
-                errEl.textContent = 'Your account is awaiting admin approval. Please wait until the payment is verified.';
+                errEl.textContent = 'Your account is pending admin approval. You can sign in after the admin approves your registration.';
                 errEl.classList.add('show');
                 await firebaseAuth.signOut(); return;
             }
@@ -13791,6 +14002,8 @@ const originalShowPage=window.showPage;
 window.showPage=function(name){
   try{
     const isAdminUser=(typeof currentUser!=='undefined'&&currentUser&&currentUser.role==='admin');
+    const cu=(typeof currentUser!=='undefined')?currentUser:null;
+    if(cu&&cu.role!=='admin'&&cu.status!=='active'){showToast('Your account is pending admin approval.','warning');return;}
     if((name==='approvals'||name==='activitylog') && !isAdminUser) return;
     const required=pageMin[name];
     if(required && required<99 && !hasLevel(required)){
@@ -13887,25 +14100,27 @@ window.doSignup=async function(){
     let role=roleEl?roleEl.dataset.role:'analyst';
     /* New public signups cannot self-provision an admin account. */
     if(role==='admin')role='analyst';
+    /* New accounts start Pending Approval: the admin approves from the Approvals
+       tab (a WhatsApp notification is sent automatically by the backend), and
+       the 7-day trial clock starts at approval time, not signup time. */
     const user={
       id:'u_'+Date.now(),firebaseUid:cred.user.uid,fname,lname,email,company,role,
-      status:'active',isRenewal:false,createdAt:nowIso(),hasSeenSample:false,
-      currentPlan:'trial',subscriptionStatus:'active',trialStartDate:start.toISOString(),
-      subscriptionStartDate:null,expiryDate:expiry.toISOString(),validUntil:expiry.toISOString(),
+      status:'pending',isRenewal:false,createdAt:nowIso(),pendingSince:nowIso(),hasSeenSample:false,
+      currentPlan:'trial',subscriptionStatus:'pending',trialStartDate:null,
+      subscriptionStartDate:null,expiryDate:null,validUntil:null,
       paymentStatus:'trial',planId:'trial',
-      subscription:{userId:cred.user.uid,name:`${fname} ${lname}`.trim(),email,currentPlan:'trial',subscriptionStatus:'active',
-        trialStartDate:start.toISOString(),subscriptionStartDate:null,expiryDate:expiry.toISOString(),
-        paymentStatus:'trial',history:[historyEntry('trial_started','trial',{durationDays:7})]}
+      subscription:{userId:cred.user.uid,name:`${fname} ${lname}`.trim(),email,currentPlan:'trial',subscriptionStatus:'pending',
+        trialStartDate:null,subscriptionStartDate:null,expiryDate:null,
+        paymentStatus:'trial',history:[historyEntry('trial_requested','trial',{durationDays:7})]}
     };
     await db.collection('users').doc(email).set(user);
-    await auth.signInWithEmailAndPassword(email,pw);
-    if(okEl){okEl.textContent='✅ Your 7-day full-access trial is active. Welcome to PharmaTracker!';okEl.classList.add('show');}
-    document.getElementById('form-signup')?.classList.remove('active');
-    document.getElementById('auth-overlay')?.classList.add('hidden');
-    currentUser=user;
-    if(typeof saveSession==='function')saveSession(email);
-    if(typeof loginSuccess==='function')loginSuccess(user,true);
-    setTimeout(()=>{window.renderPharmaTrackerSubscriptionBox();addNavEntitlements();applyFineGrainedLocks();},50);
+    try{await auth.signOut();}catch(_){}
+    if(typeof sendAdminNotification==='function'){try{sendAdminNotification(user,false);}catch(_){}}
+    document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+    document.getElementById('pending-title').textContent='Registration Submitted — Pending Approval';
+    document.getElementById('pending-text').textContent='Your account is awaiting admin approval. The admin has been notified on WhatsApp. Please sign in after your account is approved.';
+    document.getElementById('form-pending').classList.add('active');
   }catch(e){
     console.error(e);
     const msg=(typeof authErrorMessage==='function')?authErrorMessage(e):(e?.message||'Could not create your account.');
@@ -13932,6 +14147,23 @@ if(typeof approveUser==='function'){
       fresh.subscription.currentPlan=p.id; fresh.subscription.subscriptionStartDate=start.toISOString(); fresh.subscription.expiryDate=expiry.toISOString();
       fresh.subscription.subscriptionStatus='active'; fresh.subscription.paymentStatus='verified';
       await appendHistory(fresh,fresh.isRenewal?'renewal_verified':'subscription_started',p.id,{transactionId:fresh.transactionId||null});
+      await persistSubscription(fresh);
+      if(typeof currentUser!=='undefined'&&currentUser&&currentUser.email===email)currentUser=fresh;
+    }
+    else if(fresh&&(!selected||selected==='trial')){
+      /* Trial approval: the 7-day full-access clock starts at approval time. */
+      ensureSubscriptionShape(fresh);
+      const tStart=new Date();
+      const trialDays=(typeof PT_SAAS!=='undefined'&&PT_SAAS.TRIAL_DAYS)||7;
+      const tExpiry=new Date(tStart.getTime()+trialDays*86400000);
+      fresh.currentPlan='trial'; fresh.planId='trial'; fresh.subscriptionStatus='active';
+      fresh.trialStartDate=tStart.toISOString(); fresh.subscriptionStartDate=null;
+      fresh.expiryDate=tExpiry.toISOString(); fresh.validUntil=tExpiry.toISOString();
+      fresh.paymentStatus='trial';
+      fresh.subscription.currentPlan='trial'; fresh.subscription.trialStartDate=tStart.toISOString();
+      fresh.subscription.subscriptionStartDate=null; fresh.subscription.expiryDate=tExpiry.toISOString();
+      fresh.subscription.subscriptionStatus='active'; fresh.subscription.paymentStatus='trial';
+      await appendHistory(fresh,'trial_started','trial',{durationDays:trialDays,approvedBy:(typeof currentUser!=='undefined'&&currentUser&&currentUser.email)||'admin'});
       await persistSubscription(fresh);
       if(typeof currentUser!=='undefined'&&currentUser&&currentUser.email===email)currentUser=fresh;
     }
@@ -15628,8 +15860,9 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
         try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
     };
     /* Legacy anchors (hero buttons, plan cards…) map onto the new pages. */
-    var MAP = { 'mkt-product': 'product', 'features': 'features', 'mkt-vision': 'vision',
-                'mkt-howto': 'howto', 'mkt-pricing': 'pricing', 'mkt-faq': 'pricing' };
+    var MAP = { 'mkt-product': 'product', 'features': 'features', 'mkt-problem': 'problem',
+                'mkt-vision': 'vision', 'mkt-howto': 'howto', 'mkt-proof': 'proof',
+                'mkt-pricing': 'pricing', 'mkt-faq': 'pricing' };
     var origScrollTo = window.mktScrollTo;
     window.mktScrollTo = function (id) {
         if (MAP[id]) {
@@ -15777,4 +16010,4 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbe9f98c3e11bb',t:'MTc5MDE5MTMwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
