@@ -2761,11 +2761,6 @@ function changeSiteLanguage(language){
         <div class="auth-form active" id="form-signup">
             <div class="auth-error" id="signup-error">First name is required.</div>
             <div class="auth-success" id="signup-success">✅ Account created! Signing you in…</div>
-            <div class="pt-trial-banner" id="pt-trial-banner">
-                <div class="pt-trial-icon"><i class="fas fa-rocket"></i></div>
-                <div><strong>7-Day Free Trial</strong><span>Full access · No payment required · Start instantly</span></div>
-                <span class="pt-trial-badge">FREE</span>
-            </div>
 
 
             <div class="auth-name-row">
@@ -2838,18 +2833,6 @@ function changeSiteLanguage(language){
                     <input class="auth-input" type="password" id="signup-confirm" placeholder="Repeat password">
                 </div>
             </div>
-
-            <!-- SaaS trial: signup is free for 7 days; payment is only required when upgrading/renewing. -->
-            <div class="saas-trial-signup-box" style="margin:12px 0 14px;padding:14px 15px;border:1px solid rgba(232,185,92,.35);border-radius:14px;background:linear-gradient(160deg,rgba(232,185,92,.10),rgba(255,255,255,.025));">
-                <div style="display:flex;align-items:center;gap:10px;font-weight:800;color:var(--gold-bright);font-size:13px;">
-                    <i class="fas fa-gift"></i> 7-Day Free Trial
-                    <span style="margin-left:auto;font-size:11px;padding:4px 8px;border-radius:999px;background:rgba(232,185,92,.12);color:var(--gold-bright);">FULL ACCESS</span>
-                </div>
-                <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-top:7px;">
-                    Start free with complete PharmaTracker access for 7 days. No payment or transaction ID is required. Upgrade to Basic, Professional or Business whenever you are ready.
-                </div>
-            </div>
-
             <!-- Legacy payment step retained for paid-signup compatibility; hidden because new accounts start on the free trial. -->
             <div class="payment-box signup-payment-legacy">
                 <div class="payment-box-title"><i class="fas fa-gem"></i> <span id="signup-plan-name">Premium Plan</span> <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
@@ -2877,7 +2860,7 @@ function changeSiteLanguage(language){
             </div>
 
             <button class="auth-btn" id="signup-btn" onclick="doSignup()">
-                <i class="fas fa-rocket"></i> Start 7-Day Free Trial
+                <i class="fas fa-user-plus"></i> Create Account
             </button>
 
             <div class="auth-terms">
@@ -5120,7 +5103,7 @@ function changeSiteLanguage(language){
         <div><div class="pt3-title">Upload Inventory / Sales File</div><div class="pt3-sub">CSV, XLSX or XLS · 33-column pharmaceutical template · inventory &amp; sales analytics update automatically after import</div></div>
         <div class="pt3-controls">
           <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()"><i class="fas fa-cloud-upload-alt"></i> Upload Inventory / Sales File</button>
-          <button class="btn btn-ghost" onclick="downloadSample()"><i class="fas fa-download"></i> Download Sample File</button>
+          <button class="btn btn-ghost" onclick="downloadOperationalIntelligenceSample()"><i class="fas fa-download"></i> Download Sample File</button>
         </div>
       </div>
       <div id="pt3-upload-status" class="pt3-sub" style="margin-top:8px">No file uploaded yet in this session.</div>
@@ -5150,7 +5133,7 @@ function changeSiteLanguage(language){
         <div class="pt3-head"><div><div class="pt3-title">Inventory Intelligence</div><div class="pt3-sub">Stock-based signals; cost, reorder and supplier metrics appear only when supplied</div></div></div>
         <div class="pt3-kpis" id="pt3-inv-kpis"></div>
         <div id="pt3-inventory-table" style="margin-top:14px"></div>
-        <div class="pt3-method">Coverage = current stock ÷ estimated average daily units sold over the recent 30-day window. Default operational thresholds: ≤7 days = stock-out risk, &gt;90 days = overstock signal, no sales in the last 90 days = dead-stock signal. These are transparent heuristics, not machine-learning predictions.</div>
+        <div class="pt3-method">Coverage = current stock ÷ estimated average daily units sold over the recent 30-day window. Default operational thresholds: ≤1 week = stock-out risk, &gt;90 days = overstock signal, no sales in the last 90 days = dead-stock signal. These are transparent heuristics, not machine-learning predictions.</div>
       </div>
       <div class="pt3-card pt3-col-4">
         <div class="pt3-head"><div><div class="pt3-title">Inventory Health Score</div><div class="pt3-sub">Transparent, availability-aware score</div></div></div>
@@ -9632,6 +9615,39 @@ async function downloadSectionPDF(sectionId) {
     }
 }
 
+function downloadOperationalIntelligenceSample() {
+    /*
+     * Operational Intelligence sample: only fields actually consumed by the
+     * shared sales/inventory dataset and the Operational Intelligence module.
+     * The main Dashboard Sales sample remains unchanged.
+     */
+    const headers = [
+        'Invoice ID','Invoice Date','Customer Name','Company Name','Company Group',
+        'Region Name','Booking Man','Item Name','Pack Size','Rate','Expiry Date',
+        'Batch Number','Stock','Bonus','Gross Amount','Discount Amount','Net Amount',
+        'Purchase Cost'
+    ];
+    const rows = [
+        ['OI-INV-1001','2026-09-01','Al-Shifa Medical Store','Getz Pharma','Antibiotics','Lahore North','Ahmed Khan','Cefspan 400mg Capsules','10s Strip',2450,'2027-05-31','B-OI-26001',120,10,294000,14700,279300,1750],
+        ['OI-INV-1002','2026-09-03','MediCare Pharmacy','Abbott Laboratories','Analgesics','Karachi South','Fatima Ali','Brufen 400mg Tablets','100s Bottle',950,'2027-11-30','B-OI-26002',260,20,247000,12350,234650,690],
+        ['OI-INV-1003','2026-09-06','City Medical Store','Sanofi Pakistan','Antacids','Lahore North','Ahmed Khan','Risek 20mg Capsules','28s Strip',1320.5,'2028-01-31','B-OI-26003',175,12,231087.5,9243.5,221844,980],
+        ['OI-INV-1004','2026-09-10','Star Pharma','Hilton Pharma','Antibiotics','Islamabad','Usman Malik','Velosef 500mg Capsules','24s Pack',2140.75,'2027-09-30','B-OI-26004',90,5,192667.5,11560.05,181107.45,1510],
+        ['OI-INV-1005','2026-09-13','Health Plus Pharmacy','Getz Pharma','Vitamins','Faisalabad','Sara Khan','CaC-1000 Plus Tablets','20s Tube',875.25,'2027-12-31','B-OI-26005',340,25,297585,29758.5,267826.5,610],
+        ['OI-INV-1006','2026-09-17','Noor Medical Hall','Abbott Laboratories','Analgesics','Multan','Ali Raza','Panadol Extra Tablets','100s Pack',420,'2027-08-31','B-OI-26006',520,40,218400,17472,200928,300],
+        ['OI-INV-1007','2026-09-21','Care Pharmacy','Hilton Pharma','Vitamins','Rawalpindi','Hassan Javed','Enervon Multivitamins','30s Bottle',1120,'2028-04-30','B-OI-26007',210,15,235200,10584,224616,790],
+        ['OI-INV-1008','2026-09-24','LifeLine Pharmacy','Sanofi Pakistan','Cardiac','Rawalpindi','Hassan Javed','Cardilor 5mg Tablets','30s Pack',760.6,'2028-06-30','B-OI-26008',185,10,140711,7739.1,132971.9,540]
+    ];
+    if (typeof XLSX === 'undefined') {
+        showToast('Excel support is unavailable.', 'error');
+        return;
+    }
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Operational Intelligence');
+    XLSX.writeFile(wb, 'PharmaTracker_Operational_Intelligence_Sample.xlsx');
+    showToast('Operational Intelligence sample file downloaded and ready to upload.', 'success');
+}
+
 function downloadSample() {
     /* Exact 33-column pharmaceutical distribution template. Gross/Discount/
        Sales-Tax/Net values are internally consistent so the file imports cleanly. */
@@ -13133,11 +13149,16 @@ function prepareDataSummary(catalogue, data) {
                                .filter(function (id) { return Number(id) >= keep; });
             }
         } catch (e) { return; }
+        const deletePromises = [];
         for (let i = 0; i < ids.length; i += 200) {
             const b = db.batch();
             ids.slice(i, i + 200).forEach(function (id) { b.delete(chunksCol().doc(id)); });
-            try { await b.commit(); } catch (e) {}
+            deletePromises.push(b.commit().catch(function () {}));
+            if (deletePromises.length >= 4) {
+                await Promise.all(deletePromises.splice(0, deletePromises.length));
+            }
         }
+        if (deletePromises.length) await Promise.all(deletePromises);
     }
 
     async function cloudSaveSnapshot(reason) {
@@ -13148,24 +13169,35 @@ function prepareDataSummary(catalogue, data) {
             chunks.push(enc.data.subarray(i, Math.min(i + CHUNK_LIMIT, enc.data.length)));
         }
 
+        // Keep the existing chunk/document structure, but commit independent
+        // Firestore batches concurrently. This removes the old serial network
+        // wait between every batch while keeping concurrency bounded.
+        const COMMIT_CONCURRENCY = 4;
+        const pendingBatches = [];
         let batch = db.batch(), ops = 0, bytes = 0;
+        const queueCommit = () => {
+            if (!ops) return;
+            pendingBatches.push(batch.commit());
+            batch = db.batch(); ops = 0; bytes = 0;
+        };
         for (let i = 0; i < chunks.length; i++) {
             // FIX: Convert Uint8Array to base64 string before storing in Firestore
             // (Firestore rejects custom binary objects; only accepts JSON-serializable types)
             const dataB64 = uint8ToBase64(chunks[i]);
-            batch.set(chunksCol().doc(chunkId(i)), { 
-                i: i, 
-                n: chunks[i].length, 
+            batch.set(chunksCol().doc(chunkId(i)), {
+                i: i,
+                n: chunks[i].length,
                 data: dataB64,
                 compressed: enc.compressed
             });
             ops++; bytes += chunks[i].length;
-            if (ops >= MAX_OPS || bytes >= COMMIT_LIMIT) {
-                await batch.commit();
-                batch = db.batch(); ops = 0; bytes = 0;
+            if (ops >= MAX_OPS || bytes >= COMMIT_LIMIT) queueCommit();
+            if (pendingBatches.length >= COMMIT_CONCURRENCY) {
+                await Promise.all(pendingBatches.splice(0, pendingBatches.length));
             }
         }
-        if (ops) await batch.commit();
+        queueCommit();
+        if (pendingBatches.length) await Promise.all(pendingBatches);
 
         await deleteExtraChunks(chunks.length);
 
@@ -13963,7 +13995,7 @@ window.pharmaTrackerChoosePlan=function(planId){
   }
   if(typeof selectedPlan!=='undefined') selectedPlan.signup=planId;
   enterAuth('signup');
-  setTimeout(()=>showToast('Your selected plan will be available after the 7-day full-access trial.','info'),250);
+  setTimeout(()=>showToast('Your selected plan will be available after account activation.','info'),250);
 };
 
 /* ----- Subscription card / countdown / pricing inside Settings. */
@@ -13976,7 +14008,7 @@ window.renderPharmaTrackerSubscriptionBox=function(){
   const st=subscriptionState(currentUser), p=st.planId?planDef(st.planId):null;
   const expired=st.status==='expired';
   const isTrial=st.planId==='trial';
-  const label=expired?'Expired':(isTrial?'Trial Active':`${p?.name||'Active'} Active`);
+  const label=expired?'Expired':(isTrial?'Active Subscription':`${p?.name||'Subscription'} Active`);
   const dateText=st.expiry?new Date(st.expiry).toLocaleDateString('en-GB'):'—';
   el.innerHTML=`
     <div class="saas-expiry-banner ${expired?'expired':''}">
@@ -14143,7 +14175,7 @@ window.doSignup=async function(){
     };
     await db.collection('users').doc(email).set(user);
     await auth.signInWithEmailAndPassword(email,pw);
-    if(okEl){okEl.textContent='✅ Your 7-day full-access trial is active. Welcome to PharmaTracker!';okEl.classList.add('show');}
+    if(okEl){okEl.textContent='✅ Your account is active. Welcome to PharmaTracker!';okEl.classList.add('show');}
     document.getElementById('form-signup')?.classList.remove('active');
     document.getElementById('auth-overlay')?.classList.add('hidden');
     currentUser=user;
@@ -14237,7 +14269,7 @@ function syncSaaSTopbar(){
   if(!pill||typeof currentUser==='undefined'||!currentUser){if(pill)pill.style.display='none';return;}
   const st=subscriptionState(currentUser),p=st.planId?planDef(st.planId):null;
   pill.style.display='flex';pill.className='saas-status-pill '+(st.status==='expired'?'expired':st.planId==='trial'?'trial':'');
-  pill.innerHTML=`<span class="saas-status-dot"></span><strong>${esc(p?.name||'No plan')}</strong><span>${st.status==='expired'?'Expired':`${st.days}d left`}</span>`;
+  pill.innerHTML=`<span class="saas-status-dot"></span><strong>${esc(st.planId==='trial'?'Active Subscription':(p?.name||'No plan'))}</strong><span>${st.status==='expired'?'Expired':`${st.days}d left`}</span>`;
   pill.onclick=()=>{if(typeof showPage==='function')showPage('settings');};
 }
 function updateCountdowns(){
@@ -14300,7 +14332,7 @@ function showSaaSExpiryNotification(){
   if(st.status==='expired'){
     showToast('Your subscription has expired. Your data is safe. Renew to restore access.', 'warning');
   }else if(days<=7){
-    showToast(`${st.planId==='trial'?'Free trial':'Subscription'} expires in ${days} day${days===1?'':'s'}. Upgrade or renew from Settings.`, 'warning');
+    showToast(`${'Subscription'} expires in ${days} day${days===1?'':'s'}. Upgrade or renew from Settings.`, 'warning');
   }
 }
 
@@ -14343,11 +14375,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 <style id="pt-international-upgrade-css">
-.pt-trial-banner{display:flex;align-items:center;gap:11px;padding:12px 13px;margin:0 0 16px;border:1px solid rgba(232,185,92,.34);border-radius:12px;background:linear-gradient(135deg,rgba(232,185,92,.10),rgba(124,140,255,.07));}
-.pt-trial-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(232,185,92,.14);color:var(--gold-bright,#ffd866)}
-.pt-trial-banner div:nth-child(2){display:flex;flex-direction:column;gap:2px;flex:1}.pt-trial-banner strong{font-size:12px}.pt-trial-banner span{font-size:10.5px;color:var(--muted)}
-.pt-trial-badge{font-size:9px!important;font-weight:900!important;color:#1a1200!important;background:var(--gold-bright,#ffd866);padding:4px 7px;border-radius:999px}
-.pt-trial-mode .payment-box{display:none!important}.pt-trial-mode #signup-btn{margin-top:4px}.pt-trial-mode #signup-btn i:before{content:"\f135"}.pt-trial-mode #signup-btn{font-size:0}.pt-trial-mode #signup-btn:after{content:"Start 7-Day Free Trial";font-size:13px}
 .pt-feedback-public{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.pt-feedback-card{border:1px solid var(--hairline,var(--border));background:var(--glass,rgba(255,255,255,.03));border-radius:16px;padding:18px}.pt-feedback-stars{color:var(--gold-bright,#ffd866);letter-spacing:2px;font-size:13px}.pt-feedback-text{font-size:12px;line-height:1.65;color:var(--text);margin:11px 0}.pt-feedback-meta{font-size:10px;color:var(--muted)}.pt-feedback-empty{grid-column:1/-1;text-align:center;padding:22px;border:1px dashed var(--border);border-radius:14px;color:var(--muted);font-size:12px}.pt-feedback-cta{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 17px;border:1px solid rgba(232,185,92,.20);border-radius:14px;background:rgba(232,185,92,.05)}.pt-feedback-cta div{display:flex;flex-direction:column;gap:3px}.pt-feedback-cta span{font-size:11px;color:var(--muted)}
 .pt-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.pt-faq-grid details{border:1px solid var(--border);border-radius:13px;background:var(--glass,rgba(255,255,255,.03));padding:14px 16px}.pt-faq-grid summary{cursor:pointer;font-size:12.5px;font-weight:800}.pt-faq-grid p{font-size:11.5px;line-height:1.65;color:var(--muted);margin:10px 0 2px}
 .pt-feedback-modal{position:fixed;inset:0;z-index:10050;background:rgba(5,7,15,.72);backdrop-filter:blur(7px);display:none;align-items:center;justify-content:center;padding:20px}.pt-feedback-modal.show{display:flex}.pt-feedback-dialog{width:min(470px,100%);border:1px solid var(--border);background:var(--surface,#111522);border-radius:18px;padding:22px;box-shadow:0 30px 90px rgba(0,0,0,.45)}.pt-feedback-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.pt-feedback-head h3{margin:0;font-size:17px}.pt-feedback-close{border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer}.pt-star-row{display:flex;gap:6px;margin:18px 0}.pt-star{border:0;background:transparent;color:#60677c;font-size:27px;cursor:pointer;padding:2px}.pt-star.selected{color:var(--gold-bright,#ffd866)}.pt-feedback-dialog textarea{width:100%;min-height:110px;resize:vertical;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:10px;padding:11px;font:inherit;font-size:12px;box-sizing:border-box}.pt-feedback-note{font-size:10.5px;color:var(--muted);line-height:1.5;margin:9px 0 14px}.pt-feedback-admin{margin-top:16px!important}.pt-admin-feedback-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}.pt-admin-feedback-row:last-child{border-bottom:0}.pt-admin-feedback-main{flex:1;min-width:0}.pt-admin-feedback-actions{display:flex;gap:6px}.pt-admin-feedback-actions button{padding:5px 8px;font-size:10px}
@@ -14611,7 +14638,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.pharmaTrackerStartTrial=function(){
     try{if(typeof selectedPlan!=='undefined')selectedPlan.signup='trial';}catch(e){}
     enterAuth('signup');
-    setTimeout(function(){var f=q('form-signup');if(f){f.classList.add('pt-trial-mode');f.scrollTop=0}var b=q('pt-trial-banner');if(b)b.style.display='flex';var pb=q('signup-btn');if(pb){pb.innerHTML='<i class="fas fa-rocket"></i> Start 7-Day Free Trial'}var tx=q('signup-txnid');if(tx)tx.value=''},80);
+    setTimeout(function(){var f=q('form-signup');if(f){f.scrollTop=0}var pb=q('signup-btn');if(pb){pb.innerHTML='<i class="fas fa-user-plus"></i> Create Account'}var tx=q('signup-txnid');if(tx)tx.value=''},80);
   };
   function init(){
     renderStars();loadPublicFeedback();
@@ -14621,7 +14648,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   // Keep the trial path explicit even if the user enters signup through another CTA.
-  document.addEventListener('click',function(e){var el=e.target.closest?.('#tab-signup');if(el)setTimeout(function(){q('form-signup')?.classList.add('pt-trial-mode')},50)});
+  
 })();
 </script>
 
