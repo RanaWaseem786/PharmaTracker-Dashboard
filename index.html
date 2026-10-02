@@ -10284,6 +10284,7 @@ function sendAdminNotification(user, isRenewal) {
     };
     emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, params)
         .catch(err => console.warn('EmailJS send failed:', err));
+
 }
 
 function sendResetCodeEmail(user, code) {
@@ -10575,7 +10576,7 @@ function loginSuccess(user, newLogin = true) {
     // Admin-only: show Approvals nav + badge
     const navApprovals = document.getElementById('nav-approvals');
     if (navApprovals) navApprovals.style.display = user.role === 'admin' ? 'flex' : 'none';
-    if (user.role === 'admin') renderApprovals();
+    if (user.role === 'admin') { renderApprovals(); startApprovalsListener(); } else { stopApprovalsListener(); }
 
     // Admin-only: Subscription & Recharge Settings card
     const adminSubCard = document.getElementById('admin-subscription-settings-card');
@@ -10746,8 +10747,15 @@ async function doRenew() {
     if (!user) { showToast('Account not found.', 'error'); return; }
 
     const plan = ensureSelectedPlan('renew');
+    const previousPlanId = user.planId || (user.subscription && user.subscription.currentPlan) || null;
+    const isPlanUpgrade = !!(plan && previousPlanId && previousPlanId !== plan.id &&
+        ['basic','professional','business'].includes(previousPlanId) &&
+        ['basic','professional','business'].includes(plan.id));
     user.status = 'pending';
     user.isRenewal = true;
+    user.requestType = isPlanUpgrade ? 'plan_upgrade' : 'renewal';
+    user.previousPlanId = previousPlanId;
+    user.requestedPlanId = plan ? plan.id : previousPlanId;
     user.paymentMethod = selectedPay.renew;
     user.transactionId = txnId;
     if (plan) user.planId = plan.id;
@@ -10829,6 +10837,7 @@ function backToLogin() {
 }
 
 function doLogout() {
+    stopApprovalsListener();
     clearSession();
     currentUser = null;
     document.querySelector('.sidebar').classList.add('hidden');
@@ -10950,6 +10959,39 @@ function deleteUser(email) {
 /* ═══════════════════════════════════════════════
    PENDING APPROVALS (admin only)
 ═══════════════════════════════════════════════ */
+let approvalsUnsubscribe = null;
+let approvalsRefreshTimer = null;
+
+function stopApprovalsListener() {
+    try { if (typeof approvalsUnsubscribe === 'function') approvalsUnsubscribe(); } catch (e) {}
+    approvalsUnsubscribe = null;
+    if (approvalsRefreshTimer) { clearInterval(approvalsRefreshTimer); approvalsRefreshTimer = null; }
+}
+
+function startApprovalsListener() {
+    stopApprovalsListener();
+    if (typeof currentUser === 'undefined' || !currentUser || currentUser.role !== 'admin') return;
+
+    // Firestore listener keeps the admin Approvals badge/list current while a
+    // customer submits a renewal or Professional → Business upgrade elsewhere.
+    if (useFirestore && typeof db !== 'undefined' && db && db.collection) {
+        try {
+            approvalsUnsubscribe = db.collection('users').onSnapshot(function () {
+                renderApprovals().catch(function (e) { console.warn('Approvals refresh failed:', e); });
+            }, function (e) {
+                console.warn('Live approvals listener failed:', e);
+            });
+            return;
+        } catch (e) { console.warn('Could not start live approvals listener:', e); }
+    }
+
+    // Local/fallback mode: refresh periodically so an already-open admin page
+    // still notices a new pending request on the same device.
+    approvalsRefreshTimer = setInterval(function () {
+        renderApprovals().catch(function () {});
+    }, 15000);
+}
+
 async function renderApprovals() {
     const el = document.getElementById('approvals-list-container');
     const badge = document.getElementById('approvalsBadge');
@@ -10980,7 +11022,7 @@ async function renderApprovals() {
                     <div class="approval-card-name">${u.fname} ${u.lname||''}</div>
                     <div class="approval-card-meta">${u.email} · ${u.company||'—'} · ${requestedOn}</div>
                 </div>
-                <span class="approval-tag ${u.isRenewal ? 'renewal' : ''}">${u.isRenewal ? 'Renewal' : 'New Registration'}</span>
+                <span class="approval-tag ${u.requestType === 'plan_upgrade' || u.isRenewal ? 'renewal' : ''}">${u.requestType === 'plan_upgrade' ? 'Plan Upgrade' : (u.isRenewal ? 'Renewal' : 'New Registration')}</span>
             </div>
             <div class="approval-pay-row">
                 <i class="${u.paymentMethod === 'card' ? 'fas fa-credit-card' : 'fas fa-mobile-alt'}"></i>
@@ -10988,7 +11030,7 @@ async function renderApprovals() {
                 <span>·</span>
                 <span>Ref: <b>${u.transactionId || '—'}</b></span>
                 <span>·</span>
-                <span>${(() => { const p = u.planId ? getPlanById(u.planId) : null; return u.paymentMethod === 'card' ? `$${p ? p.priceIntl : 20}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; })()}${(() => { const p = u.planId ? getPlanById(u.planId) : null; return p ? ' · ' + p.name : ''; })()}</span>
+                <span>${(() => { const p = u.planId ? getPlanById(u.planId) : null; const oldP = u.previousPlanId ? getPlanById(u.previousPlanId) : null; const amount = u.paymentMethod === 'card' ? `$${p ? p.priceIntl : 20}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; return (u.requestType === 'plan_upgrade' && oldP && p) ? `${oldP.name} → ${p.name} · ${amount}` : `${amount}${p ? ' · ' + p.name : ''}`; })()}</span>
             </div>
             <div class="approval-actions">
                 <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveUser('${emailAttr}')"><i class="fas fa-check"></i> Approve</button>
@@ -14230,7 +14272,11 @@ if(typeof doRenew==='function'){
         const pid=(typeof selectedPlan!=='undefined'&&selectedPlan.renew)||user.planId;
         user.planId=pid;
         user.subscription.currentPlan=pid;
-        await appendHistory(user,'payment_submitted',pid,{transactionId:user.transactionId||null});
+        await appendHistory(user, user.requestType === 'plan_upgrade' ? 'plan_upgrade_submitted' : 'payment_submitted', pid, {
+          transactionId:user.transactionId||null,
+          previousPlanId:user.previousPlanId||null,
+          requestedPlanId:user.requestedPlanId||pid
+        });
         await persistSubscription(user);
       }
     }catch(e){console.warn('Could not append renewal history:',e);}
