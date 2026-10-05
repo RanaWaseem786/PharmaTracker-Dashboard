@@ -1423,7 +1423,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 #auth-overlay .role-option.selected i{ color:var(--gold-bright) !important; }
 
 /* payment box premium styling */
-#form-signup .signup-payment-legacy{display:none !important;}
+
 #form-signup .saas-trial-signup-box{display:block;}
 #auth-overlay .payment-box{ background:linear-gradient(160deg, rgba(232,185,92,0.07), rgba(255,255,255,0.02)) !important; border-color:rgba(232,185,92,0.25) !important; border-radius:14px !important; }
 #auth-overlay .payment-box-title{ color:var(--gold-bright) !important; font-size:13px !important; letter-spacing:.3px; }
@@ -2854,7 +2854,7 @@ function changeSiteLanguage(language){
                 </div>
                 <div class="auth-field" style="margin-bottom:0">
                     <label>Transaction ID / Reference No.</label>
-                    <input class="auth-input" type="text" id="signup-txnid" placeholder="e.g. 123456789012">
+                    <input class="auth-input" type="text" id="signup-txnid" placeholder="e.g. 123456789012" required>
                 </div>
                 <div class="payment-note"><i class="fas fa-info-circle"></i> <span id="pay-note-text">After sending your payment, enter the Transaction ID here. Your account will be activated once the admin verifies the payment (valid for 1 month).</span></div>
             </div>
@@ -10333,7 +10333,7 @@ function selectPayMethod(method, ctx) {
     const isCard = method === 'card';
     if (mobileBlock) mobileBlock.style.display = isCard ? 'none' : 'flex';
     if (cardBlock) cardBlock.style.display = isCard ? 'block' : 'none';
-    if (txnWrap && txnWrap.closest('.auth-field')) txnWrap.closest('.auth-field').style.display = isCard ? 'none' : '';
+    if (txnWrap && txnWrap.closest('.auth-field')) txnWrap.closest('.auth-field').style.display = (isCard && ctx !== 'signup') ? 'none' : '';
 
     const noteEl = document.getElementById('pay-note-text' + suffix);
     if (noteEl) {
@@ -10368,7 +10368,7 @@ function getSaaSPaymentPlans() {
     });
 }
 function paymentPlansForContext(ctx) {
-    return ctx === 'renew' ? getSaaSPaymentPlans() : getActivePlans();
+    return (ctx === 'signup' || ctx === 'renew') ? getSaaSPaymentPlans() : getActivePlans();
 }
 function ensureSelectedPlan(ctx) {
     const plans = paymentPlansForContext(ctx);
