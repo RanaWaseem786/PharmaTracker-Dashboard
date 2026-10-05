@@ -11048,10 +11048,22 @@ async function approveUser(email) {
     const durationDays = plan ? plan.durationDays : SUBSCRIPTION_DAYS;
     const now = new Date();
     const validUntil = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    const isPlanUpgrade = user.requestType === 'plan_upgrade' &&
+        ['basic','professional','business'].includes(user.previousPlanId) &&
+        ['basic','professional','business'].includes(user.planId) &&
+        user.previousPlanId !== user.planId;
     user.status = 'active';
     user.isRenewal = false;
     user.approvedAt = now.toISOString();
     user.validUntil = validUntil.toISOString();
+    if (isPlanUpgrade) {
+        user.currentPlan = user.planId;
+        user.subscriptionStatus = 'active';
+        user.subscriptionStartDate = now.toISOString();
+        user.expiryDate = validUntil.toISOString();
+        user.paymentStatus = 'verified';
+        user.subscription = { ...(user.subscription || {}), currentPlan: user.planId, subscriptionStatus: 'active', subscriptionStartDate: now.toISOString(), expiryDate: validUntil.toISOString(), paymentStatus: 'verified' };
+    }
     await saveUser(user);
 
     if (currentUser && currentUser.email === email) { currentUser = user; renderSubscriptionBox(); }
