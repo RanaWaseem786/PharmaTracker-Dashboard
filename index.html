@@ -9888,12 +9888,31 @@ function buildInternationalSampleData() {
                 });
                 srno++; invCounter++;
 
-                if (rows.length % 1000 === 0) {
-                    bytesEstimate = JSON.stringify(rows.slice(-1000)).length * (rows.length / 1000);
+                /* Keep the generated dataset below the requested 5 MB JSON size.
+                   Check the actual serialized payload periodically instead of
+                   estimating from a single chunk, so the cap is deterministic. */
+                if (rows.length % 250 === 0) {
+                    try {
+                        bytesEstimate = (typeof TextEncoder !== 'undefined')
+                            ? new TextEncoder().encode(JSON.stringify(rows)).length
+                            : JSON.stringify(rows).length;
+                    } catch (e) {
+                        bytesEstimate = JSON.stringify(rows).length;
+                    }
                     if (bytesEstimate >= targetBytes) break outer;
                 }
             }
         }
+    }
+
+    /* Hard final cap: never return a sample payload larger than 5 MiB. */
+    try {
+        const serializedBytes = () => (typeof TextEncoder !== 'undefined')
+            ? new TextEncoder().encode(JSON.stringify(rows)).length
+            : JSON.stringify(rows).length;
+        while (rows.length && serializedBytes() > targetBytes) rows.pop();
+    } catch (e) {
+        /* Keep the already bounded generator result if byte measurement fails. */
     }
     _sampleDatasetCache = rows;
     return rows;
@@ -9911,7 +9930,9 @@ function buildInternationalSampleData() {
 {
     const hasDataFlag = localStorage.getItem(LS_HASDATA_KEY);
     const legacyData = localStorage.getItem(LEGACY_LS_KEY);
-    if (hasDataFlag === null && legacyData === null) window.__ptNeedsSampleData = true;
+    /* Demo data is seeded per signed-in user by ptEnsureUserDataset().
+       Do not use a browser-wide first-visit flag here. */
+    window.__ptNeedsSampleData = false;
     rawData = [];
 }
 populateGlobalFilters();
@@ -10521,26 +10542,50 @@ async function initAuth() {
     }
 }
 
+async function ptEnsureUserDataset(user) {
+    /* Dataset storage is scoped by the signed-in user's email. Always load that
+       scope first, then seed only if this account has never received demo data.
+       This prevents one user's sales from appearing for another new user. */
+    try {
+        const loaded = await loadDataFromStorage();
+        if (loaded && rawData.length) {
+            if (!user.hasSeenSample) {
+                user.hasSeenSample = true;
+                await saveUser(user);
+            }
+            return;
+        }
+
+        if (!user.hasSeenSample) {
+            rawData = buildInternationalSampleData();
+            ptMarkStorageFullRewrite();
+            populateGlobalFilters();
+            populateFilters();
+            updateAll();
+            saveDataToStorage();
+            user.hasSeenSample = true;
+            await saveUser(user);
+            console.log(`✅ Seeded 10-year demo dataset for ${user.email}: ${rawData.length} records`);
+        } else {
+            /* Existing account with intentionally empty/cleared data stays empty. */
+            rawData = [];
+            populateGlobalFilters();
+            populateFilters();
+            updateAll();
+        }
+    } catch (e) {
+        console.error('Could not initialize user dataset:', e);
+    }
+}
+
 function loginSuccess(user, newLogin = true) {
     currentUser = user;
     if (newLogin) saveSession(user.email);
 
-    // Pull the saved dataset now (the user is in) — start-up no longer pays for it.
-    if (window.__ptLoadDataOnce) setTimeout(function () { window.__ptLoadDataOnce({ force: true }); }, 0);
-
-    // For a brand-new user account that has never logged in before, make sure
-    // the dashboard isn't empty on their very first visit. This only fires when
-    // there's no dataset yet (nothing real to lose), and never runs again for
-    // that account once flagged.
-    if (newLogin && !user.hasSeenSample && !rawData.length && localStorage.getItem(LS_HASDATA_KEY) !== '1') {
-        rawData = buildInternationalSampleData(); ptMarkStorageFullRewrite();
-        saveDataToStorage();
-        populateGlobalFilters();
-        populateFilters();
-        updateAll();
-        user.hasSeenSample = true;
-        saveUser(user).catch(() => {});
-    }
+    // Load/seed the dataset only after the correct user is known. The dataset is
+    // stored per-user in IndexedDB, so every new account gets its own 10-year
+    // sample dataset without sharing another account's records.
+    ptEnsureUserDataset(user);
 
     document.getElementById('auth-overlay').classList.add('hidden');
     document.getElementById('marketing-root').classList.add('hidden');
@@ -10758,14 +10803,15 @@ async function doRenew() {
     user.requestedPlanId = plan ? plan.id : previousPlanId;
     user.paymentMethod = selectedPay.renew;
     user.transactionId = txnId;
-    if (plan) user.planId = plan.id;
+    /* Keep the requested plan separate from the active entitlement until admin approval. */
+    user.planId = previousPlanId || (plan ? plan.id : null);
     user.pendingSince = new Date().toISOString();
     await saveUser(user);
     sendAdminNotification(user, true);
 
     document.getElementById('renew-txnid').value = '';
-    document.getElementById('pending-title').textContent = 'Renewal Submitted!';
-    document.getElementById('pending-text').textContent = 'Your renewal request has been sent to the admin. Your account will be reactivated for 1 month after the payment is verified.';
+    document.getElementById('pending-title').textContent = isPlanUpgrade ? 'Plan Upgrade Submitted!' : 'Renewal Submitted!';
+    document.getElementById('pending-text').textContent = isPlanUpgrade ? `Your ${plan ? plan.name : 'plan'} upgrade request has been sent to the admin. Your new plan will activate for 1 month after the payment is verified.` : 'Your renewal request has been sent to the admin. Your account will be reactivated for 1 month after the payment is verified.';
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
     document.getElementById('form-pending').classList.add('active');
@@ -14243,67 +14289,80 @@ window.doSignup=async function(){
   }
 };
 
-/* ----- Verified admin approval: activate the requested plan everywhere. */
+/* ----- Verified admin approval: one authoritative SaaS activation write. */
 if(typeof approveUser==='function'){
-  const originalApproveUser=approveUser;
   window.approveUser=async function(email){
     email=String(email||'').trim().toLowerCase();
-    const before=await getUserByEmail(email);
-    if(!before){ showToast('User account not found.','error'); return; }
-    const selected=before.requestedPlanId || before.planId || before.subscription?.currentPlan;
-    const p=selected&&selected!=='trial'?planDef(selected):null;
-    const wasUpgrade=before.requestType==='plan_upgrade' || !!before.requestedPlanId;
+    try{
+      const user=await getUserByEmail(email);
+      if(!user){ showToast('User account not found.','error'); return; }
 
-    /* First run the legacy approval so the existing approval UI/cloud save stays intact. */
-    await originalApproveUser(email);
+      const selectedId=String(user.requestedPlanId || user.planId || user.subscription?.currentPlan || '').toLowerCase();
+      const p=(selectedId && selectedId!=='trial') ? planDef(selectedId) : null;
+      if(!p || !PT_SAAS.plans[p.id]){
+        showToast('No valid subscription plan was found for this request.','error');
+        return;
+      }
 
-    /* Then write the complete SaaS subscription shape in ONE cloud/local save. */
-    const fresh=await getUserByEmail(email);
-    if(!fresh) return;
-    if(p){
-      const start=new Date();
+      const now=new Date();
       const durationDays=Number(p.durationDays)||30;
-      const expiry=new Date(start.getTime()+durationDays*86400000);
-      fresh.status='active';
-      fresh.isRenewal=false;
-      fresh.requestType=wasUpgrade?'plan_upgrade':'renewal';
-      fresh.previousPlanId=before.previousPlanId||null;
-      fresh.requestedPlanId=p.id;
-      fresh.currentPlan=p.id;
-      fresh.planId=p.id;
-      fresh.subscriptionStatus='active';
-      fresh.subscriptionStartDate=start.toISOString();
-      fresh.expiryDate=expiry.toISOString();
-      fresh.validUntil=expiry.toISOString();
-      fresh.paymentStatus='verified';
-      fresh.approvedAt=start.toISOString();
-      const sub={...(fresh.subscription||{})};
-      sub.userId=fresh.firebaseUid||fresh.id||null;
-      sub.name=[fresh.fname,fresh.lname].filter(Boolean).join(' ')||fresh.name||'';
-      sub.email=fresh.email||email;
+      const expiry=new Date(now.getTime()+durationDays*86400000);
+      const previousPlanId=user.previousPlanId || user.subscription?.currentPlan || null;
+      const wasUpgrade=user.requestType==='plan_upgrade' || !!user.requestedPlanId;
+
+      /* Preserve the complete subscription history instead of replacing it. */
+      const sub={...(user.subscription||{})};
+      sub.userId=user.firebaseUid||user.id||null;
+      sub.name=[user.fname,user.lname].filter(Boolean).join(' ')||user.name||'';
+      sub.email=user.email||email;
       sub.currentPlan=p.id;
       sub.subscriptionStatus='active';
-      sub.subscriptionStartDate=start.toISOString();
+      sub.subscriptionStartDate=now.toISOString();
       sub.expiryDate=expiry.toISOString();
       sub.paymentStatus='verified';
       sub.history=Array.isArray(sub.history)?sub.history:[];
-      sub.history.push(historyEntry(wasUpgrade?'plan_upgrade_approved':'payment_approved',p.id,{transactionId:fresh.transactionId||null,previousPlanId:before.previousPlanId||null}));
-      fresh.subscription=sub;
-      fresh.subscriptionHistory=sub.history;
-      await saveUser(fresh);
+      sub.history.push(historyEntry(wasUpgrade?'plan_upgrade_approved':'payment_approved',p.id,{
+        transactionId:user.transactionId||null,
+        previousPlanId:previousPlanId||null,
+        approvedAt:now.toISOString()
+      }));
 
-      /* Update this browser immediately if admin is approving their own account. */
-      if(typeof currentUser!=='undefined'&&currentUser&&String(currentUser.email||'').toLowerCase()===email){
-        currentUser=fresh;
-        try{writeProfileCache(email,fresh);}catch(e){}
+      /* One complete user document is written. No second legacy approval write. */
+      user.status='active';
+      user.isRenewal=false;
+      user.approvedAt=now.toISOString();
+      user.requestType=wasUpgrade?'plan_upgrade':'renewal';
+      user.requestedPlanId=p.id;
+      user.planId=p.id;
+      user.currentPlan=p.id;
+      user.subscriptionStatus='active';
+      user.subscriptionStartDate=now.toISOString();
+      user.expiryDate=expiry.toISOString();
+      user.validUntil=expiry.toISOString();
+      user.paymentStatus='verified';
+      user.subscription=sub;
+      user.subscriptionHistory=sub.history;
+
+      /* Remove pending-only markers after approval so the same request cannot be approved twice. */
+      delete user.pendingSince;
+      await saveUser(user);
+
+      /* Immediately synchronize this browser if it is the approved account. */
+      if(typeof currentUser!=='undefined' && currentUser && String(currentUser.email||'').toLowerCase()===email){
+        currentUser=user;
+        try{writeProfileCache(email,user);}catch(e){}
       }
-      if(typeof showToast==='function') showToast(`${fresh.fname||'User'} is now on ${p.name}.`,'success');
+
+      if(typeof renderApprovals==='function') await renderApprovals();
+      if(typeof renderUsersTab==='function') await renderUsersTab();
+      if(typeof addNavEntitlements==='function') addNavEntitlements();
+      if(typeof applyFineGrainedLocks==='function') applyFineGrainedLocks();
+      if(typeof window.renderPharmaTrackerSubscriptionBox==='function') window.renderPharmaTrackerSubscriptionBox();
+      if(typeof showToast==='function') showToast(`${user.fname||'User'} is now on ${p.name}. Valid till ${expiry.toLocaleDateString('en-GB')}.`,'success');
+    }catch(err){
+      console.error('Subscription approval failed:',err);
+      if(typeof showToast==='function') showToast('Approval failed. The subscription was not changed. Please check the cloud connection and try again.','error');
     }
-    if(typeof renderApprovals==='function')renderApprovals();
-    if(typeof renderUsersTab==='function')renderUsersTab();
-    if(typeof addNavEntitlements==='function')addNavEntitlements();
-    if(typeof applyFineGrainedLocks==='function')applyFineGrainedLocks();
-    if(typeof window.renderPharmaTrackerSubscriptionBox==='function')window.renderPharmaTrackerSubscriptionBox();
   };
 }
 
@@ -14327,6 +14386,11 @@ window.ptRefreshCurrentUserSubscription=async function(){
 document.addEventListener('visibilitychange',function(){
   if(document.visibilityState==='visible'&&typeof window.ptRefreshCurrentUserSubscription==='function'){
     window.ptRefreshCurrentUserSubscription();
+  }
+  if(typeof window.ptSubscriptionSyncTimer==='undefined'){
+    window.ptSubscriptionSyncTimer=setInterval(function(){
+      if(document.visibilityState==='visible'&&typeof window.ptRefreshCurrentUserSubscription==='function') window.ptRefreshCurrentUserSubscription();
+    },15000);
   }
 });
 
