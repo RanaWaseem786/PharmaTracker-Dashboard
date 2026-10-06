@@ -2568,8 +2568,8 @@ html[data-theme] ::-webkit-scrollbar-thumb{ background:rgba(212,175,90,0.25) !im
     <section class="mkt-section mkt-wrap" data-mktpage="pricing" id="mkt-pricing">
         <div class="mkt-section-head">
             <div class="mkt-kicker">Pricing</div>
-            <h2 id="mkt-pricing-headline">One plan. Every feature. <span class="grad">Only $5/month.</span></h2>
-            <p id="mkt-pricing-sub">No tiers, no feature-gating — every distributor gets the full platform. Pick whichever payment rail works where you are.</p>
+            <h2 id="mkt-pricing-headline">Simple pricing. <span class="grad">Pick what fits.</span></h2>
+            <p id="mkt-pricing-sub">Choose Basic, Professional or Business — local PKR pricing and international USD pricing are shown by the selected region.</p>
         </div>
         <div class="mkt-pricing-grid" id="mkt-pricing-grid">
         </div>
@@ -2835,7 +2835,7 @@ function changeSiteLanguage(language){
             </div>
             <!-- Legacy payment step retained for paid-signup compatibility; hidden because new accounts start on the free trial. -->
             <div class="payment-box signup-payment-legacy">
-                <div class="payment-box-title"><i class="fas fa-gem"></i> <span id="signup-plan-name">Premium Plan</span> <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
+                <div class="payment-box-title"><i class="fas fa-gem"></i> <span id="signup-plan-name">Basic</span> <span class="amt" id="pay-amt-display">Rs. 1,000 / month</span></div>
                 <div class="plan-select-row" id="signup-plan-row"></div>
                 <div class="pay-method-row pay-method-row-3">
                     <div class="pay-method selected" id="pm-jazzcash" onclick="selectPayMethod('jazzcash')"><i class="fas fa-mobile-alt"></i> JazzCash</div>
@@ -10143,8 +10143,12 @@ const SUB_SETTINGS_KEY = 'pharmatracker_subscription_settings';
 const DEFAULT_SUBSCRIPTION_SETTINGS = {
     jazzcashNumber: '0332 7282070',
     easypaisaNumber: '0332 7282070',
+    /* Legacy fallback now mirrors the live SaaS catalogue so the old $5 /
+       Premium Plan can never reappear when subscription settings are missing. */
     plans: [
-        { id: 'plan_default', name: 'Premium Plan', priceLocal: REGISTRATION_FEE, priceIntl: 5, durationDays: SUBSCRIPTION_DAYS, description: 'Full access to every feature.', active: true }
+        { id: 'basic', name: 'Basic', priceLocal: 1000, priceIntl: 20, durationDays: 30, description: 'Essential sales visibility for small businesses.', active: true },
+        { id: 'professional', name: 'Professional', priceLocal: 2500, priceIntl: 35, durationDays: 30, description: 'Advanced analytics for serious business management.', active: true },
+        { id: 'business', name: 'Business', priceLocal: 5000, priceIntl: 50, durationDays: 30, description: 'Complete access for larger teams and enterprise workflows.', active: true }
     ]
 };
 
