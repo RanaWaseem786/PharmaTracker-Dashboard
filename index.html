@@ -4983,7 +4983,7 @@ function changeSiteLanguage(language){
     chartInstance = new Chart(canvas.getContext('2d'), { type:'bar', data:{ labels:rows.map(row => row.name), datasets:[
       { label:'Actual Net Sales', data:rows.map(row => row.netAmount), backgroundColor:accent, borderRadius:6, maxBarThickness:30 },
       { label:'Sales Target', data:rows.map(row => row.target), backgroundColor:targetColor, borderRadius:6, maxBarThickness:30 }
-    ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, labels:{ color:muted, boxWidth:11, usePointStyle:true } }, tooltip:{ callbacks:{ label:context => `${context.dataset.label}: ${money(context.raw)}` } } }, scales:{ x:{ ticks:{ color:muted, maxRotation:38, minRotation:0 }, grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ color:muted, callback:value => money(value) }, grid:{ color:'rgba(128,128,128,.12)' } } } } });
+    ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, labels:{ color:muted, boxWidth:11, usePointStyle:true } }, tooltip:{ callbacks:{ label:context => `${context.dataset.label}: ${money(context.raw)}` } } }, scales:{ x:{ ticks:{ color:muted, maxRotation:38, minRotation:0 }, grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ color:muted, callback:value => window.ptCompactChartNumber(value, true) }, grid:{ color:'rgba(128,128,128,.12)' } } } } });
   }
   function exportRows(list) {
     return list.map(row => ({ Rank:row.rank, 'Rep / Booker':row.name, 'Sales Target':row.target, 'Actual Net Sales':row.netAmount, 'Target Achievement %':row.achievementPct == null ? '' : Number(row.achievementPct.toFixed(2)), 'Remaining Target Amount':row.remainingTarget == null ? '' : row.remainingTarget, 'Sales Growth %':row.growthPct == null ? '' : Number(row.growthPct.toFixed(2)), Invoices:row.invoices, Customers:row.customers, Products:row.products, 'Average Order Value':row.avgOrder, 'Gross Revenue':row.grossAmount, 'Discount %':Number(row.discountPct.toFixed(2)), 'Revenue Share %':Number(row.sharePct.toFixed(2)) }));
@@ -5875,40 +5875,57 @@ function onMeasureModeChange() {
 function measureField() { return measureMode === 'units' ? 'stock' : 'netAmount'; }
 function measureAxisTicks() { return measureMode === 'units' ? { callback: v => window.ptCompactChartNumber(v, false) } : { callback: v => window.ptCompactChartNumber(v, true) }; }
 
-/* Base dataset after applying the global Company Group + Month/Quarter filters.
-   All page renderers should read from this instead of rawData directly. */
+/* Base dataset after global and page-level filters.
+   One-pass filtering avoids building intermediate arrays + a Set for every
+   refresh. The result is cached until the dataset or a relevant filter changes. */
+let __ptBaseDataCache = { source: null, signature: '', result: [] };
 function getBaseData() {
-    let data = getGlobalData();
-
-    // Filter out data from disabled files - maintains index correspondence.
-    // PERF: membership via a Set (O(1)) instead of data.includes() inside the
-    // loop (O(n²) — ~27s per call at 300k rows, called ~15× per refresh).
-    // SameValueZero semantics are identical for object references.
-    const inData = (data === rawData) ? null : new Set(data);
-    let filteredData = [];
-    for (let idx = 0; idx < rawData.length; idx++) {
-        const fileId = fileRowMap.get(idx);
-        const fileInfo = uploadedFiles.get(fileId);
-        if (fileInfo && !fileInfo.disabled && (!inData || inData.has(rawData[idx]))) {
-            filteredData.push(rawData[idx]);
-        }
-    }
-    data = filteredData;
-    
     const region = document.getElementById('fRegion')?.value || '';
     const man = document.getElementById('fBookingMan')?.value || '';
     const month = document.getElementById('fMonth')?.value || '';
-    const search = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
-    const filteredDataset = data.filter(d => {
-        if (region && d.regionName !== region) return false;
-        if (man && d.bookingMan !== man) return false;
-        if (month && !d.invoiceDate.startsWith(month)) return false;
+    const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+    const fileState = Array.from(uploadedFiles.entries(), ([id, info]) => [id, !!info.disabled]);
+    const signature = JSON.stringify([
+        rawData.length, fileRowMap.size, fileState, globalCompany || '', globalCompanyGroup || '',
+        periodMode || 'all', periodValue || [], region, man, month, search
+    ]);
+    if (__ptBaseDataCache.source === rawData && __ptBaseDataCache.signature === signature) {
+        try { window.originalDataset = rawData; window.filteredDataset = __ptBaseDataCache.result; } catch (e) {}
+        return __ptBaseDataCache.result;
+    }
+
+    const selectedMonths = (periodMode === 'month' && periodValue.length) ? new Set(periodValue) : null;
+    const quarterRanges = (periodMode === 'quarter' && periodValue.length) ? periodValue.map(pv => {
+        const [year, quarterText] = pv.split('-Q');
+        const quarter = parseInt(quarterText, 10);
+        const startMonth = (quarter - 1) * 3 + 1;
+        return { year, startMonth, endMonth: startMonth + 2 };
+    }) : null;
+    const filteredDataset = rawData.filter((row, idx) => {
+        const fileInfo = uploadedFiles.get(fileRowMap.get(idx));
+        if (!fileInfo || fileInfo.disabled) return false;
+        if (globalCompany && row.companyName !== globalCompany) return false;
+        if (globalCompanyGroup && row.companyGroup !== globalCompanyGroup) return false;
+
+        const invoiceDate = String(row.invoiceDate || '');
+        if (selectedMonths && !selectedMonths.has(invoiceDate.substring(0, 7))) return false;
+        if (quarterRanges) {
+            const parts = invoiceDate.split('-');
+            const year = parts[0];
+            const monthNumber = parseInt(parts[1], 10);
+            if (!quarterRanges.some(range => year === range.year && monthNumber >= range.startMonth && monthNumber <= range.endMonth)) return false;
+        }
+        if (region && row.regionName !== region) return false;
+        if (man && row.bookingMan !== man) return false;
+        if (month && !invoiceDate.startsWith(month)) return false;
         if (search) {
-            const text = [d.invoiceId, d.customerName, d.companyName, d.companyGroup, d.itemName, d.bookingMan, d.regionName].join(' ').toLowerCase();
+            const text = [row.invoiceId, row.customerName, row.companyName, row.companyGroup, row.itemName, row.bookingMan, row.regionName].join(' ').toLowerCase();
             if (!text.includes(search)) return false;
         }
         return true;
     });
+
+    __ptBaseDataCache = { source: rawData, signature, result: filteredDataset };
     try { window.originalDataset = rawData; window.filteredDataset = filteredDataset; } catch (e) {}
     return filteredDataset;
 }
@@ -7501,7 +7518,7 @@ function updateCustomerPageStats(data = getCustomerCatalogData()) {
 }
 
 function topByValue(data, keyField, valField) {
-    const map = {}; // normKey -> { label, total }
+    const map = Object.create(null); // normKey -> { label, total }; safe for arbitrary imported labels
     data.forEach(r => {
         const raw = r[keyField];
         const key = normKey(raw);
@@ -7765,12 +7782,20 @@ function buildTrendSeries(data) {
         const [y, qs] = periodValue[0].split('-Q');
         const q = parseInt(qs, 10);
         const startMonth = (q - 1) * 3 + 1;
+        const monthTotals = [0, 0, 0];
+        // Aggregate in one pass instead of scanning the full dataset three times.
+        data.forEach(r => {
+            if (!r.invoiceDate) return;
+            const dateYear = String(r.invoiceDate).substring(0, 4);
+            const dateMonth = parseInt(String(r.invoiceDate).substring(5, 7), 10);
+            const offset = dateMonth - startMonth;
+            if (dateYear === y && offset >= 0 && offset < 3) monthTotals[offset] += Number(r[mField] || 0);
+        });
         const labels = [], vals = [];
         for (let i = 0; i < 3; i++) {
-            const mo = startMonth + i;
-            const key = `${y}-${pad2(mo)}`;
+            const key = `${y}-${pad2(startMonth + i)}`;
             labels.push(monthLabel(key));
-            vals.push(data.filter(r => r.invoiceDate && r.invoiceDate.substring(0,7) === key).reduce((s,r)=>s+r[mField],0));
+            vals.push(monthTotals[i]);
         }
         return { labels, vals, sub: `Monthly ${isUnits ? 'units sold' : 'net revenue'} — ${quarterLabel(periodValue[0])}` };
     }
@@ -9168,6 +9193,7 @@ document.querySelectorAll('.nav-item[data-page]').forEach(el => {
 
 /* ═══════════════════════════════════════════════
    SEARCH & PERFORMANCE OPTIMIZATION
+   Includes one-pass base filtering and cached filtered results for large datasets.
 ═══════════════════════════════════════════════ */
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
@@ -11655,7 +11681,7 @@ window.__ptScheduleDataLoad(5000);
  function key(r,n){return String(r[n]??r[n.replace('Name','')]??'Unassigned').trim()||'Unassigned'} function group(rows,field){return rows.reduce((a,r)=>{let k=key(r,field);a[k]=(a[k]||0)+amount(r);return a},{})}
  function dateOf(r){let d=new Date(r.invoiceDate||r.date);return isNaN(d)?null:d} function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
  function rows(){let data=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
- function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>Number(v).toLocaleString()},grid:{color:'rgba(148,180,255,.1)'}}}}})}
+ function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>window.ptCompactChartNumber(v, false)},grid:{color:'rgba(148,180,255,.1)'}}}}})}
  function sorted(g,n=6){return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,n)} function list(id,g){$(id).innerHTML=sorted(g,5).map(([n,v])=>`<li><span>${escapeHtml(n)}</span><b>${money(v)}</b></li>`).join('')||'<li>No data imported yet.</li>'} function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
  function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,oldProfitPct=$('ex-profit-percent').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';$('ex-profit-percent').value=oldProfitPct;suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
  $('ex-kpis').innerHTML=[['Total Revenue',money(total),'#6d7cff'],['Total Profit',money(total*profitRate()),'#2ee6a6'],['Invoices',invoices.toLocaleString(),'#ffb65d'],['Customers',customers.toLocaleString(),'#a979ff'],['Products',products.toLocaleString(),'#51c8ff'],['Avg. Order',money(avg),'#ff718c']].map((x,i)=>`<div class="ex-card" style="--card-color:${x[2]}"><div class="ex-label">${x[0]}</div><div class="ex-value">${x[1]}</div><div class="ex-delta">${i<2?'▲ '+(8+i*3)+'% vs prior period':'Live from imported data'}</div></div>`).join('');
@@ -16455,7 +16481,7 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
         },
         scales:{
           x:{type:'linear',title:{display:true,text:'Units Sold',color:t.muted},ticks:{color:t.muted},grid:{color:t.grid},border:{color:t.border}},
-          y:{title:{display:true,text:'Revenue',color:t.muted},ticks:{color:t.muted,callback:function(v){return fmt(v);}},grid:{color:t.grid},border:{color:t.border}}
+          y:{title:{display:true,text:'Revenue',color:t.muted},ticks:{color:t.muted,callback:function(v){return window.ptCompactChartNumber(v,true);}},grid:{color:t.grid},border:{color:t.border}}
         }
       }
     });
