@@ -16305,10 +16305,18 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
   `;
   document.head.appendChild(style);
 
-  function exact(v) {
+  function exact(v, currency) {
     if (v === null || v === undefined || v === '') return '';
     const n = Number(v);
-    return Number.isFinite(n) ? String(n) : String(v);
+    if (!Number.isFinite(n)) return String(v);
+    const sign = n < 0 ? '-' : '';
+    const a = Math.abs(n);
+    let out;
+    if (a >= 1e9) out = (a / 1e9).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'B';
+    else if (a >= 1e6) out = (a / 1e6).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'M';
+    else if (a >= 1e3) out = (a / 1e3).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'K';
+    else out = Math.round(a * 100) / 100;
+    return sign + (currency ? '₨' : '') + out;
   }
 
   const valueLabelPlugin = {
@@ -16329,7 +16337,8 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
           if (!Number.isFinite(n)) return;
           const p = el.getProps(['x','y','base'], true);
           const horizontal = chart.options.indexAxis === 'y';
-          const label = exact(raw);
+          const isUnits = /units|stock|quantity/i.test(String(ds.label || ''));
+          const label = exact(raw, !isUnits);
           if (horizontal) {
             ctx.textAlign = n < 0 ? 'right' : 'left';
             const x = n < 0 ? p.x - 7 : p.x + 7;
