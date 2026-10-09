@@ -109,30 +109,6 @@ var o=((a=s[17])==null?void 0:a[0])?Ob(e,e[_b(s[17][0].data)][0]):[];var l=vb(s[
 var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.s.r;c<=n.e.r;++c){i=Ta(c);for(f=n.s.c;f<=n.e.c;++f){r=s[f]+i;t=l?(e[c]||[])[f]:e[r];a="";if(t===undefined)continue;else if(t.F!=null){r=t.F;if(!t.f)continue;a=t.f;if(r.indexOf(":")==-1)r=r+":"+r}if(t.f!=null)a=t.f;else if(t.t=="z")continue;else if(t.t=="n"&&t.v!=null)a=""+t.v;else if(t.t=="b")a=t.v?"TRUE":"FALSE";else if(t.w!==undefined)a="'"+t.w;else if(t.v===undefined)continue;else if(t.t=="s")a="'"+t.v;else a=""+t.v;o[o.length]=r+"="+a}}return o}function xw(e,r,t){var a=t||{};var n=+!a.skipHeader;var i=e||{};var s=0,f=0;if(i&&a.origin!=null){if(typeof a.origin=="number")s=a.origin;else{var o=typeof a.origin=="string"?Oa(a.origin):a.origin;s=o.r;f=o.c}}var l;var c={s:{c:0,r:0},e:{c:f,r:s+r.length-1+n}};if(i["!ref"]){var h=Da(i["!ref"]);c.e.c=Math.max(c.e.c,h.e.c);c.e.r=Math.max(c.e.r,h.e.r);if(s==-1){s=h.e.r+1;c.e.r=s+r.length-1+n}}else{if(s==-1){s=0;c.e.r=r.length-1+n}}var u=a.header||[],d=0;r.forEach(function(e,r){rr(e).forEach(function(t){if((d=u.indexOf(t))==-1)u[d=u.length]=t;var o=e[t];var c="z";var h="";var v=Ra({c:f+d,r:s+r+n});l=Rw(i,v);if(o&&typeof o==="object"&&!(o instanceof Date)){i[v]=o}else{if(typeof o=="number")c="n";else if(typeof o=="boolean")c="b";else if(typeof o=="string")c="s";else if(o instanceof Date){c="d";if(!a.cellDates){c="n";o=fr(o)}h=a.dateNF||X[14]}else if(o===null&&a.nullError){c="e";o=0}if(!l)i[v]=l={t:c,v:o};else{l.t=c;l.v=o;delete l.w;delete l.R;if(h)l.z=h}if(h)l.z=h}})});c.e.c=Math.max(c.e.c,f+u.length-1);var v=Ta(s);if(n)for(d=0;d<u.length;++d)i[ya(d+f)+v]={t:"s",v:u[d]};i["!ref"]=Na(c);return i}function Ow(e,r){return xw(null,e,r)}function Rw(e,r,t){if(typeof r=="string"){if(Array.isArray(e)){var a=Oa(r);if(!e[a.r])e[a.r]=[];return e[a.r][a.c]||(e[a.r][a.c]={t:"z"})}return e[r]||(e[r]={t:"z"})}if(typeof r!="number")return Rw(e,Ra(r));return Rw(e,Ra({r:r,c:t||0}))}function Iw(e,r){if(typeof r=="number"){if(r>=0&&e.SheetNames.length>r)return r;throw new Error("Cannot find sheet # "+r)}else if(typeof r=="string"){var t=e.SheetNames.indexOf(r);if(t>-1)return t;throw new Error("Cannot find sheet name |"+r+"|")}else throw new Error("Cannot find sheet |"+r+"|")}function Nw(){return{SheetNames:[],Sheets:{}}}function Dw(e,r,t,a){var n=1;if(!t)for(;n<=65535;++n,t=undefined)if(e.SheetNames.indexOf(t="Sheet"+n)==-1)break;if(!t||e.SheetNames.length>=65535)throw new Error("Too many worksheets");if(a&&e.SheetNames.indexOf(t)>=0){var i=t.match(/(^.*?)(\d+)$/);n=i&&+i[2]||0;var s=i&&i[1]||t;for(++n;n<=65535;++n)if(e.SheetNames.indexOf(t=s+n)==-1)break}Jp(t);if(e.SheetNames.indexOf(t)>=0)throw new Error("Worksheet with name |"+t+"| already exists!");e.SheetNames.push(t);e.Sheets[t]=r;return t}function Fw(e,r,t){if(!e.Workbook)e.Workbook={};if(!e.Workbook.Sheets)e.Workbook.Sheets=[];var a=Iw(e,r);if(!e.Workbook.Sheets[a])e.Workbook.Sheets[a]={};switch(t){case 0:;case 1:;case 2:break;default:throw new Error("Bad sheet visibility setting "+t);}e.Workbook.Sheets[a].Hidden=t}function Pw(e,r){e.z=r;return e}function Lw(e,r,t){if(!r){delete e.l}else{e.l={Target:r};if(t)e.l.Tooltip=t}return e}function Mw(e,r,t){return Lw(e,"#"+r,t)}function Uw(e,r,t){if(!e.c)e.c=[];e.c.push({t:r,a:t||"SheetJS"})}function Bw(e,r,t,a){var n=typeof r!="string"?r:Da(r);var i=typeof r=="string"?r:Na(r);for(var s=n.s.r;s<=n.e.r;++s)for(var f=n.s.c;f<=n.e.c;++f){var o=Rw(e,s,f);o.t="n";o.F=i;delete o.v;if(s==n.s.r&&f==n.s.c){o.f=t;if(a)o.D=true}}return e}var Ww={encode_col:ya,encode_row:Ta,encode_cell:Ra,encode_range:Na,decode_col:Ca,decode_row:ka,split_cell:xa,decode_cell:Oa,decode_range:Ia,format_cell:Pa,sheet_add_aoa:Ma,sheet_add_json:xw,sheet_add_dom:Gm,aoa_to_sheet:Ua,json_to_sheet:Ow,table_to_sheet:jm,table_to_book:Xm,sheet_to_csv:yw,sheet_to_txt:Sw,sheet_to_json:Aw,sheet_to_html:Vm,sheet_to_formulae:_w,sheet_to_row_object_array:Aw,sheet_get_cell:Rw,book_new:Nw,book_append_sheet:Dw,book_set_sheet_visibility:Fw,cell_set_number_format:Pw,cell_set_hyperlink:Lw,cell_set_internal_link:Mw,cell_add_comment:Uw,sheet_set_array_formula:Bw,consts:{SHEET_VISIBLE:0,SHEET_HIDDEN:1,SHEET_VERY_HIDDEN:2}};var Hw;function zw(e){Hw=e}function Vw(e,r){var t=Hw();var a=r==null?{}:r;if(e==null||e["!ref"]==null){t.push(null);return t}var n=Da(e["!ref"]);var i=a.FS!==undefined?a.FS:",",s=i.charCodeAt(0);var f=a.RS!==undefined?a.RS:"\n",o=f.charCodeAt(0);var l=new RegExp((i=="|"?"\\|":i)+"+$");var c="",h=[];a.dense=Array.isArray(e);var u=a.skipHidden&&e["!cols"]||[];var d=a.skipHidden&&e["!rows"]||[];for(var v=n.s.c;v<=n.e.c;++v)if(!(u[v]||{}).hidden)h[v]=ya(v);var p=n.s.r;var g=false,m=0;t._read=function(){if(!g){g=true;return t.push("\ufeff")}while(p<=n.e.r){++p;if((d[p-1]||{}).hidden)continue;c=Cw(e,n,p-1,h,s,o,i,a);if(c!=null){if(a.strip)c=c.replace(l,"");if(c||a.blankrows!==false)return t.push((m++?f:"")+c)}}return t.push(null)};return t}function Gw(e,r){var t=Hw();var a=r||{};var n=a.header!=null?a.header:Bm;var i=a.footer!=null?a.footer:Wm;t.push(n);var s=Ia(e["!ref"]);a.dense=Array.isArray(e);t.push(zm(e,s,a));var f=s.s.r;var o=false;t._read=function(){if(f>s.e.r){if(!o){o=true;t.push("</table>"+i)}return t.push(null)}while(f<=s.e.r){t.push(Um(e,s,f,a));++f;break}};return t}function jw(e,r){var t=Hw({objectMode:true});if(e==null||e["!ref"]==null){t.push(null);return t}var a={t:"n",v:0},n=0,i=1,s=[],f=0,o="";var l={s:{r:0,c:0},e:{r:0,c:0}};var c=r||{};var h=c.range!=null?c.range:e["!ref"];if(c.header===1)n=1;else if(c.header==="A")n=2;else if(Array.isArray(c.header))n=3;switch(typeof h){case"string":l=Da(h);break;case"number":l=Da(e["!ref"]);l.s.r=h;break;default:l=h;}if(n>0)i=0;var u=Ta(l.s.r);var d=[];var v=0;var p=Array.isArray(e);var g=l.s.r,m=0;var b={};if(p&&!e[g])e[g]=[];var w=c.skipHidden&&e["!cols"]||[];var k=c.skipHidden&&e["!rows"]||[];for(m=l.s.c;m<=l.e.c;++m){if((w[m]||{}).hidden)continue;d[m]=ya(m);a=p?e[g][m]:e[d[m]+u];switch(n){case 1:s[m]=m-l.s.c;break;case 2:s[m]=d[m];break;case 3:s[m]=c.header[m-l.s.c];break;default:if(a==null)a={w:"__EMPTY",t:"s"};o=f=Pa(a,null,c);v=b[f]||0;if(!v)b[f]=1;else{do{o=f+"_"+v++}while(b[o]);b[f]=v;b[o]=1}s[m]=o;}}g=l.s.r+i;t._read=function(){while(g<=l.e.r){if((k[g-1]||{}).hidden)continue;var r=Tw(e,l,g,d,n,s,p,c);++g;if(r.isempty===false||(n===1?c.blankrows!==false:!!c.blankrows)){t.push(r.row);return}}return t.push(null)};return t}var Xw={to_json:jw,to_html:Gw,to_csv:Vw,set_readable:zw};if(typeof vm!=="undefined")e.parse_xlscfb=vm;e.parse_zip=Xb;e.read=iw;e.readFile=sw;e.readFileSync=sw;e.write=gw;e.writeFile=bw;e.writeFileSync=bw;e.writeFileAsync=kw;e.utils=Ww;e.writeXLSX=pw;e.writeFileXLSX=ww;e.SSF=Ve;if(typeof Xw!=="undefined")e.stream=Xw;if(typeof Ke!=="undefined")e.CFB=Ke;if(typeof require!=="undefined"){var $w=undefined;if(($w||{}).Readable)zw($w.Readable)}}if(typeof exports!=="undefined")make_xlsx_lib(exports);else if(typeof module!=="undefined"&&module.exports)make_xlsx_lib(module.exports);else if(typeof define==="function"&&define.amd)define("xlsx",function(){if(!XLSX.version)make_xlsx_lib(XLSX);return XLSX});else make_xlsx_lib(XLSX);if(typeof window!=="undefined"&&!window.XLSX)try{window.XLSX=XLSX}catch(e){}
 
 </script>
-    <script>
-/* Performance + compact chart labels: presentation-only, no data/calculation changes. */
-(function () {
-  function ptCompactNumber(value, currency) {
-    var n = Number(value);
-    if (!Number.isFinite(n)) return value;
-    var sign = n < 0 ? '-' : '';
-    n = Math.abs(n);
-    var out = n >= 1e9 ? (n / 1e9).toFixed(1).replace(/\.0$/, '') + 'B'
-      : n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M'
-      : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K'
-      : String(Math.round(n * 100) / 100);
-    return sign + (currency ? '₨' : '') + out;
-  }
-  window.ptCompactChartNumber = ptCompactNumber;
-  if (!window.Chart) return;
-  /* Catch axis tick callbacks used by charts that rely on Chart.js defaults. */
-  var defaults = Chart.defaults;
-  defaults.font = defaults.font || {};
-  defaults.plugins = defaults.plugins || {};
-  defaults.scales = defaults.scales || {};
-  /* Existing explicit callbacks are patched below where their common formats occur. */
-})();
-</script>
     <!-- EmailJS: sends the admin an email whenever someone registers/renews. See EMAILJS_CONFIG below to activate. -->
     <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <!-- Firebase: shared database so registrations/approvals sync across every device. See FIREBASE_CONFIG below to activate. -->
@@ -4506,7 +4482,7 @@ function changeSiteLanguage(language){
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { ticks: { color: muted }, grid: { display: false } },
-                    y: { ticks: { color: muted, callback: v => window.ptCompactChartNumber(v, true) }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    y: { ticks: { color: muted, callback: v => money(v) }, grid: { color: 'rgba(255,255,255,0.05)' } }
                 }
             }
         });
@@ -4750,7 +4726,6 @@ function changeSiteLanguage(language){
     } catch (error) {
       if (typeof disableFirestoreForThisSession === 'function') disableFirestoreForThisSession(error);
       console.warn('Could not sync rep targets to Firebase; local targets remain saved.', error);
-      try { showToast('Cloud unavailable: rep targets were not saved to the cloud. They stay in this browser until the connection returns.', 'warning'); } catch (_) {}
     }
   }
   function read(id) { return text(byId(id)?.value); }
@@ -4981,7 +4956,7 @@ function changeSiteLanguage(language){
     chartInstance = new Chart(canvas.getContext('2d'), { type:'bar', data:{ labels:rows.map(row => row.name), datasets:[
       { label:'Actual Net Sales', data:rows.map(row => row.netAmount), backgroundColor:accent, borderRadius:6, maxBarThickness:30 },
       { label:'Sales Target', data:rows.map(row => row.target), backgroundColor:targetColor, borderRadius:6, maxBarThickness:30 }
-    ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, labels:{ color:muted, boxWidth:11, usePointStyle:true } }, tooltip:{ callbacks:{ label:context => `${context.dataset.label}: ${money(context.raw)}` } } }, scales:{ x:{ ticks:{ color:muted, maxRotation:38, minRotation:0 }, grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ color:muted, callback:value => window.ptCompactChartNumber(value, true) }, grid:{ color:'rgba(128,128,128,.12)' } } } } });
+    ] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, labels:{ color:muted, boxWidth:11, usePointStyle:true } }, tooltip:{ callbacks:{ label:context => `${context.dataset.label}: ${money(context.raw)}` } } }, scales:{ x:{ ticks:{ color:muted, maxRotation:38, minRotation:0 }, grid:{ display:false } }, y:{ beginAtZero:true, ticks:{ color:muted, callback:value => money(value) }, grid:{ color:'rgba(128,128,128,.12)' } } } } });
   }
   function exportRows(list) {
     return list.map(row => ({ Rank:row.rank, 'Rep / Booker':row.name, 'Sales Target':row.target, 'Actual Net Sales':row.netAmount, 'Target Achievement %':row.achievementPct == null ? '' : Number(row.achievementPct.toFixed(2)), 'Remaining Target Amount':row.remainingTarget == null ? '' : row.remainingTarget, 'Sales Growth %':row.growthPct == null ? '' : Number(row.growthPct.toFixed(2)), Invoices:row.invoices, Customers:row.customers, Products:row.products, 'Average Order Value':row.avgOrder, 'Gross Revenue':row.grossAmount, 'Discount %':Number(row.discountPct.toFixed(2)), 'Revenue Share %':Number(row.sharePct.toFixed(2)) }));
@@ -5871,61 +5846,42 @@ function onMeasureModeChange() {
     if (rawData.length) updateAll();
 }
 function measureField() { return measureMode === 'units' ? 'stock' : 'netAmount'; }
-function measureAxisTicks() { return measureMode === 'units' ? { callback: v => window.ptCompactChartNumber(v, false) } : { callback: v => window.ptCompactChartNumber(v, true) }; }
+function measureAxisTicks() { return measureMode === 'units' ? { callback: v => Number(v).toLocaleString() } : { callback: v => '₨'+v.toLocaleString() }; }
 
-/* Base dataset after global and page-level filters.
-   One-pass filtering avoids building intermediate arrays + a Set for every
-   refresh. The result is cached until the dataset or a relevant filter changes. */
-let __ptBaseDataCache = { source: null, signature: '', result: [] };
+/* Base dataset after applying the global Company Group + Month/Quarter filters.
+   All page renderers should read from this instead of rawData directly. */
 function getBaseData() {
+    let data = getGlobalData();
+
+    // Filter out data from disabled files - maintains index correspondence.
+    // PERF: membership via a Set (O(1)) instead of data.includes() inside the
+    // loop (O(n²) — ~27s per call at 300k rows, called ~15× per refresh).
+    // SameValueZero semantics are identical for object references.
+    const inData = (data === rawData) ? null : new Set(data);
+    let filteredData = [];
+    for (let idx = 0; idx < rawData.length; idx++) {
+        const fileId = fileRowMap.get(idx);
+        const fileInfo = uploadedFiles.get(fileId);
+        if (fileInfo && !fileInfo.disabled && (!inData || inData.has(rawData[idx]))) {
+            filteredData.push(rawData[idx]);
+        }
+    }
+    data = filteredData;
+    
     const region = document.getElementById('fRegion')?.value || '';
     const man = document.getElementById('fBookingMan')?.value || '';
     const month = document.getElementById('fMonth')?.value || '';
-    const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-    const fileState = Array.from(uploadedFiles.entries(), ([id, info]) => [id, !!info.disabled]);
-    const signature = JSON.stringify([
-        rawData.length, fileRowMap.size, fileState, globalCompany || '', globalCompanyGroup || '',
-        periodMode || 'all', periodValue || [], region, man, month, search
-    ]);
-    if (__ptBaseDataCache.source === rawData && __ptBaseDataCache.signature === signature) {
-        try { window.originalDataset = rawData; window.filteredDataset = __ptBaseDataCache.result; } catch (e) {}
-        return __ptBaseDataCache.result;
-    }
-
-    const selectedMonths = (periodMode === 'month' && periodValue.length) ? new Set(periodValue) : null;
-    const quarterRanges = (periodMode === 'quarter' && periodValue.length) ? periodValue.map(pv => {
-        const [year, quarterText] = pv.split('-Q');
-        const quarter = parseInt(quarterText, 10);
-        const startMonth = (quarter - 1) * 3 + 1;
-        return { year, startMonth, endMonth: startMonth + 2 };
-    }) : null;
-    const filteredDataset = rawData.filter((row, idx) => {
-        const fileInfo = uploadedFiles.get(fileRowMap.get(idx));
-        if (!fileInfo || fileInfo.disabled) return false;
-        if (globalCompany && row.companyName !== globalCompany) return false;
-        if (globalCompanyGroup && row.companyGroup !== globalCompanyGroup) return false;
-
-        const invoiceDate = String(row.invoiceDate || '');
-        if (selectedMonths && !selectedMonths.has(invoiceDate.substring(0, 7))) return false;
-        if (quarterRanges) {
-            const parts = invoiceDate.split('-');
-            const year = parts[0];
-            const monthNumber = parseInt(parts[1], 10);
-            if (!quarterRanges.some(range => year === range.year && monthNumber >= range.startMonth && monthNumber <= range.endMonth)) return false;
-        }
-        if (region && row.regionName !== region) return false;
-        if (man && row.bookingMan !== man) return false;
-        if (month && !invoiceDate.startsWith(month)) return false;
+    const search = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
+    return data.filter(d => {
+        if (region && d.regionName !== region) return false;
+        if (man && d.bookingMan !== man) return false;
+        if (month && !d.invoiceDate.startsWith(month)) return false;
         if (search) {
-            const text = [row.invoiceId, row.customerName, row.companyName, row.companyGroup, row.itemName, row.bookingMan, row.regionName].join(' ').toLowerCase();
+            const text = [d.invoiceId, d.customerName, d.companyName, d.companyGroup, d.itemName, d.bookingMan, d.regionName].join(' ').toLowerCase();
             if (!text.includes(search)) return false;
         }
         return true;
     });
-
-    __ptBaseDataCache = { source: rawData, signature, result: filteredDataset };
-    try { window.originalDataset = rawData; window.filteredDataset = filteredDataset; } catch (e) {}
-    return filteredDataset;
 }
 
 function getGlobalData() {
@@ -6070,20 +6026,29 @@ function ptCreateRowProcessor() {
         numLike(cell(cells, MI.netAmount, len));      const netNum = _n, netEmp = _e, netOk = _v;
         if (!rateOk) messages.push('Invalid number in Rate');
         if (!stockOk) messages.push('Invalid number in Stock');
+        else if (stockNum < 0) messages.push('Invalid stock quantity (negative)');
         else if (stockNum > 100000000) messages.push('Invalid stock quantity (unrealistic)');
         if (!bonusOk) messages.push('Invalid number in Bonus');
+        else if (bonusNum < 0) messages.push('Invalid Bonus quantity (negative)');
         if (!grossOk) messages.push('Invalid monetary value in Gross Amount');
+        else if (grossNum < 0) messages.push('Invalid monetary value in Gross Amount (negative)');
         if (!discAmtOk) messages.push('Invalid monetary value in Discount Amount');
+        else if (discAmtNum < 0) messages.push('Invalid monetary value in Discount Amount (negative)');
         if (!stAmtOk) messages.push('Invalid monetary value in Sales Tax Amount');
+        else if (stAmtNum < 0) messages.push('Invalid monetary value in Sales Tax Amount (negative)');
         if (!addTaxOk) messages.push('Invalid monetary value in Additional Tax');
+        else if (addTaxNum < 0) messages.push('Invalid monetary value in Additional Tax (negative)');
         if (!awhtAmtOk) messages.push('Invalid monetary value in AWHT Amt');
+        else if (awhtAmtNum < 0) messages.push('Invalid monetary value in AWHT Amt (negative)');
         if (!netOk) messages.push('Invalid monetary value in Net Amount');
+        else if (netNum < 0) messages.push('Invalid monetary value in Net Amount (negative)');
+        if (!rateEmp && rateOk && rateNum < 0) messages.push('Invalid monetary value in Rate (negative)');
         if (!discOk) messages.push('Invalid number in Discount');
-        else if (!discEmp && discNum > 100) messages.push('Invalid Discount % (must be 0–100)');
+        else if (!discEmp && (discNum < 0 || discNum > 100)) messages.push('Invalid Discount % (must be 0–100)');
         if (!stOk) messages.push('Invalid number in Sales Tax');
-        else if (!stEmp && stNum > 100) messages.push('Invalid Sales Tax % (must be 0–100)');
+        else if (!stEmp && (stNum < 0 || stNum > 100)) messages.push('Invalid Sales Tax % (must be 0–100)');
         if (!awhtpOk) messages.push('Invalid number in AWHTP');
-        else if (!awhtpEmp && awhtpNum > 100) messages.push('Invalid AWHTP % (must be 0–100)');
+        else if (!awhtpEmp && (awhtpNum < 0 || awhtpNum > 100)) messages.push('Invalid AWHTP % (must be 0–100)');
         let dateStr = String(cell(cells, MI.invoiceDate, len)).trim();
         if (dateStr.length >= 4 && dateStr.length <= 5) {
             const serial = +dateStr;
@@ -6098,7 +6063,9 @@ function ptCreateRowProcessor() {
         if (itemIdMapped && !itemIdVal) messages.push('Empty Item ID');
         const grossAmt = (grossOk || grossEmp) ? grossNum : 0;
         const netAmt = ((netOk || netEmp) ? netNum : 0) || grossAmt;
-        // Duplicate-looking rows are valid transactions and must never be silently discarded.
+        const dupKey = [String(cell(cells, MI.invoiceId, len)).trim(), itemIdVal || itemName, String(cell(cells, MI.batchNumber, len)).trim(), stockNum, netAmt].join('|').toLowerCase();
+        if (seenKeys.has(dupKey)) messages.push('Duplicate record (same Invoice + Item + Batch + Qty + Net)');
+        else seenKeys.add(dupKey);
         if (messages.length) {
             errBox.rejected++;
             if (errBox.errors.length < errBox.cap) errBox.errors.push({ row: sheetRow, messages });
@@ -6147,8 +6114,6 @@ function ptCreateRowProcessor() {
             supplierLeadTime: toNum(cell(cells, MI.supplierLeadTime, len)),
             minimumStock: toNum(cell(cells, MI.minimumStock, len)),
             reorderLevel: toNum(cell(cells, MI.reorderLevel, len)),
-            // Complete original row is retained so no uploaded column/value is lost.
-            __sourceCells: cells.slice(),
         };
     }
     return { process };
@@ -6435,7 +6400,6 @@ async function handleFile(input) {
                    streaming validated batches back with real progress. */
                 const parsed = await ptParseViaWorker(worker, fileData, ext, file);
                 const headers = (parsed && parsed.headers) || [];
-                pendingHeaders = headers.slice();
                 if (!headers.length || !parsed.totalRows) {
                     showToast(`⚠️ File "${file.name}" appears empty!`, 'warning');
                     uploadedFiles.delete(fileId);
@@ -6686,23 +6650,6 @@ function applyMapping() {
    refreshes filters + dashboard once, then reports Total / Successful /
    Rejected with error details. No UI or behavior change. ── */
 function ptFinishImport(data, total, rejectedCount, rowErrors) {
-    // Preserve every uploaded column exactly as received, while keeping the
-    // existing normalized fields used by the dashboard.
-    const headers = Array.isArray(pendingHeaders) ? pendingHeaders.slice() : [];
-    if (headers.length) {
-        data.forEach(row => {
-            const cells = Array.isArray(row.__sourceCells) ? row.__sourceCells : [];
-            const source = {};
-            headers.forEach((h, i) => {
-                let key = String(h ?? '').trim() || `Column ${i + 1}`;
-                const base = key; let n = 2;
-                while (Object.prototype.hasOwnProperty.call(source, key)) key = `${base} (${n++})`;
-                source[key] = cells[i] === undefined ? '' : cells[i];
-            });
-            row.__sourceColumns = source;
-            delete row.__sourceCells;
-        });
-    }
     const dataStartIndex = rawData.length;
 
     // Track which file each row came from
@@ -6713,7 +6660,6 @@ function ptFinishImport(data, total, rejectedCount, rowErrors) {
     // Append new data to existing data (don't replace).
     // A push loop avoids building a second full copy of the dataset.
     for (let k = 0; k < data.length; k++) rawData.push(data[k]);
-    try { window.originalDataset = rawData; } catch (e) {}
 
     // Update file info with actual accepted row count
     if (uploadedFiles.has(currentFileId)) {
@@ -7516,7 +7462,7 @@ function updateCustomerPageStats(data = getCustomerCatalogData()) {
 }
 
 function topByValue(data, keyField, valField) {
-    const map = Object.create(null); // normKey -> { label, total }; safe for arbitrary imported labels
+    const map = {}; // normKey -> { label, total }
     data.forEach(r => {
         const raw = r[keyField];
         const key = normKey(raw);
@@ -7780,20 +7726,12 @@ function buildTrendSeries(data) {
         const [y, qs] = periodValue[0].split('-Q');
         const q = parseInt(qs, 10);
         const startMonth = (q - 1) * 3 + 1;
-        const monthTotals = [0, 0, 0];
-        // Aggregate in one pass instead of scanning the full dataset three times.
-        data.forEach(r => {
-            if (!r.invoiceDate) return;
-            const dateYear = String(r.invoiceDate).substring(0, 4);
-            const dateMonth = parseInt(String(r.invoiceDate).substring(5, 7), 10);
-            const offset = dateMonth - startMonth;
-            if (dateYear === y && offset >= 0 && offset < 3) monthTotals[offset] += Number(r[mField] || 0);
-        });
         const labels = [], vals = [];
         for (let i = 0; i < 3; i++) {
-            const key = `${y}-${pad2(startMonth + i)}`;
+            const mo = startMonth + i;
+            const key = `${y}-${pad2(mo)}`;
             labels.push(monthLabel(key));
-            vals.push(monthTotals[i]);
+            vals.push(data.filter(r => r.invoiceDate && r.invoiceDate.substring(0,7) === key).reduce((s,r)=>s+r[mField],0));
         }
         return { labels, vals, sub: `Monthly ${isUnits ? 'units sold' : 'net revenue'} — ${quarterLabel(periodValue[0])}` };
     }
@@ -7950,7 +7888,7 @@ function updateCharts() {
             plugins: { legend: { labels: { boxWidth: 12, color: '#c9d2e8' } }, tooltip: { ...premiumTooltip, callbacks: { label: c => `${c.dataset.label}: ${fmt(c.parsed.y)}` } } },
             scales: {
                 x: { grid: { display: false }, stacked: false, ticks: { color: '#c9d2e8' } },
-                y: { grid: { color: 'rgba(232,198,117,0.08)' }, ticks: { callback: v => window.ptCompactChartNumber(v, true), color: '#c9d2e8' }, border: { color: 'rgba(232,198,117,0.2)' } }
+                y: { grid: { color: 'rgba(232,198,117,0.08)' }, ticks: { callback: v => '₨'+v.toLocaleString(), color: '#c9d2e8' }, border: { color: 'rgba(232,198,117,0.2)' } }
             }
         }
     });
@@ -8085,7 +8023,7 @@ function updateCharts() {
                 },
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#c9d2e8' } },
-                    y: { position: 'left', grid: { color: 'rgba(232,198,117,0.08)' }, ticks: { callback: v => window.ptCompactChartNumber(v, true), color: '#c9d2e8' }, border: { color: 'rgba(232,198,117,0.2)' } },
+                    y: { position: 'left', grid: { color: 'rgba(232,198,117,0.08)' }, ticks: { callback: v => '₨' + v.toLocaleString(), color: '#c9d2e8' }, border: { color: 'rgba(232,198,117,0.2)' } },
                     y1: { position: 'right', grid: { display: false }, ticks: { callback: v => v + '%', color: '#f7dfa0' } }
                 }
             }
@@ -8540,7 +8478,7 @@ function updateCustomerCharts(data) {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: true } },
-                scales: { y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => window.ptCompactChartNumber(v, true) } }, x: { grid: { color: 'rgba(48,54,61,0.8)' } } }
+                scales: { y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => fmtK(v) } }, x: { grid: { color: 'rgba(48,54,61,0.8)' } } }
             }
         });
     }
@@ -8656,7 +8594,7 @@ function updateProductCharts(data) {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: true } },
-                scales: { y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => window.ptCompactChartNumber(v, true) } }, x: { grid: { color: 'rgba(48,54,61,0.8)' } } }
+                scales: { y: { grid: { color: 'rgba(48,54,61,0.8)' }, ticks: { callback: v => fmtK(v) } }, x: { grid: { color: 'rgba(48,54,61,0.8)' } } }
             }
         });
     }
@@ -9169,20 +9107,13 @@ const pageInfo = {
     approvals: { title:'Pending Approvals', desc:'Review and approve new registrations & renewals' },
 };
 
-const __ptPageNodes = Object.fromEntries(Array.from(document.querySelectorAll('.page')).map(p => [p.id.replace(/^page-/, ''), p]));
-const __ptNavNodes = Object.fromEntries(Array.from(document.querySelectorAll('.nav-item[data-page]')).map(n => [n.dataset.page, n]));
 function showPage(name) {
-    const target = __ptPageNodes[name] || document.getElementById('page-' + name);
-    if (!target) return;
-    document.querySelector('.page.active')?.classList.remove('active');
-    document.querySelector('.nav-item.active')?.classList.remove('active');
-    target.classList.add('active');
-    __ptNavNodes[name]?.classList.add('active');
-    const info = pageInfo[name];
-    if (info) {
-        document.getElementById('pageTitle').textContent = info.title;
-        document.getElementById('pageDesc').textContent = info.desc;
-    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelector(`.nav-item[data-page="${name}"]`).classList.add('active');
+    document.getElementById('pageTitle').textContent = pageInfo[name].title;
+    document.getElementById('pageDesc').textContent = pageInfo[name].desc;
 }
 
 document.querySelectorAll('.nav-item[data-page]').forEach(el => {
@@ -9191,7 +9122,6 @@ document.querySelectorAll('.nav-item[data-page]').forEach(el => {
 
 /* ═══════════════════════════════════════════════
    SEARCH & PERFORMANCE OPTIMIZATION
-   Includes one-pass base filtering and cached filtered results for large datasets.
 ═══════════════════════════════════════════════ */
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
@@ -9202,14 +9132,13 @@ document.getElementById('searchInput').addEventListener('input', () => {
 });
 
 // Performance: Debounce chart updates
-let chartUpdateFrame = 0;
+let chartUpdateTimeout;
 const originalUpdateCharts = updateCharts;
 updateCharts = function() {
-    if (chartUpdateFrame) cancelAnimationFrame(chartUpdateFrame);
-    chartUpdateFrame = requestAnimationFrame(() => {
-        chartUpdateFrame = 0;
+    clearTimeout(chartUpdateTimeout);
+    chartUpdateTimeout = setTimeout(() => {
         originalUpdateCharts.call(this);
-    });
+    }, 100);
 };
 
 /* ═══════════════════════════════════════════════
@@ -10065,14 +9994,10 @@ function showFirebaseSetupHelp(message) {
 }
 
 function disableFirestoreForThisSession(e) {
-    /* PRODUCTION: Firestore stays the only authority. No error here ever switches the app
-       to a separate local account/data source; it only reports a clear English message. */
-    const kind = ptCloudErrorKind(e);
-    console.error('Cloud error [' + kind + '] (no local fallback):', e);
-    const now = Date.now();
-    if (now - (disableFirestoreForThisSession._last || 0) < 8000) return;
-    disableFirestoreForThisSession._last = now;
-    try { if (typeof showToast === 'function') showToast(ptCloudErrorMessage(e), 'error'); } catch (_) {}
+    if (isFirestorePermissionError(e)) {
+        useFirestore = false;
+        console.warn('Firestore access denied by Firebase Rules; using local storage for this session. Fix Firestore Rules and reload to re-enable cloud sync.');
+    }
 }
 
 function initFirebaseBackend() {
@@ -10113,138 +10038,94 @@ if (!useFirestore && !FIREBASE_CONFIG.apiKey.startsWith('YOUR_')) {
 (function () { if (window.whenFirebaseReady) window.whenFirebaseReady(initFirebaseBackend); else initFirebaseBackend(); })();
 
 
-/* ═══════════════════════════════════════════════════════════════════════
-   CLOUD DATA LAYER — Firestore is the ONLY source of truth for accounts.
-   There is no local account store, no local password check and no silent
-   "falling back to local". localStorage is used only as a read cache.
-═══════════════════════════════════════════════════════════════════════ */
-(function () { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} })(); /* purge stale local accounts / old password hashes */
-
-function ptCloudErrorKind(e) {
-    if (e && e.ptKind) return e.ptKind;
-    const code = String(e && e.code || '').toLowerCase();
-    const msg = String(e && e.message || e || '').toLowerCase();
-    if (code.includes('permission-denied') || msg.includes('missing or insufficient permissions') || msg.includes('permission-denied')) return 'permission-denied';
-    if (code.startsWith('auth/') || code.includes('unauthenticated')) return 'auth';
-    if (code.includes('network-request-failed') || code.includes('deadline-exceeded') || msg.includes('timed out') || msg.includes('failed to fetch') ||
-        (typeof navigator !== 'undefined' && navigator.onLine === false)) return 'network';
-    if (code.includes('not-found')) return 'missing';
-    if (code.includes('unavailable') || msg.includes('unavailable')) return 'unavailable';
-    return 'unknown';
+function localGetAll() {
+    try { return JSON.parse(localStorage.getItem(AUTH_KEY) || '[]'); } catch { return []; }
 }
-const PT_CLOUD_MESSAGES = {
-    'unavailable': 'Cloud unavailable. PharmaTracker could not reach the cloud service. Please check your connection and try again.',
-    'network': 'Cloud unavailable (network problem). Please check your internet connection and try again.',
-    'permission-denied': 'Cloud access denied. Your account is not allowed to perform this action. Please sign in again or contact support.',
-    'auth': 'Cloud sign-in problem. Please sign in again.',
-    'missing': 'The requested cloud record was not found.',
-    'unknown': 'Cloud error. Please try again.'
-};
-function ptCloudErrorMessage(e) { return PT_CLOUD_MESSAGES[ptCloudErrorKind(e)] || PT_CLOUD_MESSAGES.unknown; }
-function ptCloudError(e, action) {
-    const kind = ptCloudErrorKind(e);
-    const err = new Error(PT_CLOUD_MESSAGES[kind] || PT_CLOUD_MESSAGES.unknown);
-    err.ptKind = kind;
-    err.code = (e && e.code) || ('cloud/' + kind);
-    err.originalError = e;
-    err.ptAction = action || '';
-    return err;
-}
-function ptRequireCloud() {
-    if (!useFirestore || !db) throw ptCloudError({ ptKind: 'unavailable' }, 'init');
-}
+function localSaveAll(users) { localStorage.setItem(AUTH_KEY, JSON.stringify(users)); }
 
 async function getAllUsers() {
-    ptRequireCloud();
-    try {
-        const snap = await db.collection('users').get();
-        return snap.docs.map(d => { const u = d.data(); delete u.pw; delete u.resetCode; delete u.resetCodeExpiry; return u; });
-    } catch (e) {
-        disableFirestoreForThisSession(e);
-        throw ptCloudError(e, 'read users');
+    const localUsers = localGetAll();
+
+    if (useFirestore) {
+        try {
+            const snap = await db.collection('users').get();
+            const firestoreUsers = snap.docs.map(d => d.data());
+            const firestoreEmails = new Set(
+                firestoreUsers.map(u => String(u.email || '').toLowerCase())
+            );
+
+            // Keep legacy/local accounts usable after Firebase is enabled.
+            // Only migrate accounts that do not already exist in Firestore.
+            for (const user of localUsers) {
+                const email = String(user.email || '').toLowerCase();
+                if (email && !firestoreEmails.has(email)) {
+                    try {
+                        await db.collection('users').doc(email).set(user);
+                        firestoreUsers.push(user);
+                        firestoreEmails.add(email);
+                    } catch (e) {
+                        console.warn('Could not migrate local user to Firestore:', email, e);
+                    }
+                }
+            }
+            return firestoreUsers;
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Firestore read failed, falling back to local:', e);
+        }
     }
+    return localUsers;
 }
 
 async function getUserByEmail(email) {
-    email = String(email || '').trim().toLowerCase();
-    if (!email) return null;
-    ptRequireCloud();
-    try {
-        const doc = await db.collection('users').doc(email).get();
-        return doc.exists ? doc.data() : null; /* a missing doc is simply "no account" — never a local lookup */
-    } catch (e) {
-        disableFirestoreForThisSession(e);
-        throw ptCloudError(e, 'read user');
+    email = (email || '').trim().toLowerCase();
+    const localUser = localGetAll().find(
+        u => String(u.email || '').trim().toLowerCase() === email
+    ) || null;
+
+    if (useFirestore) {
+        try {
+            const doc = await db.collection('users').doc(email).get();
+
+            // IMPORTANT: a missing Firestore document must not hide an existing
+            // account that was created by an older/local version of the app.
+            if (doc.exists) return doc.data();
+
+            if (localUser) {
+                try {
+                    await db.collection('users').doc(email).set(localUser);
+                } catch (e) {
+                    console.warn('Could not migrate local login account to Firestore:', e);
+                }
+                return localUser;
+            }
+            return null;
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Firestore read failed, falling back to local:', e);
+            return localUser;
+        }
     }
+
+    return localUser;
 }
-
-/* Fields a NON-admin may change on their own users/{email} doc (mirrors firestore.rules).
-   Profile fields and subscription REQUEST fields are written in two separate updates because
-   the rules evaluate them as two separate permitted shapes. */
-const PT_SELF_PROFILE_KEYS = ['fname', 'lname', 'company', 'hasSeenSample', 'firebaseUid'];
-const PT_SELF_REQUEST_KEYS = ['status', 'isRenewal', 'requestType', 'previousPlanId', 'requestedPlanId',
-                              'paymentMethod', 'transactionId', 'pendingSince', 'paymentStatus'];
-function ptSameValue(a, b) { return JSON.stringify(a === undefined ? null : a) === JSON.stringify(b === undefined ? null : b); }
-function ptIsAdminActor() { return !!(typeof currentUser !== 'undefined' && currentUser && currentUser.role === 'admin'); }
-
 async function saveUser(user) {
-    ptRequireCloud();
-    const email = String(user && user.email || '').trim().toLowerCase();
-    if (!email) throw new Error('Cannot save an account without an email address.');
-    const ref = db.collection('users').doc(email);
-    try {
-        /* Admin: approval / rejection / user management — full document write. */
-        if (ptIsAdminActor()) {
-            const clean = JSON.parse(JSON.stringify(user)); /* drops undefined */
-            delete clean.resetCode; delete clean.resetCodeExpiry;
-            await ref.set(clean);
-            return { written: true, mode: 'admin' };
-        }
-
-        /* Everyone else: only their own doc, only the permitted keys. */
-        const me = typeof currentUser !== 'undefined' && currentUser ? String(currentUser.email || '').toLowerCase() : '';
-        const authEmail = (window.firebase && firebase.auth && firebase.auth().currentUser)
-            ? String(firebase.auth().currentUser.email || '').toLowerCase() : '';
-        if (email !== me && email !== authEmail) throw ptCloudError({ code: 'permission-denied' }, 'save other user');
-
-        const snap = await ref.get();
-        if (!snap.exists) throw ptCloudError({ code: 'not-found' }, 'save user');
-        const old = snap.data() || {};
-
-        const profilePatch = {};
-        PT_SELF_PROFILE_KEYS.forEach(k => {
-            if (user[k] !== undefined && !ptSameValue(user[k], old[k])) profilePatch[k] = user[k];
-        });
-
-        const requestPatch = {};
-        if (user.status === 'pending') {
-            const candidate = Object.assign({}, user);
-            /* planId (the ACTIVE plan) can never be self-written; a plan choice travels as requestedPlanId. */
-            if (candidate.planId && candidate.planId !== old.planId && !candidate.requestedPlanId) candidate.requestedPlanId = candidate.planId;
-            PT_SELF_REQUEST_KEYS.forEach(k => {
-                if (candidate[k] !== undefined && !ptSameValue(candidate[k], old[k])) requestPatch[k] = candidate[k];
-            });
-            if (Object.keys(requestPatch).length) requestPatch.paymentStatus = 'pending_verification';
-        } else if (user.status !== undefined && user.status !== old.status) {
-            console.warn('Ignored a client-side attempt to change account status; status is admin-controlled.');
-        }
-
-        let wrote = false;
-        if (Object.keys(profilePatch).length) { await ref.update(profilePatch); wrote = true; }
-        if (Object.keys(requestPatch).length) { await ref.update(requestPatch); wrote = true; }
-        return { written: wrote, mode: 'self' };
-    } catch (e) {
-        if (e && e.ptKind) throw e;
-        disableFirestoreForThisSession(e);
-        throw ptCloudError(e, 'save user');
+    if (useFirestore) {
+        try { await db.collection('users').doc(user.email.toLowerCase()).set(user); return; }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore write failed, falling back to local:', e); }
     }
+    const users = localGetAll();
+    const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx >= 0) users[idx] = user; else users.push(user);
+    localSaveAll(users);
 }
-
 async function deleteUserByEmail(email) {
-    email = String(email || '').trim().toLowerCase();
-    ptRequireCloud();
-    try { await db.collection('users').doc(email).delete(); }
-    catch (e) { disableFirestoreForThisSession(e); throw ptCloudError(e, 'delete user'); }
+    email = (email || '').toLowerCase();
+    if (useFirestore) {
+        try { await db.collection('users').doc(email).delete(); return; }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore delete failed, falling back to local:', e); }
+    }
+    localSaveAll(localGetAll().filter(u => u.email.toLowerCase() !== email));
 }
 
 function getSession() { return localStorage.getItem(SESSION_KEY); }
@@ -10275,17 +10156,14 @@ let subSettings = null;
 
 async function getSubscriptionSettings() {
     let data = null;
-    try {
-        ptRequireCloud();
-        const doc = await db.collection('appSettings').doc('subscription').get();
-        if (doc.exists) {
-            data = doc.data();
-            try { localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(data)); } catch (_) {} /* read cache only */
-        }
-    } catch (e) {
-        disableFirestoreForThisSession(e);
-        /* Read-only display cache so the signup page can still show payment details. Never authoritative. */
-        try { data = JSON.parse(localStorage.getItem(SUB_SETTINGS_KEY) || 'null'); } catch (_) { data = null; }
+    if (useFirestore) {
+        try {
+            const doc = await db.collection('appSettings').doc('subscription').get();
+            if (doc.exists) data = doc.data();
+        } catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore settings read failed, falling back to local:', e); }
+    }
+    if (!data) {
+        try { data = JSON.parse(localStorage.getItem(SUB_SETTINGS_KEY) || 'null'); } catch (e) { data = null; }
     }
     if (!data) return { ...DEFAULT_SUBSCRIPTION_SETTINGS, plans: DEFAULT_SUBSCRIPTION_SETTINGS.plans.map(p => ({...p})) };
     return {
@@ -10295,16 +10173,11 @@ async function getSubscriptionSettings() {
     };
 }
 async function saveSubscriptionSettingsData(settings) {
-    try {
-        ptRequireCloud();
-        await db.collection('appSettings').doc('subscription').set(settings);
-    } catch (e) {
-        disableFirestoreForThisSession(e);
-        try { showToast(ptCloudErrorMessage(e) + ' Your settings were NOT saved.', 'error'); } catch (_) {}
-        return false;
+    localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(settings));
+    if (useFirestore) {
+        try { await db.collection('appSettings').doc('subscription').set(settings); }
+        catch (e) { disableFirestoreForThisSession(e); console.warn('Firestore settings write failed, kept locally only:', e); }
     }
-    try { localStorage.setItem(SUB_SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} /* cache updated only after the cloud accepted it */
-    return true;
 }
 async function loadSubscriptionSettings() {
     subSettings = await getSubscriptionSettings();
@@ -10374,7 +10247,24 @@ function getPlanById(id) {
     return all.find(p => p.id === id) || getActivePlans()[0] || all[0];
 }
 
+// Move only the original seeded account to the owner's new email address.
+async function migrateLegacyOwnerAccount() {
+    const legacy = await getUserByEmail(LEGACY_OWNER_EMAIL);
+    if (!legacy || legacy.id !== 'demo-admin') return;
+    if (await getUserByEmail(OWNER_EMAIL)) return;
 
+    const migrated = { ...legacy, email: OWNER_EMAIL, role: 'admin', status: 'active', validUntil: null };
+    await saveUser(migrated);
+    await deleteUserByEmail(LEGACY_OWNER_EMAIL);
+    if (getSession() === LEGACY_OWNER_EMAIL) saveSession(OWNER_EMAIL);
+}
+
+// Simple hash (not cryptographic — suitable for this kind of internal tool)
+function hashPw(pw) {
+    let h = 0;
+    for (let i = 0; i < pw.length; i++) { h = Math.imul(31, h) + pw.charCodeAt(i) | 0; }
+    return h.toString(36) + pw.length.toString(36) + pw.split('').reverse().slice(0,3).join('').split('').map(c=>c.charCodeAt(0).toString(16)).join('');
+}
 
 /* ── EmailJS: sends the admin an email whenever someone registers/renews ──
    1. Create a free account at https://www.emailjs.com
@@ -10386,6 +10276,10 @@ function getPlanById(id) {
 const EMAILJS_CONFIG = {
     serviceId: 'service_0akum4k',
     templateId: 'template_fva366d',
+    // Password-reset emails use a SEPARATE template (sent to the USER, not the admin).
+    // Create a new template in EmailJS with variables: {{to_email}} {{user_name}} {{reset_code}}
+    // and set its "To Email" field to {{to_email}}. Then paste its Template ID below.
+    resetTemplateId: 'template_y22eszf',
     publicKey: 'EwHEfXfL6Ty_r_Bp_',
     adminEmail: 'ranawaseembkr91@gmail.com'
 };
@@ -10402,47 +10296,36 @@ function sendAdminNotification(user, isRenewal) {
         console.warn('EmailJS not configured yet — check the Approvals tab in the dashboard instead.');
         return;
     }
-    /* Request types: New Registration / Renewal / Plan Upgrade / Recharge. An upgrade is NEVER labelled "Renewal". */
-    const rt = user.requestType || (isRenewal ? 'renewal' : 'registration');
-    const typeLabel = ({ plan_upgrade: 'Plan Upgrade', recharge: 'Recharge', renewal: 'Renewal', registration: 'New Registration' })[rt] || (isRenewal ? 'Renewal' : 'New Registration');
-    const planLabel = id => !id ? '—' : (id === 'trial' ? 'Free Trial' : ((getPlanById(id) || {}).name || id));
-    const reqId = user.requestedPlanId || user.planId;
-    const plan = (reqId && reqId !== 'trial') ? getPlanById(reqId) : null;
-    const isCard = user.paymentMethod === 'card';
-    const amount = isCard ? ('$' + (plan && plan.priceIntl != null ? plan.priceIntl : 20)) : ('Rs. ' + (plan ? plan.priceLocal : REGISTRATION_FEE));
-    const methodLabel = isCard ? 'Card (Intl.)' : (user.paymentMethod === 'easypaisa' ? 'EasyPaisa' : 'JazzCash');
-    const prevName = planLabel(user.previousPlanId);
-    const reqName = planLabel(reqId);
-    const planChange = (rt === 'plan_upgrade') ? (prevName + ' → ' + reqName) : reqName;
-    const dateStr = new Date().toLocaleString('en-GB');
-    const details = [
-        'Request Type: ' + typeLabel,
-        'Previous → Requested Plan: ' + (rt === 'plan_upgrade' ? planChange : ('— → ' + reqName)),
-        'Payment Method: ' + methodLabel,
-        'Transaction ID: ' + (user.transactionId || '—'),
-        'Amount: ' + amount,
-        'Date: ' + dateStr
-    ].join('\n');
+    const plan = user.planId ? getPlanById(user.planId) : null;
     const params = {
         to_email: EMAILJS_CONFIG.adminEmail,
-        user_name: (user.fname || '') + ' ' + (user.lname || ''),
+        user_name: (user.fname||'') + ' ' + (user.lname||''),
         user_email: user.email,
         company: user.company || '—',
-        amount: amount,
-        method: methodLabel,
-        txn_id: user.transactionId || '—',
-        type: typeLabel,
-        request_type: typeLabel,
-        previous_plan: prevName,
-        requested_plan: reqName,
-        plan_change: planChange,
-        date: dateStr,
-        details: details
+        amount: (plan ? plan.priceLocal : REGISTRATION_FEE),
+        method: user.paymentMethod,
+        txn_id: user.transactionId,
+        type: isRenewal ? 'Renewal' : 'New Registration'
     };
     emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.templateId, params)
         .catch(err => console.warn('EmailJS send failed:', err));
+
 }
 
+function sendResetCodeEmail(user, code) {
+    if (!window.emailjs || EMAILJS_CONFIG.resetTemplateId.startsWith('YOUR_') || EMAILJS_CONFIG.publicKey.startsWith('YOUR_')) {
+        console.warn('EmailJS reset template not configured yet — reset code was generated but no email was sent.');
+        return false;
+    }
+    const params = {
+        to_email: user.email,
+        user_name: (user.fname || '') + ' ' + (user.lname || ''),
+        reset_code: code
+    };
+    emailjs.send(EMAILJS_CONFIG.serviceId, EMAILJS_CONFIG.resetTemplateId, params)
+        .catch(err => console.warn('EmailJS reset send failed:', err));
+    return true;
+}
 
 /* ── JazzCash / EasyPaisa payment box (+ secure international card checkout) ──
    Numbers/IBAN/plan prices now come from subSettings (Admin Settings),
@@ -10602,34 +10485,18 @@ async function doAccountRecharge() {
     if ((typeof selectedPay !== 'undefined' && selectedPay.recharge === 'card')) { errEl.textContent = 'Card payments use the "Pay securely" button above — no Transaction ID needed. Your plan activates after verification.'; errEl.classList.add('show'); return; }
     if (!txnId) { errEl.textContent = 'Transaction ID is required.'; errEl.classList.add('show'); return; }
 
-    /* A recharge changes a protected account, so the person must be signed in as that account. */
-    const fbUser = (window.firebase && firebase.auth) ? firebase.auth().currentUser : null;
-    if (!fbUser || String(fbUser.email || '').toLowerCase() !== email) {
-        errEl.textContent = 'Please sign in with this email address first. If your subscription has expired, the renewal screen appears right after you sign in.';
-        errEl.classList.add('show'); return;
-    }
-    let user;
-    try { user = await getUserByEmail(email); }
-    catch (e) { errEl.textContent = ptCloudErrorMessage(e); errEl.classList.add('show'); return; }
+    const user = await getUserByEmail(email);
     if (!user) { errEl.textContent = 'No account found with this email address.'; errEl.classList.add('show'); return; }
     if (!user.validUntil) { errEl.textContent = 'This account does not require a recharge.'; errEl.classList.add('show'); return; }
 
     const plan = ensureSelectedPlan('recharge');
-    const prevPlan = user.planId || (user.subscription && user.subscription.currentPlan) || null;
     user.status = 'pending';
     user.isRenewal = true;
-    user.requestType = 'recharge';
-    user.previousPlanId = prevPlan;
-    user.requestedPlanId = plan ? plan.id : prevPlan;
     user.paymentMethod = selectedPay.recharge;
     user.transactionId = txnId;
-    user.paymentStatus = 'pending_verification';
+    if (plan) user.planId = plan.id;
     user.pendingSince = new Date().toISOString();
-    try {
-        await saveUser(user);
-    } catch (e) { errEl.textContent = ptCloudErrorMessage(e) + ' Your request was not submitted.'; errEl.classList.add('show'); return; }
-    try { await appendHistory(user, 'recharge_submitted', user.requestedPlanId, { transactionId: txnId, previousPlanId: prevPlan || null, requestedPlanId: user.requestedPlanId || null }); }
-    catch (e) { console.warn('Could not record recharge history:', e); }
+    await saveUser(user);
     sendAdminNotification(user, true);
 
     document.getElementById('pending-title').textContent = 'Recharge Request Submitted!';
@@ -10645,12 +10512,38 @@ const ROLE_COLORS = { admin:'#ffa657', analyst:'#58a6ff', manager:'#bc8cff', vie
 const ROLE_LABELS = { admin:'Admin', analyst:'Analyst', manager:'Manager', viewer:'Viewer' };
 
 async function initAuth() {
-    /* Replaced by the Firebase Authentication boot code as soon as the SDK loads.
-       Reaching this body means the cloud SDK is unavailable: there are NO local accounts
-       and NO demo admin any more, so the only honest answer is a clear error. */
+    await migrateLegacyOwnerAccount();
+    const sessionEmail = getSession();
+    if (sessionEmail) {
+        const found = await getUserByEmail(sessionEmail);
+        if (found && found.status === 'active') {
+            currentUser = found;
+            loginSuccess(found, false);
+            return;
+        }
+    }
     document.getElementById('marketing-root').classList.remove('hidden');
-    const el = document.getElementById('login-error');
-    if (el) { el.textContent = 'Cloud unavailable. PharmaTracker cannot sign you in right now. Please check your internet connection and reload the page.'; el.classList.add('show'); }
+
+    // Seed the owner's admin account if no users exist yet
+    const all = await getAllUsers();
+    if (all.length === 0) {
+        const demo = {
+            id: 'owner-admin',
+            fname: 'Muhammad', lname: 'Waseem',
+            email: OWNER_EMAIL,
+            company: 'Noor Distributor',
+            role: 'admin',
+            pw: hashPw('demo1234'),
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            approvedAt: new Date().toISOString(),
+            validUntil: null, // owner admin never expires
+            hasSeenSample: true
+        };
+        await saveUser(demo);
+        document.getElementById('login-success').textContent = 'Admin account ready → ' + OWNER_EMAIL + '. Please use your Firebase password.';
+        document.getElementById('login-success').classList.add('show');
+    }
 }
 
 async function ptEnsureUserDataset(user) {
@@ -10744,10 +10637,51 @@ function loginSuccess(user, newLogin = true) {
 }
 
 async function doLogin() {
-    const el = document.getElementById('login-error');
-    if (el) { el.textContent = 'Cloud unavailable. Sign-in needs the cloud service. Please check your internet connection and reload the page.'; el.classList.add('show'); }
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const pw = document.getElementById('login-password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.classList.remove('show');
+
+    if (!email || !pw) { errEl.textContent = 'Please enter your email and password.'; errEl.classList.add('show'); return; }
+
+    const user = await getUserByEmail(email);
+    if (!user || user.pw !== hashPw(pw)) {
+        errEl.textContent = 'Invalid email or password. Please try again.';
+        errEl.classList.add('show');
+        document.getElementById('login-email').classList.add('error');
+        document.getElementById('login-password').classList.add('error');
+        return;
+    }
+
+    // If this was a legacy/local account, keep its working credentials in
+    // Firestore as soon as the user successfully logs in.
+    if (useFirestore) {
+        try {
+            await db.collection('users').doc(email).set(user);
+        } catch (e) {
+            disableFirestoreForThisSession(e);
+            console.warn('Could not sync logged-in user to Firestore:', e);
+        }
+    }
+
+    document.getElementById('login-email').classList.remove('error');
+    document.getElementById('login-password').classList.remove('error');
+
+    if (user.status === 'pending') {
+        errEl.textContent = 'Your account is awaiting admin approval. Please wait until the payment is verified.';
+        errEl.classList.add('show');
+        return;
+    }
+
+    if (user.status === 'active' && user.validUntil && new Date(user.validUntil) < new Date()) {
+        showRenewForm(user);
+        return;
+    }
+
+    loginSuccess(user);
 }
 
+let resetTargetEmail = null;
 
 function showForgotForm() {
     document.getElementById('forgot-email').value = '';
@@ -10758,15 +10692,83 @@ function showForgotForm() {
     document.getElementById('form-forgot').classList.add('active');
 }
 
+function genResetCode() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+}
 
 async function doForgotPassword() {
-    const el = document.getElementById('forgot-error');
-    if (el) { el.textContent = 'Cloud unavailable. Password reset needs the cloud service. Please check your internet connection and reload the page.'; el.classList.add('show'); }
+    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+    const errEl = document.getElementById('forgot-error');
+    const okEl = document.getElementById('forgot-success');
+    errEl.classList.remove('show');
+    okEl.classList.remove('show');
+
+    if (!email) { errEl.textContent = 'Please enter your email address.'; errEl.classList.add('show'); return; }
+
+    const user = await getUserByEmail(email);
+    if (!user) {
+        // Don't reveal whether the email exists — just show a generic message either way.
+        okEl.textContent = 'If this email is registered, a reset code has been sent. Please check your inbox.';
+        okEl.classList.add('show');
+        return;
+    }
+
+    const code = genResetCode();
+    user.resetCode = code;
+    user.resetCodeExpiry = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // valid for 30 minutes
+    await saveUser(user);
+
+    const sent = sendResetCodeEmail(user, code);
+    resetTargetEmail = email;
+
+    document.getElementById('reset-error').classList.remove('show');
+    document.getElementById('reset-success').classList.remove('show');
+    document.getElementById('reset-code').value = '';
+    document.getElementById('reset-password').value = '';
+    document.getElementById('reset-confirm').value = '';
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+    document.getElementById('form-reset').classList.add('active');
+
+    if (!sent) {
+        // Email not configured yet — show the code directly so testing still works.
+        document.getElementById('reset-success').textContent = `Reset code: ${code} (email is not configured yet — the code is shown here directly)`;
+        document.getElementById('reset-success').classList.add('show');
+    } else {
+        showToast('A reset code has been sent to your email.', 'success');
+    }
 }
 
 async function doResetPassword() {
-    const el = document.getElementById('reset-error');
-    if (el) { el.textContent = 'Reset codes are no longer used. Please use the password reset link that was sent to your email.'; el.classList.add('show'); }
+    const code = document.getElementById('reset-code').value.trim();
+    const pw = document.getElementById('reset-password').value;
+    const confirm = document.getElementById('reset-confirm').value;
+    const errEl = document.getElementById('reset-error');
+    const okEl = document.getElementById('reset-success');
+    errEl.classList.remove('show');
+
+    if (!resetTargetEmail) { errEl.textContent = 'Session expired. Please try again.'; errEl.classList.add('show'); return; }
+    if (!code) { errEl.textContent = 'Please enter the reset code.'; errEl.classList.add('show'); return; }
+    if (!pw || pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+
+    const user = await getUserByEmail(resetTargetEmail);
+    if (!user || !user.resetCode) { errEl.textContent = 'No reset request found. Please request a new code.'; errEl.classList.add('show'); return; }
+    if (user.resetCode !== code) { errEl.textContent = 'The reset code is incorrect.'; errEl.classList.add('show'); return; }
+    if (new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'The reset code has expired. Please request a new one.'; errEl.classList.add('show'); return; }
+
+    user.pw = hashPw(pw);
+    delete user.resetCode;
+    delete user.resetCodeExpiry;
+    await saveUser(user);
+
+    resetTargetEmail = null;
+    okEl.textContent = 'Password reset successful! Sign in with your new password.';
+    okEl.classList.add('show');
+    setTimeout(() => {
+        backToLogin();
+        document.getElementById('login-email').value = user.email;
+    }, 1200);
 }
 
 function showRenewForm(user) {
@@ -10790,9 +10792,7 @@ async function doRenew() {
     if ((typeof selectedPay !== 'undefined' && selectedPay.renew === 'card')) { const rErr = document.getElementById('renew-error'); if (rErr) { rErr.textContent = 'Card payments use the "Pay securely" button above — no Transaction ID needed. Your plan activates after verification.'; rErr.classList.add('show'); } return; }
     if (!txnId) { showToast('Please enter the Transaction ID.', 'error'); return; }
 
-    let user;
-    try { user = await getUserByEmail(renewTargetEmail); }
-    catch (e) { showToast(ptCloudErrorMessage(e), 'error'); return; }
+    const user = await getUserByEmail(renewTargetEmail);
     if (!user) { showToast('Account not found.', 'error'); return; }
 
     const plan = ensureSelectedPlan('renew');
@@ -10809,10 +10809,8 @@ async function doRenew() {
     user.transactionId = txnId;
     /* Keep the requested plan separate from the active entitlement until admin approval. */
     user.planId = previousPlanId || (plan ? plan.id : null);
-    user.paymentStatus = 'pending_verification'; /* payment is NOT verified until an admin (or the Stripe webhook) says so */
     user.pendingSince = new Date().toISOString();
-    try { await saveUser(user); }
-    catch (e) { showToast(ptCloudErrorMessage(e) + ' Your request was not submitted.', 'error'); return; }
+    await saveUser(user);
     sendAdminNotification(user, true);
 
     document.getElementById('renew-txnid').value = '';
@@ -10824,8 +10822,61 @@ async function doRenew() {
 }
 
 function doSignup() {
-    const el = document.getElementById('signup-error');
-    if (el) { el.textContent = 'Cloud unavailable. Registration needs the cloud service. Please check your internet connection and reload the page.'; el.classList.add('show'); }
+    const fname = document.getElementById('signup-fname').value.trim();
+    const lname = document.getElementById('signup-lname').value.trim();
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
+    const company = document.getElementById('signup-company').value.trim();
+    const pw = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    const txnId = document.getElementById('signup-txnid').value.trim();
+    const roleEl = document.querySelector('.role-option.selected');
+    let role = roleEl ? roleEl.dataset.role : 'analyst';
+    if (role === 'admin') role = 'analyst'; /* public signups can never create an admin */
+    const errEl = document.getElementById('signup-error');
+    const okEl = document.getElementById('signup-success');
+    errEl.classList.remove('show'); okEl.classList.remove('show');
+
+    if (!fname) { errEl.textContent = 'First name is required.'; errEl.classList.add('show'); return; }
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
+    if (!company) { errEl.textContent = 'Company name is required.'; errEl.classList.add('show'); return; }
+    if (pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+    if (!txnId) { errEl.textContent = 'Payment Transaction ID is required.'; errEl.classList.add('show'); return; }
+
+    (async () => {
+        const existing = await getUserByEmail(email);
+        if (existing) {
+            errEl.textContent = 'An account with this email already exists.';
+            errEl.classList.add('show'); return;
+        }
+
+        const signupPlan = ensureSelectedPlan('signup');
+        const newUser = {
+            id: 'u_' + Date.now(),
+            fname, lname, email, company, role,
+            pw: hashPw(pw),
+            status: 'pending',
+            isRenewal: false,
+            paymentMethod: selectedPay.signup,
+            transactionId: txnId,
+            planId: signupPlan ? signupPlan.id : null,
+            pendingSince: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            hasSeenSample: false
+        };
+        await saveUser(newUser);
+        sendAdminNotification(newUser, false);
+
+        okEl.textContent = '✅ Registration submitted! Waiting for approval…';
+        okEl.classList.add('show');
+        document.getElementById('pending-title').textContent = 'Registration Submitted!';
+        document.getElementById('pending-text').textContent = 'Your registration request has been sent to the admin. Your account will be activated after the payment is verified.';
+        setTimeout(() => {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('form-pending').classList.add('active');
+        }, 700);
+    })();
 }
 
 function backToLogin() {
@@ -10897,16 +10948,29 @@ function saveProfile() {
         currentUser.fname = fname;
         currentUser.lname = lname;
         currentUser.company = company;
-        try { await saveUser(currentUser); }
-        catch (e) { showToast(ptCloudErrorMessage(e) + ' Your profile was NOT saved.', 'error'); return; }
+        await saveUser(currentUser);
         document.getElementById('sidebar-user-name').textContent = fname + ' ' + lname;
         if (document.getElementById('gl-topbar-name')) { document.getElementById('gl-topbar-name').textContent = fname + ' ' + lname; }
         showToast('Profile updated!', 'success');
     })();
 }
 
-async function changePassword() {
-    showToast('Cloud unavailable. Password changes need the cloud service. Please reload the page.', 'error');
+function changePassword() {
+    const cur = document.getElementById('pw-current').value;
+    const nw = document.getElementById('pw-new').value;
+    const cnf = document.getElementById('pw-confirm').value;
+    if (!cur || !nw || !cnf) { showToast('Fill all password fields.', 'error'); return; }
+    if (nw.length < 6) { showToast('New password must be 6+ characters.', 'error'); return; }
+    if (nw !== cnf) { showToast('Passwords do not match.', 'error'); return; }
+    (async () => {
+        if (currentUser.pw !== hashPw(cur)) { showToast('Current password is incorrect.', 'error'); return; }
+        currentUser.pw = hashPw(nw);
+        await saveUser(currentUser);
+        document.getElementById('pw-current').value = '';
+        document.getElementById('pw-new').value = '';
+        document.getElementById('pw-confirm').value = '';
+        showToast('Password changed successfully!', 'success');
+    })();
 }
 
 /* Users tab (admin only) — currently no page renders this container; kept for future use */
@@ -10916,9 +10980,7 @@ async function renderUsersTab() {
     const adminOnly = document.getElementById('admin-only-section');
     if (adminOnly) adminOnly.style.display = currentUser?.role === 'admin' ? 'block' : 'none';
 
-    let users;
-    try { users = await getAllUsers(); }
-    catch (e) { el.innerHTML = '<div style="font-size:12px;color:var(--muted)">' + mktPriceEscape(ptCloudErrorMessage(e)) + '</div>'; return; }
+    const users = await getAllUsers();
     el.innerHTML = users.map(u => {
         const initials = ((u.fname||'?')[0] + ((u.lname||'')[0]||'')).toUpperCase();
         const col = ROLE_COLORS[u.role] || '#8b949e';
@@ -10926,11 +10988,11 @@ async function renderUsersTab() {
         return `<div class="user-row">
             <div class="user-row-avatar" style="background:linear-gradient(135deg,${col},#bc8cff)">${initials}</div>
             <div class="user-row-info">
-                <div class="user-row-name">${mktPriceEscape(u.fname)} ${mktPriceEscape(u.lname||'')} ${isSelf ? '<span style="font-size:10px;color:var(--muted)">(you)</span>':''}</div>
-                <div class="user-row-meta">${mktPriceEscape(u.email)} · ${mktPriceEscape(u.company||'—')}</div>
+                <div class="user-row-name">${u.fname} ${u.lname||''} ${isSelf ? '<span style="font-size:10px;color:var(--muted)">(you)</span>':''}</div>
+                <div class="user-row-meta">${u.email} · ${u.company||'—'}</div>
             </div>
             <span class="user-row-badge badge-${u.role}">${ROLE_LABELS[u.role]||u.role}</span>
-            ${currentUser?.role==='admin' && !isSelf ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deleteUser(${mktPriceEscape(JSON.stringify(String(u.email)))})"><i class="fas fa-trash"></i></button>` : ''}
+            ${currentUser?.role==='admin' && !isSelf ? `<button class="btn btn-danger" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${u.email}')"><i class="fas fa-trash"></i></button>` : ''}
         </div>`;
     }).join('');
 }
@@ -10938,8 +11000,7 @@ async function renderUsersTab() {
 function deleteUser(email) {
     if (!confirm('Remove this user?')) return;
     (async () => {
-        try { await deleteUserByEmail(email); }
-        catch (e) { showToast(ptCloudErrorMessage(e) + ' The user was NOT removed.', 'error'); return; }
+        await deleteUserByEmail(email);
         renderUsersTab();
         showToast('User removed.', 'info');
     })();
@@ -10986,27 +11047,8 @@ async function renderApprovals() {
     const badge = document.getElementById('approvalsBadge');
     if (!el) return;
 
-    let all;
-    try { all = await getAllUsers(); }
-    catch (e) {
-        el.innerHTML = `<div class="empty-approvals"><i class="fas fa-triangle-exclamation"></i>${mktPriceEscape(ptCloudErrorMessage(e))}</div>`;
-        return;
-    }
+    const all = await getAllUsers();
     const pending = all.filter(u => u.status === 'pending');
-    const rejected = all.filter(u => u.status === 'rejected')
-        .sort((x, y) => String(y.rejectedAt || '').localeCompare(String(x.rejectedAt || '')));
-    const rejectedHtml = rejected.length ? (
-        `<div style="margin:18px 0 8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Rejected requests (${rejected.length})</div>` +
-        rejected.map(u => {
-            const kind = u.requestType === 'plan_upgrade' ? 'Plan Upgrade' : (u.requestType === 'recharge' ? 'Recharge' : (u.isRenewal || u.requestType === 'renewal' ? 'Renewal' : 'New Registration'));
-            const when = u.rejectedAt ? new Date(u.rejectedAt).toLocaleString('en-GB') : '—';
-            return `<div class="approval-card" style="opacity:.85"><div class="approval-card-top"><div class="user-row-info">
-                <div class="approval-card-name">${mktPriceEscape(u.fname)} ${mktPriceEscape(u.lname || '')}</div>
-                <div class="approval-card-meta">${mktPriceEscape(u.email)} · ${mktPriceEscape(u.company || '—')} · Rejected ${mktPriceEscape(when)}${u.rejectedBy ? ' by ' + mktPriceEscape(u.rejectedBy) : ''}</div>
-                <div class="approval-card-meta">Ref: ${mktPriceEscape(u.transactionId || '—')}${u.rejectionReason ? ' · Reason: ' + mktPriceEscape(u.rejectionReason) : ''}</div>
-                </div><span class="approval-tag">${kind} · Rejected</span></div></div>`;
-        }).join('')
-    ) : '';
 
     if (badge) {
         badge.textContent = pending.length;
@@ -11014,7 +11056,7 @@ async function renderApprovals() {
     }
 
     if (pending.length === 0) {
-        el.innerHTML = `<div class="empty-approvals"><i class="fas fa-circle-check"></i>No pending registrations or renewals.</div>` + rejectedHtml;
+        el.innerHTML = `<div class="empty-approvals"><i class="fas fa-circle-check"></i>No pending registrations or renewals.</div>`;
         return;
     }
 
@@ -11022,66 +11064,72 @@ async function renderApprovals() {
         const initials = ((u.fname||'?')[0] + ((u.lname||'')[0]||'')).toUpperCase();
         const col = ROLE_COLORS[u.role] || '#8b949e';
         const requestedOn = new Date(u.pendingSince || u.createdAt).toLocaleString('en-GB');
-        const emailJs = mktPriceEscape(JSON.stringify(String(u.email)));
+        const emailAttr = u.email.replace(/'/g, "\\'");
         return `<div class="approval-card">
             <div class="approval-card-top">
                 <div class="user-row-avatar" style="background:linear-gradient(135deg,${col},#bc8cff)">${initials}</div>
                 <div class="user-row-info">
-                    <div class="approval-card-name">${mktPriceEscape(u.fname)} ${mktPriceEscape(u.lname||'')}</div>
-                    <div class="approval-card-meta">${mktPriceEscape(u.email)} · ${mktPriceEscape(u.company||'—')} · ${requestedOn}</div>
+                    <div class="approval-card-name">${u.fname} ${u.lname||''}</div>
+                    <div class="approval-card-meta">${u.email} · ${u.company||'—'} · ${requestedOn}</div>
                 </div>
-                <span class="approval-tag ${u.requestType === 'plan_upgrade' || u.isRenewal ? 'renewal' : ''}">${u.requestType === 'plan_upgrade' ? 'Plan Upgrade' : (u.requestType === 'recharge' ? 'Recharge' : (u.isRenewal ? 'Renewal' : 'New Registration'))}</span>
+                <span class="approval-tag ${u.requestType === 'plan_upgrade' || u.isRenewal ? 'renewal' : ''}">${u.requestType === 'plan_upgrade' ? 'Plan Upgrade' : (u.isRenewal ? 'Renewal' : 'New Registration')}</span>
             </div>
             <div class="approval-pay-row">
                 <i class="${u.paymentMethod === 'card' ? 'fas fa-credit-card' : 'fas fa-mobile-alt'}"></i>
                 <span>${u.paymentMethod === 'card' ? 'Card (Intl.)' : (u.paymentMethod === 'easypaisa' ? 'EasyPaisa' : 'JazzCash')}</span>
                 <span>·</span>
-                <span>Ref: <b>${mktPriceEscape(u.transactionId || '—')}</b></span>
+                <span>Ref: <b>${u.transactionId || '—'}</b></span>
                 <span>·</span>
                 <span>${(() => { const p = u.planId ? getPlanById(u.planId) : null; const oldP = u.previousPlanId ? getPlanById(u.previousPlanId) : null; const amount = u.paymentMethod === 'card' ? `$${p ? p.priceIntl : 20}` : `Rs. ${p ? p.priceLocal : REGISTRATION_FEE}`; return (u.requestType === 'plan_upgrade' && oldP && p) ? `${oldP.name} → ${p.name} · ${amount}` : `${amount}${p ? ' · ' + p.name : ''}`; })()}</span>
             </div>
             <div class="approval-actions">
-                <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveUser(${emailJs})"><i class="fas fa-check"></i> Approve</button>
-                <button class="btn btn-danger" style="padding:7px 14px;font-size:12px" onclick="rejectUser(${emailJs})"><i class="fas fa-xmark"></i> Reject</button>
+                <button class="btn btn-primary" style="padding:7px 14px;font-size:12px" onclick="approveUser('${emailAttr}')"><i class="fas fa-check"></i> Approve</button>
+                <button class="btn btn-danger" style="padding:7px 14px;font-size:12px" onclick="rejectUser('${emailAttr}')"><i class="fas fa-xmark"></i> Reject</button>
             </div>
         </div>`;
-    }).join('') + rejectedHtml;
+    }).join('');
 }
 
 async function approveUser(email) {
-    /* Replaced by the verified SaaS approval defined later in this file. */
+    const user = await getUserByEmail(email);
+    if (!user) return;
+
+    const plan = user.planId ? getPlanById(user.planId) : null;
+    const durationDays = plan ? plan.durationDays : SUBSCRIPTION_DAYS;
+    const now = new Date();
+    const validUntil = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    const isPlanUpgrade = user.requestType === 'plan_upgrade' &&
+        ['basic','professional','business'].includes(user.previousPlanId) &&
+        ['basic','professional','business'].includes(user.planId) &&
+        user.previousPlanId !== user.planId;
+    user.status = 'active';
+    user.isRenewal = false;
+    user.approvedAt = now.toISOString();
+    user.validUntil = validUntil.toISOString();
+    if (isPlanUpgrade) {
+        user.currentPlan = user.planId;
+        user.subscriptionStatus = 'active';
+        user.subscriptionStartDate = now.toISOString();
+        user.expiryDate = validUntil.toISOString();
+        user.paymentStatus = 'verified';
+        user.subscription = { ...(user.subscription || {}), currentPlan: user.planId, subscriptionStatus: 'active', subscriptionStartDate: now.toISOString(), expiryDate: validUntil.toISOString(), paymentStatus: 'verified' };
+    }
+    await saveUser(user);
+
+    if (currentUser && currentUser.email === email) { currentUser = user; renderSubscriptionBox(); }
+    renderApprovals();
+    renderUsersTab();
+    showToast(`${user.fname}'s account has been approved (valid till ${validUntil.toLocaleDateString('en-GB')}).`, 'success');
 }
 
-async function rejectUser(email) {
-    email = String(email || '').trim().toLowerCase();
-    const reasonInput = window.prompt('Reject this request? The account is kept and marked as rejected (nothing is deleted).\nOptional reason:', '');
-    if (reasonInput === null) return;
-    try {
-        const user = await getUserByEmail(email);
-        if (!user) { showToast('User account not found.', 'error'); return; }
-        if (user.status !== 'pending') { showToast('This request is no longer pending.', 'warning'); renderApprovals().catch(function () {}); return; }
-        const requestType = user.requestType || (user.isRenewal ? 'renewal' : 'registration');
-        const now = new Date().toISOString();
-        const reason = String(reasonInput || '').trim().slice(0, 300);
-        user.status = 'rejected';
-        user.rejectedAt = now;
-        user.rejectedBy = (currentUser && currentUser.email) || null;
-        user.rejectionReason = reason;
-        user.paymentStatus = 'rejected';
-        user.isRenewal = false;
-        if (user.subscription) user.subscription = { ...user.subscription, paymentStatus: 'rejected' };
-        await saveUser(user);
-        try {
-            await appendHistory(user, requestType + '_rejected', user.requestedPlanId || user.planId || null,
-                { rejectedAt: now, rejectedBy: user.rejectedBy, reason: reason, transactionId: user.transactionId || null });
-        } catch (he) { console.warn('Rejection saved but history entry failed:', he); }
-        await renderApprovals();
-        renderUsersTab().catch(function () {});
-        showToast('Request rejected. The account was kept and marked as rejected.', 'info');
-    } catch (e) {
-        console.error('Reject failed:', e);
-        showToast((e && e.ptKind ? e.message : 'Rejection failed.') + ' Nothing was changed.', 'error');
-    }
+function rejectUser(email) {
+    if (!confirm('Is registration/renewal ko reject karke user remove kar dein?')) return;
+    (async () => {
+        await deleteUserByEmail(email);
+        renderApprovals();
+        renderUsersTab();
+        showToast('Registration has been rejected.', 'info');
+    })();
 }
 
 /* ═══════════════════════════════════════════════
@@ -11244,7 +11292,7 @@ function backToMarketing(){
     async function firebaseProfile(email) {
         const normalizedEmail = String(email || '').trim().toLowerCase();
         try {
-            if (!db) throw ptCloudError({ ptKind: 'unavailable' }, 'init');
+            if (!db) throw new Error('Firestore is not initialized.');
             const snap = await db.collection('users').doc(normalizedEmail).get();
             return snap.exists ? snap.data() : null;
         } catch (e) {
@@ -11252,7 +11300,13 @@ function backToMarketing(){
             // password error. If this device has a legacy local profile, use it
             // as a temporary fallback; otherwise surface the real Firebase issue.
             if (isFirestorePermissionError(e)) {
-                /* No local legacy fallback in production: cloud is authoritative. */
+                const localUser = localGetAll().find(
+                    u => String(u.email || '').trim().toLowerCase() === normalizedEmail
+                ) || null;
+                if (localUser) {
+                    console.warn('Firestore denied profile read; using local legacy profile for this session. Fix Firestore Rules for cloud profiles.', e);
+                    return localUser;
+                }
                 const permissionError = new Error('Firebase sign-in succeeded, but Firestore denied access to your PharmaTracker profile. Update the Firestore Rules to allow an authenticated user to read users/{email}.');
                 permissionError.code = 'firestore/profile-permission-denied';
                 permissionError.originalError = e;
@@ -11263,24 +11317,18 @@ function backToMarketing(){
         }
     }
 
-    /* LEGACY ONLY — delete this function and legacyHashPw() once every old account has signed in
-       once (see MIGRATION_NOTES.md). The old hash is used here only to verify a legacy password a
-       single time; it is never written anywhere. NOTE: with the hardened rules, users/{email} is not
-       readable while signed out, so this path only works if the legacy profile is readable (it is
-       normally skipped and those users use "Forgot password" / admin-created Auth accounts). */
-    function legacyHashPw(pw) {
-        let h = 0;
-        for (let i = 0; i < pw.length; i++) { h = Math.imul(31, h) + pw.charCodeAt(i) | 0; }
-        return h.toString(36) + pw.length.toString(36) + pw.split('').reverse().slice(0,3).join('').split('').map(c=>c.charCodeAt(0).toString(16)).join('');
-    }
     async function ensureLegacyAccountMigrated(email, password) {
         const profile = await firebaseProfile(email);
         if (!profile || !profile.pw) return false;
-        if (profile.pw !== legacyHashPw(password)) return false;
+        // Only migrate when the supplied password matches the legacy credential.
+        // This prevents an unknown Firebase account from being created with a bad password.
+        if (profile.pw !== hashPw(password)) return false;
         try {
             const cred = await firebaseAuth.createUserWithEmailAndPassword(email, password);
-            /* Only firebaseUid is written (allowed by the rules); the legacy pw field is removed by scrubLegacyPw() after sign-in. */
-            await db.collection('users').doc(email.toLowerCase()).update({ firebaseUid: cred.user.uid });
+            const clean = { ...profile };
+            delete clean.pw;
+            clean.firebaseUid = cred.user.uid;
+            await db.collection('users').doc(email.toLowerCase()).set(clean, { merge: true });
             return true;
         } catch (e) {
             // auth/email-already-in-use means the account was already migrated;
@@ -11319,21 +11367,10 @@ function backToMarketing(){
             return p;
         } catch (e) { return null; }
     }
-    /* Remove the legacy `pw` hash from Firestore once the person is authenticated with Firebase Auth (rule B). */
-    async function scrubLegacyPw(email, profile) {
-        try {
-            const au = firebaseAuth.currentUser;
-            if (!au || String(au.email || '').toLowerCase() !== String(email || '').trim().toLowerCase()) return;
-            await db.collection('users').doc(au.email.toLowerCase()).update({ pw: firebase.firestore.FieldValue.delete(), firebaseUid: au.uid });
-            delete profile.pw;
-        } catch (e) { console.warn('Could not remove the legacy password field yet:', e); }
-    }
     function writeProfileCache(email, profile) {
         try {
-            if (profile && profile.pw) scrubLegacyPw(email, profile);
             if (!profile || profile.status !== 'active') return;
-            const safe = Object.assign({}, profile); delete safe.pw; delete safe.resetCode; delete safe.resetCodeExpiry;
-            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ email: String(email || '').trim().toLowerCase(), ts: Date.now(), profile: safe }));
+            localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify({ email: String(email || '').trim().toLowerCase(), ts: Date.now(), profile: profile }));
         } catch (e) {}
     }
 
@@ -11410,9 +11447,6 @@ function backToMarketing(){
                     finish();
                 } catch (e) {
                     console.error(e);
-                    const errBox = document.getElementById('login-error');
-                    if (errBox) { errBox.textContent = ptCloudErrorMessage(e); errBox.classList.add('show'); }
-                    document.getElementById('auth-overlay').classList.remove('hidden');
                     finish();
                 }
             });
@@ -11494,19 +11528,12 @@ function backToMarketing(){
             const newUser = {
                 id: 'u_' + Date.now(), firebaseUid: cred.user.uid,
                 fname, lname, email, company, role,
-                status: 'pending', isRenewal: false, requestType: 'registration', paymentStatus: 'pending_verification',
+                status: 'pending', isRenewal: false,
                 paymentMethod: selectedPay.signup, transactionId: txnId,
                 planId: signupPlan ? signupPlan.id : null,
                 pendingSince: new Date().toISOString(), createdAt: new Date().toISOString(), hasSeenSample: false
             };
-            try {
-                await db.collection('users').doc(email).set(newUser);
-            } catch (writeErr) {
-                /* Do not leave an orphan Auth account with no profile behind. */
-                try { await cred.user.delete(); } catch (_) {}
-                throw ptCloudError(writeErr, 'create profile');
-            }
-            try { await appendHistory(newUser, 'registration_submitted', newUser.planId, { transactionId: txnId }); } catch (he) { console.warn('Could not record registration history:', he); }
+            await db.collection('users').doc(email).set(newUser);
             await firebaseAuth.signOut();
             sendAdminNotification(newUser, false);
             okEl.textContent = '✅ Registration submitted! Waiting for approval…'; okEl.classList.add('show');
@@ -11541,12 +11568,11 @@ function backToMarketing(){
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'Please enter a valid email address.'; errEl.classList.add('show'); return; }
         try {
             await firebaseAuth.sendPasswordResetEmail(email);
-            okEl.textContent = 'If this email is registered, a password reset email has been sent.';
+            okEl.textContent = 'If this email is registered, a password reset link has been sent. Please check your inbox/spam folder.';
             okEl.classList.add('show');
         } catch (e) {
             console.error(e);
             const code = String(e && e.code || '');
-            if (code.includes('user-not-found')) { okEl.textContent = 'If this email is registered, a password reset email has been sent.'; okEl.classList.add('show'); return; }
             errEl.textContent = code.includes('invalid-email') ? 'Please enter a valid email address.'
                 : code.includes('too-many-requests') ? 'Too many attempts. Please wait a little and try again.'
                 : 'There was a problem sending the reset email. Please try again.';
@@ -11555,9 +11581,32 @@ function backToMarketing(){
     };
 
     window.doResetPassword = async function () {
-        /* The custom 6-digit reset-code flow was removed: codes were stored in Firestore. Firebase sends a secure reset link instead. */
-        const errEl = document.getElementById('reset-error');
-        if (errEl) { errEl.textContent = 'Reset codes are no longer used. Please use the password reset link that was sent to your email.'; errEl.classList.add('show'); }
+        const code = document.getElementById('reset-code').value.trim();
+        const pw = document.getElementById('reset-password').value;
+        const confirm = document.getElementById('reset-confirm').value;
+        const errEl = document.getElementById('reset-error'); const okEl = document.getElementById('reset-success');
+        errEl.classList.remove('show'); okEl.classList.remove('show');
+        if (!resetTargetEmail) { errEl.textContent = 'Session expired. Please request a new code.'; errEl.classList.add('show'); return; }
+        if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Please enter the 6-digit reset code.'; errEl.classList.add('show'); return; }
+        if (!pw || pw.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+        if (pw !== confirm) { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+        try {
+            const user = await getUserByEmail(resetTargetEmail);
+            if (!user || !user.resetCode) { errEl.textContent = 'No reset request found. Please request a new code.'; errEl.classList.add('show'); return; }
+            if (user.resetCode !== code) { errEl.textContent = 'The reset code is incorrect.'; errEl.classList.add('show'); return; }
+            if (!user.resetCodeExpiry || new Date(user.resetCodeExpiry) < new Date()) { errEl.textContent = 'The reset code has expired. Please request a new one.'; errEl.classList.add('show'); return; }
+            user.pw = hashPw(pw);
+            delete user.resetCode; delete user.resetCodeExpiry;
+            await saveUser(user);
+            resetTargetEmail = null;
+            okEl.textContent = 'Password reset successful! Sign in with your new password.';
+            okEl.classList.add('show');
+            setTimeout(() => { backToLogin(); document.getElementById('login-email').value = user.email; }, 1200);
+        } catch (e) {
+            console.error(e);
+            errEl.textContent = 'Could not reset the password. Please try again.';
+            errEl.classList.add('show');
+        }
     };
 
     window.changePassword = async function () {
@@ -11574,10 +11623,7 @@ function backToMarketing(){
             await authUser.reauthenticateWithCredential(credential);
             await authUser.updatePassword(nw);
             const profile = await firebaseProfile(authUser.email);
-            if (profile) {
-                if (profile.pw) await scrubLegacyPw(authUser.email, profile);
-                profile.firebaseUid = authUser.uid; currentUser = profile;
-            }
+            if (profile) { delete profile.pw; profile.firebaseUid = authUser.uid; await db.collection('users').doc(authUser.email.toLowerCase()).set(profile, { merge: true }); currentUser = profile; }
             document.getElementById('pw-current').value = ''; document.getElementById('pw-new').value = ''; document.getElementById('pw-confirm').value = '';
             showToast('Password changed successfully!', 'success');
         } catch (e) {
@@ -11679,7 +11725,7 @@ window.__ptScheduleDataLoad(5000);
  function key(r,n){return String(r[n]??r[n.replace('Name','')]??'Unassigned').trim()||'Unassigned'} function group(rows,field){return rows.reduce((a,r)=>{let k=key(r,field);a[k]=(a[k]||0)+amount(r);return a},{})}
  function dateOf(r){let d=new Date(r.invoiceDate||r.date);return isNaN(d)?null:d} function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
  function rows(){let data=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
- function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>window.ptCompactChartNumber(v, false)},grid:{color:'rgba(148,180,255,.1)'}}}}})}
+ function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>Number(v).toLocaleString()},grid:{color:'rgba(148,180,255,.1)'}}}}})}
  function sorted(g,n=6){return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,n)} function list(id,g){$(id).innerHTML=sorted(g,5).map(([n,v])=>`<li><span>${escapeHtml(n)}</span><b>${money(v)}</b></li>`).join('')||'<li>No data imported yet.</li>'} function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
  function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,oldProfitPct=$('ex-profit-percent').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';$('ex-profit-percent').value=oldProfitPct;suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
  $('ex-kpis').innerHTML=[['Total Revenue',money(total),'#6d7cff'],['Total Profit',money(total*profitRate()),'#2ee6a6'],['Invoices',invoices.toLocaleString(),'#ffb65d'],['Customers',customers.toLocaleString(),'#a979ff'],['Products',products.toLocaleString(),'#51c8ff'],['Avg. Order',money(avg),'#ff718c']].map((x,i)=>`<div class="ex-card" style="--card-color:${x[2]}"><div class="ex-label">${x[0]}</div><div class="ex-value">${x[1]}</div><div class="ex-delta">${i<2?'▲ '+(8+i*3)+'% vs prior period':'Live from imported data'}</div></div>`).join('');
@@ -11812,7 +11858,7 @@ window.__ptScheduleDataLoad(5000);
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { legend: { display: options.legend ?? false, labels: { color: '#9eadd0' } }, tooltip: { callbacks: { label: context => display(context.raw) } } },
-                scales: type === 'doughnut' || type === 'pie' ? {} : { x: { ticks: { color: '#9eadd0', maxRotation: 0 }, grid: { display: false } }, y: { ticks: { color: '#9eadd0', callback: value => window.ptCompactChartNumber(value, false) }, grid: { color: 'rgba(148,180,255,.1)' } } }
+                scales: type === 'doughnut' || type === 'pie' ? {} : { x: { ticks: { color: '#9eadd0', maxRotation: 0 }, grid: { display: false } }, y: { ticks: { color: '#9eadd0', callback: value => Number(value).toLocaleString() }, grid: { color: 'rgba(148,180,255,.1)' } } }
             }
         });
     }
@@ -12493,7 +12539,7 @@ window.__ptScheduleDataLoad(5000);
         return {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false, labels: { color: '#c9c2ea' } }, tooltip: { callbacks: { label: c => isMoney ? money(c.raw) : Number(c.raw).toLocaleString() } } },
-            scales: { x: { ticks: { color: '#9d94c9', maxRotation: 0, autoSkip: true }, grid: { display: false } }, y: { ticks: { color: '#9d94c9', callback: v => window.ptCompactChartNumber(v, false) }, grid: { color: 'rgba(160,140,255,.08)' } } }
+            scales: { x: { ticks: { color: '#9d94c9', maxRotation: 0, autoSkip: true }, grid: { display: false } }, y: { ticks: { color: '#9d94c9', callback: v => Number(v).toLocaleString() }, grid: { color: 'rgba(160,140,255,.08)' } } }
         };
     }
 
@@ -13123,18 +13169,17 @@ function prepareDataSummary(catalogue, data) {
                        msg.toLowerCase().indexOf('permission-denied') > -1 ||
                        msg.toLowerCase().indexOf('missing or insufficient permissions') > -1;
         console.error('PharmaTracker cloud sync (' + (context || '') + ') failed:', e);
-        if (e && e.failedChunks) toast(e.message, 'error');
         if (denied) {
             S.blocked = true;
             if (!S.warned) {
                 S.warned = true;
-                toast('Cloud sync denied: your account may not write this data to the cloud. Your latest changes were NOT saved to the cloud. Please sign in again or contact support.', 'error');
+                toast('Cloud sync blocked: allow the userData collection in your Firestore Rules (see notes). Data will be saved on this device only.', 'error');
             }
             return true;
         }
         if (!S.warned && /timed out|unavailable|network/i.test(msg + ' ' + code)) {
             S.warned = true;
-            toast('Cloud unavailable (network problem). Your latest changes are kept in this browser only and are not in the cloud yet. They will upload when the connection returns.', 'warning');
+            toast('Cloud sync failed (network). Data is saved on this device and will sync when you are back online.', 'warning');
         }
         return false;
     }
@@ -13197,29 +13242,29 @@ function prepareDataSummary(catalogue, data) {
     }
 
     /* ------------------------------ save ------------------------------- */
-    async function deleteChunkIds(ids) {
-        /* Best-effort cleanup of OLD chunks. Only ever called after the new dataset is fully written
-           and its meta document has been committed. */
-        const jobs = [];
+    async function deleteExtraChunks(keep) {
+        let ids = [];
+        try {
+            if (S.prevChunks && S.prevChunks > keep) {
+                for (let i = keep; i < S.prevChunks; i++) ids.push(chunkId(i));
+            } else {
+                const snap = await chunksCol().get();
+                ids = snap.docs.map(function (d) { return d.id; })
+                               .filter(function (id) { return Number(id) >= keep; });
+            }
+        } catch (e) { return; }
+        const deletePromises = [];
         for (let i = 0; i < ids.length; i += 200) {
             const b = db.batch();
             ids.slice(i, i + 200).forEach(function (id) { b.delete(chunksCol().doc(id)); });
-            jobs.push(b.commit().catch(function (e) { console.warn('Old cloud chunk cleanup failed (harmless):', e); }));
-            if (jobs.length >= 4) await Promise.all(jobs.splice(0, jobs.length));
+            deletePromises.push(b.commit().catch(function () {}));
+            if (deletePromises.length >= 4) {
+                await Promise.all(deletePromises.splice(0, deletePromises.length));
+            }
         }
-        if (jobs.length) await Promise.all(jobs);
-    }
-    function idsFor(gen, count) {
-        const out = [];
-        for (let i = 0; i < count; i++) out.push(gen ? (gen + '-' + chunkId(i)) : chunkId(i));
-        return out;
+        if (deletePromises.length) await Promise.all(deletePromises);
     }
 
-    /* Crash-safe, partial-failure-safe upload:
-       1. every chunk is written under a NEW generation id (old chunks stay untouched and readable),
-       2. any failed chunk aborts the upload — no success is reported and meta is NOT updated,
-       3. only after all chunks exist is meta (pointing at the new generation) committed,
-       4. only then are the old chunks deleted. */
     async function cloudSaveSnapshot(reason) {
         if (!cloudOn()) return false;
         const enc = await encodeSnapshot(buildSnapshot());
@@ -13227,49 +13272,43 @@ function prepareDataSummary(catalogue, data) {
         for (let i = 0; i < enc.data.length; i += CHUNK_LIMIT) {
             chunks.push(enc.data.subarray(i, Math.min(i + CHUNK_LIMIT, enc.data.length)));
         }
-        const gen = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        const newId = function (i) { return gen + '-' + chunkId(i); };
 
-        const groups = []; let cur = [], bytes = 0;
+        // Keep the existing chunk/document structure, but commit independent
+        // Firestore batches concurrently. This removes the old serial network
+        // wait between every batch while keeping concurrency bounded.
+        const COMMIT_CONCURRENCY = 4;
+        const pendingBatches = [];
+        let batch = db.batch(), ops = 0, bytes = 0;
+        const queueCommit = () => {
+            if (!ops) return;
+            pendingBatches.push(batch.commit());
+            batch = db.batch(); ops = 0; bytes = 0;
+        };
         for (let i = 0; i < chunks.length; i++) {
-            cur.push(i); bytes += chunks[i].length;
-            if (cur.length >= MAX_OPS || bytes >= COMMIT_LIMIT) { groups.push(cur); cur = []; bytes = 0; }
-        }
-        if (cur.length) groups.push(cur);
-
-        const COMMIT_CONCURRENCY = 4; /* bounded concurrency, as before */
-        const failed = []; let nextGroup = 0;
-        async function worker() {
-            for (;;) {
-                const gi = nextGroup++;
-                if (gi >= groups.length) return;
-                const idxs = groups[gi];
-                try {
-                    const b = db.batch();
-                    idxs.forEach(function (i) {
-                        b.set(chunksCol().doc(newId(i)), { i: i, n: chunks[i].length, data: uint8ToBase64(chunks[i]), compressed: enc.compressed, gen: gen });
-                    });
-                    await b.commit();
-                } catch (e) { failed.push({ chunks: idxs, error: e }); }
+            // FIX: Convert Uint8Array to base64 string before storing in Firestore
+            // (Firestore rejects custom binary objects; only accepts JSON-serializable types)
+            const dataB64 = uint8ToBase64(chunks[i]);
+            batch.set(chunksCol().doc(chunkId(i)), {
+                i: i,
+                n: chunks[i].length,
+                data: dataB64,
+                compressed: enc.compressed
+            });
+            ops++; bytes += chunks[i].length;
+            if (ops >= MAX_OPS || bytes >= COMMIT_LIMIT) queueCommit();
+            if (pendingBatches.length >= COMMIT_CONCURRENCY) {
+                await Promise.all(pendingBatches.splice(0, pendingBatches.length));
             }
         }
-        await Promise.all(Array.from({ length: Math.min(COMMIT_CONCURRENCY, groups.length) }, worker));
+        queueCommit();
+        if (pendingBatches.length) await Promise.all(pendingBatches);
 
-        if (failed.length) {
-            const failedChunks = [].concat.apply([], failed.map(function (f) { return f.chunks; }));
-            const err = new Error('Cloud upload failed: ' + failedChunks.length + ' of ' + chunks.length +
-                ' data chunk(s) could not be saved. Your previous cloud data is unchanged. Please try again.');
-            err.code = (failed[0].error && failed[0].error.code) || 'cloud/partial-upload';
-            err.failedChunks = failedChunks;
-            err.cause = failed[0].error;
-            try { await deleteChunkIds(idsFor(gen, chunks.length)); } catch (_) {} /* discard the incomplete new generation */
-            throw err;
-        }
+        await deleteExtraChunks(chunks.length);
 
+        // Meta is written LAST so no reader can ever see a half-written dataset.
         const meta = {
             rowCount: (typeof rawData !== 'undefined' ? rawData.length : 0),
             chunkCount: chunks.length,
-            gen: gen,
             bytes: enc.bytes,
             compressed: enc.compressed,
             updatedAt: new Date().toISOString(),
@@ -13277,21 +13316,8 @@ function prepareDataSummary(catalogue, data) {
             reason: reason || '',
             app: 'pharmatracker'
         };
-        await rootRef().set(meta, { merge: true }); /* written LAST: readers never see a half-written dataset */
-
-        /* The new dataset is now authoritative — remove the previous generation. */
-        let oldIds = S.prevIds;
-        if (!oldIds) {
-            try {
-                const snap = await chunksCol().get();
-                oldIds = snap.docs.map(function (d) { return d.id; }).filter(function (id) { return id.indexOf(gen + '-') !== 0; });
-            } catch (e) { oldIds = []; }
-        }
-        oldIds = (oldIds || []).filter(function (id) { return id.indexOf(gen + '-') !== 0; });
-        if (oldIds.length) await deleteChunkIds(oldIds);
-
+        await rootRef().set(meta, { merge: true });
         S.prevChunks = chunks.length;
-        S.prevIds = idsFor(gen, chunks.length);
         S.lastUpdatedAt = meta.updatedAt;
         return meta;
     }
@@ -13322,7 +13348,7 @@ function prepareDataSummary(catalogue, data) {
                 const now = Date.now();
                 if (now - S.lastToast > 20000) {
                     S.lastToast = now;
-                    toast('☁️ ' + meta.rowCount.toLocaleString() + ' records synced to the cloud — the same data is now available on every device.', 'success');
+                    toast('☁️ ' + meta.rowCount.toLocaleString() + ' records cloud par sync ho gaye — ab har system par same data.', 'success');
                 }
             }
         } catch (e) {
@@ -13357,12 +13383,10 @@ function prepareDataSummary(catalogue, data) {
         const parts = new Array(count).fill(null);
         snap.docs.forEach(function (d) {
             const v = d.data() || {};
-            /* Only read the generation that meta points at (legacy datasets have no gen). */
-            if (meta.gen ? v.gen !== meta.gen : !!v.gen) return;
             if (typeof v.i === 'number' && v.i >= 0 && v.i < count) parts[v.i] = toBytes(v.data);
         });
         for (let i = 0; i < count; i++) {
-            if (!parts[i]) throw new Error('Cloud data chunk ' + i + ' is missing, so the cloud copy is incomplete. Nothing was changed on this device.');
+            if (!parts[i]) throw new Error('Cloud data chunk ' + i + ' missing — using local copy.');
         }
         let total = 0;
         parts.forEach(function (p) { total += p.length; });
@@ -13372,7 +13396,6 @@ function prepareDataSummary(catalogue, data) {
 
         const decoded = await decodeSnapshot(all, !!meta.compressed);
         S.prevChunks = count;
-        S.prevIds = idsFor(meta.gen || '', count);
         S.lastUpdatedAt = meta.updatedAt || null;
         return { snapshot: decoded, meta: meta };
     }
@@ -13620,7 +13643,7 @@ function prepareDataSummary(catalogue, data) {
         detachMetaListener();
         try { if (badge) badge.style.display = 'none'; } catch (e) {}
         S.lastUpdatedAt = null;
-        S.prevChunks = 0; S.prevIds = null;
+        S.prevChunks = 0;
         return _baseClearSession.apply(this, arguments);
     };
 
@@ -14020,28 +14043,11 @@ async function persistSubscription(user){
   }catch(e){console.warn('SaaS subscription persistence failed:',e);}
 }
 async function appendHistory(user,type,planId,details){
-  /* Subscription history now lives in users/{email}/history/{id} (append-only; users cannot write
-     the embedded array on their own profile any more). Old embedded history is left untouched and
-     is still readable through ptGetSubscriptionHistory(). */
-  const entry=historyEntry(type,planId,details||{});
-  const email=String(user&&user.email||'').trim().toLowerCase();
-  if(!email) throw new Error('Cannot record history without an account email.');
-  ptRequireCloud();
-  try{ await db.collection('users').doc(email).collection('history').doc(entry.id).set(entry); }
-  catch(e){ disableFirestoreForThisSession(e); throw ptCloudError(e,'history'); }
-  return entry;
+  ensureSubscriptionShape(user);
+  user.subscription.history=user.subscription.history||[];
+  user.subscription.history.push(historyEntry(type,planId,details||{}));
+  user.subscriptionHistory=user.subscription.history;
 }
-window.ptGetSubscriptionHistory=async function(user){
-  const email=String(user&&user.email||'').trim().toLowerCase();
-  const legacy=Array.isArray(user&&user.subscription&&user.subscription.history)?user.subscription.history
-    :(Array.isArray(user&&user.subscriptionHistory)?user.subscriptionHistory:[]);
-  let fresh=[];
-  try{ ptRequireCloud(); const snap=await db.collection('users').doc(email).collection('history').orderBy('timestamp').get(); fresh=snap.docs.map(function(d){return d.data();}); }
-  catch(e){ console.warn('Could not read subscription history from the cloud:',e); }
-  const seen=new Set();
-  return legacy.concat(fresh).filter(function(h){ const k=h&&h.id; if(!k) return true; if(seen.has(k)) return false; seen.add(k); return true; })
-    .sort(function(a,b){ return String(a&&a.timestamp||'').localeCompare(String(b&&b.timestamp||'')); });
-};
 
 /* ----- Plan migration: preserve existing payment settings and legacy access. */
 async function seedSaaSPlans(){
@@ -14239,9 +14245,7 @@ function applyFineGrainedLocks(){
 }
 
 /* ----- Trial signup: complete access immediately; no payment required. */
-/* DISABLED: this trial self-activation wrote status:'active' straight from the browser, which the hardened rules (correctly) deny.
-   A real free trial must be granted by a Cloud Function — see MIGRATION_NOTES.md. */
-window.__ptTrialSignupDisabled=async function(){
+window.doSignup=async function(){
   const fname=document.getElementById('signup-fname')?.value.trim()||'';
   const lname=document.getElementById('signup-lname')?.value.trim()||'';
   const email=document.getElementById('signup-email')?.value.trim().toLowerCase()||'';
@@ -14296,11 +14300,6 @@ if(typeof approveUser==='function'){
     try{
       const user=await getUserByEmail(email);
       if(!user){ showToast('User account not found.','error'); return; }
-      if(user.status!=='pending'){
-        showToast('This request is no longer pending, so it was not approved again.','warning');
-        if(typeof renderApprovals==='function') renderApprovals().catch(function(){});
-        return;
-      }
 
       const selectedId=String(user.requestedPlanId || user.planId || user.subscription?.currentPlan || '').toLowerCase();
       const p=(selectedId && selectedId!=='trial') ? planDef(selectedId) : null;
@@ -14311,19 +14310,11 @@ if(typeof approveUser==='function'){
 
       const now=new Date();
       const durationDays=Number(p.durationDays)||30;
-      /* EXPIRY POLICY (upgrade / renewal / recharge / new): paid time is never reduced.
-         newValidUntil = max(now, current expiry) + planDuration
-         e.g. 10 days left on Basic + upgrade to Professional (30 days) => 40 days from today.
-         The current expiry is the latest of validUntil / expiryDate / subscription.expiryDate. */
-      const toMs=function(v){ const t=v?new Date(v).getTime():NaN; return isNaN(t)?0:t; };
-      const oldExpiryMs=Math.max(toMs(user.validUntil),toMs(user.expiryDate),toMs(user.subscription&&user.subscription.expiryDate));
-      const expiry=new Date(Math.max(now.getTime(),oldExpiryMs)+durationDays*86400000);
-
+      const expiry=new Date(now.getTime()+durationDays*86400000);
       const previousPlanId=user.previousPlanId || user.subscription?.currentPlan || null;
-      const requestType=user.requestType || (user.isRenewal?'renewal':'registration');
-      const wasUpgrade=requestType==='plan_upgrade' && !!previousPlanId && previousPlanId!==p.id;
+      const wasUpgrade=user.requestType==='plan_upgrade' || !!user.requestedPlanId;
 
-      /* The existing embedded history array is preserved as-is; new events go to users/{email}/history. */
+      /* Preserve the complete subscription history instead of replacing it. */
       const sub={...(user.subscription||{})};
       sub.userId=user.firebaseUid||user.id||null;
       sub.name=[user.fname,user.lname].filter(Boolean).join(' ')||user.name||'';
@@ -14333,12 +14324,18 @@ if(typeof approveUser==='function'){
       sub.subscriptionStartDate=now.toISOString();
       sub.expiryDate=expiry.toISOString();
       sub.paymentStatus='verified';
+      sub.history=Array.isArray(sub.history)?sub.history:[];
+      sub.history.push(historyEntry(wasUpgrade?'plan_upgrade_approved':'payment_approved',p.id,{
+        transactionId:user.transactionId||null,
+        previousPlanId:previousPlanId||null,
+        approvedAt:now.toISOString()
+      }));
 
+      /* One complete user document is written. No second legacy approval write. */
       user.status='active';
       user.isRenewal=false;
       user.approvedAt=now.toISOString();
-      user.approvedBy=(currentUser&&currentUser.email)||null;
-      user.requestType=requestType;
+      user.requestType=wasUpgrade?'plan_upgrade':'renewal';
       user.requestedPlanId=p.id;
       user.planId=p.id;
       user.currentPlan=p.id;
@@ -14348,22 +14345,13 @@ if(typeof approveUser==='function'){
       user.validUntil=expiry.toISOString();
       user.paymentStatus='verified';
       user.subscription=sub;
-      delete user.pendingSince; delete user.rejectedAt; delete user.rejectedBy; delete user.rejectionReason;
+      user.subscriptionHistory=sub.history;
 
-      await saveUser(user); /* admin full write; rules allow this only for role=admin */
+      /* Remove pending-only markers after approval so the same request cannot be approved twice. */
+      delete user.pendingSince;
+      await saveUser(user);
 
-      try{
-        const evt=wasUpgrade?'plan_upgrade_approved':(requestType==='recharge'?'recharge_approved':(requestType==='renewal'?'renewal_approved':'payment_approved'));
-        await appendHistory(user,evt,p.id,{
-          transactionId:user.transactionId||null,
-          previousPlanId:previousPlanId||null,
-          approvedAt:now.toISOString(),
-          approvedBy:user.approvedBy,
-          previousValidUntil:oldExpiryMs?new Date(oldExpiryMs).toISOString():null,
-          validUntil:expiry.toISOString()
-        });
-      }catch(he){ console.warn('Approved, but the history entry could not be saved:',he); }
-
+      /* Immediately synchronize this browser if it is the approved account. */
       if(typeof currentUser!=='undefined' && currentUser && String(currentUser.email||'').toLowerCase()===email){
         currentUser=user;
         try{writeProfileCache(email,user);}catch(e){}
@@ -14377,7 +14365,7 @@ if(typeof approveUser==='function'){
       if(typeof showToast==='function') showToast(`${user.fname||'User'} is now on ${p.name}. Valid till ${expiry.toLocaleDateString('en-GB')}.`,'success');
     }catch(err){
       console.error('Subscription approval failed:',err);
-      if(typeof showToast==='function') showToast((err&&err.ptKind?err.message+' ':'')+'Approval failed. The subscription was not changed. Please try again.','error');
+      if(typeof showToast==='function') showToast('Approval failed. The subscription was not changed. Please check the cloud connection and try again.','error');
     }
   };
 }
@@ -14777,14 +14765,10 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
                 say('Online card payments are not configured yet — the owner must deploy the payment backend (see backend/README). Your plan has NOT been changed.', 'err');
                 return;
             }
-            /* The backend identifies the buyer from the Firebase ID token — never from a client-supplied email. */
-            var fbUser = (window.firebase && firebase.auth) ? firebase.auth().currentUser : null;
-            if (!fbUser) { say('Please sign in first, then start the card payment.', 'err'); return; }
-            var idToken = await fbUser.getIdToken();
             say('Creating secure checkout session…', '');
             var res = await fetch(base.replace(/\/$/, '') + '/createCheckoutSession', {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
-                body: JSON.stringify({ planId: plan.id, context: ctx })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId: plan.id, email: email })
             });
             var out = await res.json().catch(function () { return {}; });
             if (!res.ok || !out.url) throw new Error((out && out.error) || 'Checkout session failed.');
@@ -14810,16 +14794,16 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   window.pharmaTrackerCloseFeedback=function(){q('pt-feedback-modal')?.classList.remove('show')};
   window.pharmaTrackerSubmitFeedback=async function(){
     if(!rating){showToast('Please select a star rating.','warning');return}
-    var comment=(q('pt-feedback-comment')?.value||'').trim().slice(0,1000);
+    var comment=(q('pt-feedback-comment')?.value||'').trim();
     if(comment.length<5){showToast('Please add a short comment so we can learn from your feedback.','warning');return}
     var u=(typeof currentUser!=='undefined'&&currentUser)?currentUser:null;
     if(!u){showToast('Please sign in first.','warning');return}
     var item={rating:rating,comment:comment,email:String(u.email||'').toLowerCase(),name:[u.fname,u.lname].filter(Boolean).join(' ')||u.name||'Customer',company:u.company||'',planId:u.planId||u.currentPlan||'trial',createdAt:new Date().toISOString(),status:'pending',source:'in-app'};
     try{
       if(typeof db!=='undefined'&&db?.collection){await db.collection('customerFeedback').add(item)}
-      else{throw new Error('Cloud unavailable')}
+      else{var local=JSON.parse(localStorage.getItem('ptCustomerFeedback')||'[]');local.push(item);localStorage.setItem('ptCustomerFeedback',JSON.stringify(local))}
       pharmaTrackerCloseFeedback();showToast('Thank you! Your feedback was submitted for review.','success');
-    }catch(e){console.warn('Feedback submission failed:',e);showToast('Cloud unavailable or access denied. Your feedback could not be submitted. Please try again.','error')}
+    }catch(e){console.warn('Feedback submission failed:',e);showToast('Feedback could not be submitted. Please try again.','error')}
   };
   async function loadPublicFeedback(){
     var host=q('pt-feedback-public');if(!host)return;
@@ -16251,330 +16235,4 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<script id="pharmatracker-integrity-theme-chart-patch">
-(function () {
-  'use strict';
-  /* Central theme configuration: UI + typography + every Chart.js surface. */
-  const PT_THEMES = {
-    'modern-dark': {
-      font: "'DM Sans', sans-serif", mono: "'DM Mono', monospace",
-      bg:'#0b0e13', panel:'#121720', panel2:'#171d28', text:'#edf1f7', muted:'#9aa6b8',
-      border:'rgba(212,175,90,.22)', grid:'rgba(212,175,90,.10)',
-      accent:'#d4af6a', accent2:'#7fb0ff', accent3:'#ff8a7a',
-      palette:['#d4af6a','#7fb0ff','#7c5cff','#4f8cff','#e8c675','#58c7a5','#ff8a7a','#a97cff','#51c8ff','#c9714f']
-    },
-    'light-clean': {
-      font:"'DM Sans', sans-serif", mono:"'DM Mono', monospace",
-      bg:'#f7f9fc', panel:'#ffffff', panel2:'#f1f4f8', text:'#172033', muted:'#667085',
-      border:'#d9e0ea', grid:'rgba(23,32,51,.10)',
-      accent:'#3867d6', accent2:'#12a594', accent3:'#d64545',
-      palette:['#3867d6','#12a594','#8b5cf6','#f59e0b','#e11d48','#0891b2','#16a34a','#7c3aed','#0284c7','#ea580c']
-    },
-    'gradient-card': {
-      font:"'DM Sans', sans-serif", mono:"'DM Mono', monospace",
-      bg:'#111225', panel:'#1a1834', panel2:'#25204a', text:'#f7f5ff', muted:'#b9b4d4',
-      border:'rgba(167,139,250,.28)', grid:'rgba(167,139,250,.13)',
-      accent:'#a78bfa', accent2:'#38bdf8', accent3:'#fb7185',
-      palette:['#a78bfa','#38bdf8','#f472b6','#fbbf24','#34d399','#60a5fa','#fb7185','#c084fc','#22d3ee','#f97316']
-    },
-    'minimal-professional': {
-      font:"'DM Sans', sans-serif", mono:"'DM Mono', monospace",
-      bg:'#eef1f4', panel:'#ffffff', panel2:'#f7f8fa', text:'#20252b', muted:'#68727e',
-      border:'#cfd5dc', grid:'rgba(32,37,43,.10)',
-      accent:'#27384a', accent2:'#526b7f', accent3:'#b34b4b',
-      palette:['#27384a','#526b7f','#7a8f9f','#b07d3c','#3f7f6b','#6c5b7b','#a14d4d','#476d8c','#8a6d3b','#5b6570']
-    }
-  };
-  const themeName = () => document.documentElement.getAttribute('data-theme') || 'modern-dark';
-  const theme = () => PT_THEMES[themeName()] || PT_THEMES['modern-dark'];
-  window.PharmaTrackerTheme = PT_THEMES;
-  window.getPharmaTrackerTheme = theme;
-
-  const style = document.createElement('style');
-  style.id = 'pt-central-theme-overrides';
-  style.textContent = `
-    html[data-theme] body, html[data-theme] input, html[data-theme] select, html[data-theme] textarea,
-    html[data-theme] button, html[data-theme] .btn, html[data-theme] .card, html[data-theme] .sidebar,
-    html[data-theme] .topbar, html[data-theme] .filters-bar { font-family:var(--pt-font) !important; }
-    html[data-theme] { --pt-font: ${theme().font}; --pt-mono:${theme().mono}; }
-    html[data-theme="modern-dark"] { --pt-font:${PT_THEMES['modern-dark'].font}; --pt-mono:${PT_THEMES['modern-dark'].mono}; }
-    html[data-theme="light-clean"] { --pt-font:${PT_THEMES['light-clean'].font}; --pt-mono:${PT_THEMES['light-clean'].mono}; }
-    html[data-theme="gradient-card"] { --pt-font:${PT_THEMES['gradient-card'].font}; --pt-mono:${PT_THEMES['gradient-card'].mono}; }
-    html[data-theme="minimal-professional"] { --pt-font:${PT_THEMES['minimal-professional'].font}; --pt-mono:${PT_THEMES['minimal-professional'].mono}; }
-  `;
-  document.head.appendChild(style);
-
-  function exact(v, currency) {
-    if (v === null || v === undefined || v === '') return '';
-    const n = Number(v);
-    if (!Number.isFinite(n)) return String(v);
-    const sign = n < 0 ? '-' : '';
-    const a = Math.abs(n);
-    let out;
-    if (a >= 1e9) out = (a / 1e9).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'B';
-    else if (a >= 1e6) out = (a / 1e6).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'M';
-    else if (a >= 1e3) out = (a / 1e3).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + 'K';
-    else out = Math.round(a * 100) / 100;
-    return sign + (currency ? '₨' : '') + out;
-  }
-
-  const valueLabelPlugin = {
-    id:'ptExactBarValues',
-    afterDatasetsDraw(chart) {
-      if (!chart || chart.config.type !== 'bar') return;
-      const ctx = chart.ctx, t = theme();
-      ctx.save();
-      ctx.font = `600 11px ${t.font}`;
-      ctx.fillStyle = t.text;
-      ctx.textBaseline = 'middle';
-      chart.data.datasets.forEach((ds, di) => {
-        const meta = chart.getDatasetMeta(di);
-        if (!meta || meta.hidden) return;
-        meta.data.forEach((el, i) => {
-          const raw = ds.data && ds.data[i];
-          const n = Number(raw);
-          if (!Number.isFinite(n)) return;
-          const p = el.getProps(['x','y','base'], true);
-          const horizontal = chart.options.indexAxis === 'y';
-          const isUnits = /units|stock|quantity/i.test(String(ds.label || ''));
-          const label = exact(raw, !isUnits);
-          if (horizontal) {
-            ctx.textAlign = n < 0 ? 'right' : 'left';
-            const x = n < 0 ? p.x - 7 : p.x + 7;
-            ctx.fillText(label, x, p.y);
-          } else {
-            ctx.textAlign = 'center';
-            const zero = chart.scales && chart.scales.y ? chart.scales.y.getPixelForValue(0) : p.base;
-            let y = n < 0 ? p.y + 12 : (n === 0 ? zero - 8 : p.y - 8);
-            ctx.fillText(label, p.x, y);
-          }
-        });
-      });
-      ctx.restore();
-    }
-  };
-  if (window.Chart && !Chart.registry.plugins.get('ptExactBarValues')) Chart.register(valueLabelPlugin);
-
-  function applyChartTheme() {
-    if (!window.Chart) return;
-    const t = theme();
-    Chart.defaults.color = t.muted;
-    Chart.defaults.font.family = t.font;
-    Chart.defaults.borderColor = t.border;
-    const charts = Chart.instances ? Object.values(Chart.instances) : [];
-    charts.forEach(chart => {
-      try {
-        chart.options.color = t.text;
-        chart.options.font = Object.assign({}, chart.options.font || {}, {family:t.font});
-        const scales = chart.options.scales || {};
-        Object.keys(scales).forEach(k => {
-          const sc = scales[k] || {};
-          sc.ticks = Object.assign({}, sc.ticks || {}, {color:t.muted, font:Object.assign({}, sc.ticks?.font || {}, {family:t.font})});
-          sc.grid = Object.assign({}, sc.grid || {}, {color:t.grid});
-          sc.border = Object.assign({}, sc.border || {}, {color:t.border});
-          scales[k] = sc;
-        });
-        if (chart.options.plugins) {
-          chart.options.plugins.legend = Object.assign({}, chart.options.plugins.legend || {}, {labels:Object.assign({}, chart.options.plugins.legend?.labels || {}, {color:t.muted, font:Object.assign({}, chart.options.plugins.legend?.labels?.font || {}, {family:t.font})})});
-          chart.options.plugins.tooltip = Object.assign({}, chart.options.plugins.tooltip || {}, {titleColor:t.text, bodyColor:t.text, footerColor:t.muted, backgroundColor:t.panel, borderColor:t.border, borderWidth:1, titleFont:Object.assign({}, chart.options.plugins.tooltip?.titleFont || {}, {family:t.font}), bodyFont:Object.assign({}, chart.options.plugins.tooltip?.bodyFont || {}, {family:t.font})});
-        }
-        chart.data.datasets.forEach((ds, di) => {
-          const palette = t.palette;
-          if (chart.config.type === 'pie' || chart.config.type === 'doughnut') {
-            ds.backgroundColor = palette.map((c,i)=>palette[(i+di)%palette.length]);
-            ds.borderColor = t.panel;
-          } else {
-            const base = palette[di % palette.length];
-            ds.borderColor = base;
-            ds.pointBackgroundColor = base;
-            if (chart.config.type === 'bar') {
-              ds.backgroundColor = base;
-              ds.hoverBackgroundColor = t.accent;
-            } else if (chart.config.type === 'line' || chart.config.type === 'scatter') {
-              ds.backgroundColor = base + '33';
-              ds.pointBorderColor = base;
-            } else if (chart.config.type === 'area') {
-              ds.backgroundColor = base + '33';
-            }
-          }
-        });
-        chart.update('none');
-      } catch(e) { console.warn('Theme sync skipped chart:', e); }
-    });
-  }
-  window.applyPharmaTrackerChartTheme = applyChartTheme;
-
-  // Theme changes are centralized here, including changes made outside the menu.
-  const observer = new MutationObserver(muts => {
-    if (muts.some(m => m.attributeName === 'data-theme')) {
-      document.documentElement.style.setProperty('--pt-font', theme().font);
-      applyChartTheme();
-    }
-  });
-  observer.observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
-
-  if (typeof window.applyReportTheme === 'function') {
-    const originalApplyTheme = window.applyReportTheme;
-    window.applyReportTheme = function (name, persist) {
-      originalApplyTheme(name, persist);
-      applyChartTheme();
-    };
-    // setReportTheme closes menu then calls the wrapped applyReportTheme.
-  }
-  setTimeout(applyChartTheme, 0);
-  setTimeout(applyChartTheme, 500);
-
-  // Keep source-of-truth aliases available without allowing filters to overwrite rawData.
-  try { window.originalDataset = rawData; window.filteredDataset = typeof getBaseData === 'function' ? getBaseData() : rawData; } catch(e) {}
-})();
-</script>
-<script id="pharmatracker-catalogue-chart-fixed">
-(function(){
-  'use strict';
-
-  // Customer/Product catalogue chart refresh. Existing cards, filters and layout are preserved.
-  function theme(){
-    return window.getPharmaTrackerTheme ? window.getPharmaTrackerTheme() : {
-      font:'Arial, sans-serif', text:'#edf1f7', muted:'#9aa6b8', grid:'rgba(255,255,255,.10)',
-      panel:'#121720', border:'rgba(212,175,90,.22)',
-      palette:['#d4af6a','#7fb0ff','#7c5cff','#4f8cff','#e8c675','#58c7a5','#ff8a7a','#a97cff','#51c8ff','#c9714f']
-    };
-  }
-  function n(v){ var x=Number(v); return Number.isFinite(x)?x:0; }
-  function fmt(v){ return n(v).toLocaleString(undefined,{maximumFractionDigits:6}); }
-  function rows(data){ return Array.isArray(data)?data:[]; }
-  function destroy(id){ if(typeof window.destroyChart==='function') window.destroyChart(id); else if(window.Chart){ var c=Chart.getChart(document.getElementById(id)); if(c)c.destroy(); } }
-
-  function aggregate(data,key){
-    var m={};
-    rows(data).forEach(function(r){
-      var name=String(r[key] ?? 'Unknown').trim() || 'Unknown';
-      if(!m[name]) m[name]={name:name,revenue:0,units:0,orders:0};
-      m[name].revenue += n(r.netAmount);
-      m[name].units += n(r.stock);
-      m[name].orders += 1;
-    });
-    return Object.values(m).sort(function(a,b){return Math.abs(b.revenue)-Math.abs(a.revenue);});
-  }
-
-  function makeScatter(id, items, title){
-    var el=document.getElementById(id); if(!el || !window.Chart) return;
-    destroy(id);
-    var t=theme();
-    var pts=items.slice(0,80).map(function(d,i){
-      return {x:n(d.units),y:n(d.revenue),label:d.name,orders:d.orders};
-    });
-    new Chart(el,{
-      type:'scatter',
-      data:{datasets:[{
-        label:'Revenue vs Units',
-        data:pts,
-        backgroundColor:t.palette[1] || '#7fb0ff',
-        borderColor:t.palette[0] || '#d4af6a',
-        pointRadius:pts.map(function(p){return Math.max(4,Math.min(11,3+Math.sqrt(p.orders)));}),
-        pointHoverRadius:pts.map(function(p){return Math.max(7,Math.min(14,5+Math.sqrt(p.orders)));}),
-        borderWidth:1
-      }]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{
-          legend:{display:true,labels:{color:t.text,font:{family:t.font}}},
-          title:{display:false},
-          tooltip:{callbacks:{
-            title:function(items){return items[0] && items[0].raw ? items[0].raw.label : '';},
-            label:function(ctx){var p=ctx.raw||{};return ['Units: '+fmt(p.x),'Revenue: '+fmt(p.y),'Transactions: '+fmt(p.orders)];}
-          }}
-        },
-        scales:{
-          x:{type:'linear',title:{display:true,text:'Units Sold',color:t.muted},ticks:{color:t.muted},grid:{color:t.grid},border:{color:t.border}},
-          y:{title:{display:true,text:'Revenue',color:t.muted},ticks:{color:t.muted,callback:function(v){return window.ptCompactChartNumber(v,true);}},grid:{color:t.grid},border:{color:t.border}}
-        }
-      }
-    });
-    var card=el.closest('.card'); if(card){var h=card.querySelector('.card-title');if(h)h.textContent=title;}
-  }
-
-  function layout(items,x,y,w,h){
-    var vals=items.map(function(d){return Math.abs(n(d.value));});
-    var total=vals.reduce(function(a,b){return a+b;},0);
-    if(!items.length||!total)return[];
-    var work=items.map(function(d,i){return Object.assign({},d,{area:vals[i]/total*w*h});}).sort(function(a,b){return b.area-a.area;});
-    var out=[], row=[], rx=x,ry=y,rw=w,rh=h;
-    function worst(r,side){if(!r.length)return Infinity;var sum=r.reduce(function(a,d){return a+d.area;},0),mx=Math.max.apply(null,r.map(function(d){return d.area;})),mn=Math.min.apply(null,r.map(function(d){return d.area;}));return Math.max(side*side*mx/(sum*sum),sum*sum/(side*side*mn));}
-    while(work.length){var next=work[0],side=Math.min(rw,rh);if(!row.length||worst(row.concat([next]),side)<=worst(row,side)){row.push(next);work.shift();continue;} place();}
-    place();
-    function place(){if(!row.length)return;var sum=row.reduce(function(a,d){return a+d.area;},0);if(rw>=rh){var hh=sum/rw,xx=rx;row.forEach(function(d){var ww=d.area/hh;out.push(Object.assign({},d,{x:xx,y:ry,w:ww,h:hh}));xx+=ww;});ry+=hh;rh-=hh;}else{var ww=sum/rh,yy=ry;row.forEach(function(d){var hh=d.area/ww;out.push(Object.assign({},d,{x:rx,y:yy,w:ww,h:hh}));yy+=hh;});rx+=ww;rw-=ww;}row=[];}
-    return out;
-  }
-
-  function makeTreemap(id,items,title,metric){
-    var c=document.getElementById(id); if(!c)return;
-    var t=theme(), ctx=c.getContext('2d'), rect=c.getBoundingClientRect();
-    var w=Math.max(280,Math.round(rect.width||c.parentElement.clientWidth||600)), h=Math.max(240,Math.round(rect.height||280)), dpr=Math.max(1,window.devicePixelRatio||1);
-    c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-    items=items.slice(0,20);c.__ptTreemapItems=items;var lay=layout(items.map(function(d){return{name:d.name,value:d.revenue,units:d.units,orders:d.orders};}),8,8,w-16,h-16);
-    ctx.clearRect(0,0,w,h);ctx.fillStyle=t.panel||'#121720';ctx.fillRect(0,0,w,h);
-    lay.forEach(function(d,i){
-      ctx.fillStyle=(n(d.value)<0 ? (t.accent3||'#ff6b73') : t.palette[i%t.palette.length]);ctx.globalAlpha=.88;ctx.fillRect(d.x+1,d.y+1,Math.max(0,d.w-2),Math.max(0,d.h-2));ctx.globalAlpha=1;
-      ctx.strokeStyle=t.panel||'#121720';ctx.lineWidth=2;ctx.strokeRect(d.x+1,d.y+1,Math.max(0,d.w-2),Math.max(0,d.h-2));
-      if(d.w>=90&&d.h>=46){ctx.fillStyle='#fff';ctx.textBaseline='top';ctx.font='700 '+Math.max(10,Math.min(13,d.w/10))+'px '+(t.font||'sans-serif');var label=d.name.length>22?d.name.slice(0,21)+'…':d.name;ctx.fillText(label,d.x+6,d.y+6);ctx.font='600 11px '+(t.font||'sans-serif');ctx.fillText(fmt(d.value),d.x+6,d.y+24);}
-    });
-    c.title='Hover over a block for details';
-    if(!c.__ptMapBound){
-      c.__ptMapBound=true;c.addEventListener('mousemove',function(ev){var r=c.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top,hit=lay.find(function(d){return x>=d.x&&x<=d.x+d.w&&y>=d.y&&y<=d.y+d.h;});if(hit)c.title=hit.name+' | '+metric+': '+fmt(hit.value)+' | Units: '+fmt(hit.units)+' | Transactions: '+fmt(hit.orders);else c.title='';});
-    }
-    var card=c.closest('.card');if(card){var hd=card.querySelector('.card-title');if(hd)hd.textContent=title;}
-  }
-
-  window.updateCustomerCharts=function(data){
-    data=rows(data);var products=aggregate(data,'itemName');
-    makeScatter('chartCustPie',products,'Revenue vs Units by Product');
-    makeTreemap('chartCustDonut',products,'Product Revenue Treemap','Revenue');
-    // Keep existing bar and line charts, but refresh them through their original functions when available.
-    if(typeof window.renderCustomerRegionChart==='function'){} 
-    if(window.__ptOriginalCustomerCharts && typeof window.__ptOriginalCustomerCharts==='function') window.__ptOriginalCustomerCharts(data);
-  };
-
-  window.updateProductCharts=function(data){
-    data=rows(data);var customers=aggregate(data,'customerName');
-    makeScatter('chartProdPie',customers,'Revenue vs Units by Customer');
-    makeTreemap('chartProdDonut',customers,'Customer Revenue Treemap','Revenue');
-    if(window.__ptOriginalProductCharts && typeof window.__ptOriginalProductCharts==='function') window.__ptOriginalProductCharts(data);
-  };
-
-  // The existing update functions are preserved by wrapping only their pie/donut canvases.
-  // We replace the two catalogue chart functions after page load, while retaining the existing bar/line/region charts.
-  function install(){
-    // Capture current implementations once, then use them to keep the original charts that were not replaced.
-    if(!window.__ptOriginalCustomerCharts && typeof window.updateCustomerCharts==='function') window.__ptOriginalCustomerCharts=window.updateCustomerCharts;
-    if(!window.__ptOriginalProductCharts && typeof window.updateProductCharts==='function') window.__ptOriginalProductCharts=window.updateProductCharts;
-  }
-  install();
-
-  // Use a lightweight proxy: original function first, then replace only pie/donut output with the new visualizations.
-  if(window.__ptOriginalCustomerCharts){
-    window.updateCustomerCharts=function(data){
-      window.__ptOriginalCustomerCharts(data);
-      var items=aggregate(rows(data),'itemName');
-      makeScatter('chartCustPie',items,'Revenue vs Units by Product');
-      makeTreemap('chartCustDonut',items,'Product Revenue Treemap','Revenue');
-    };
-  }
-  if(window.__ptOriginalProductCharts){
-    window.updateProductCharts=function(data){
-      window.__ptOriginalProductCharts(data);
-      var items=aggregate(rows(data),'customerName');
-      makeScatter('chartProdPie',items,'Revenue vs Units by Customer');
-      makeTreemap('chartProdDonut',items,'Customer Revenue Treemap','Revenue');
-    };
-  }
-
-  window.addEventListener('resize',function(){
-    var cc=document.getElementById('chartCustDonut'), pc=document.getElementById('chartProdDonut');
-    if(cc && cc.__ptTreemapItems) makeTreemap('chartCustDonut',cc.__ptTreemapItems,'Product Revenue Treemap','Revenue');
-    if(pc && pc.__ptTreemapItems) makeTreemap('chartProdDonut',pc.__ptTreemapItems,'Customer Revenue Treemap','Revenue');
-  });
-})();
-</script>
-</body></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
