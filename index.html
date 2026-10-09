@@ -6026,29 +6026,20 @@ function ptCreateRowProcessor() {
         numLike(cell(cells, MI.netAmount, len));      const netNum = _n, netEmp = _e, netOk = _v;
         if (!rateOk) messages.push('Invalid number in Rate');
         if (!stockOk) messages.push('Invalid number in Stock');
-        else if (stockNum < 0) messages.push('Invalid stock quantity (negative)');
         else if (stockNum > 100000000) messages.push('Invalid stock quantity (unrealistic)');
         if (!bonusOk) messages.push('Invalid number in Bonus');
-        else if (bonusNum < 0) messages.push('Invalid Bonus quantity (negative)');
         if (!grossOk) messages.push('Invalid monetary value in Gross Amount');
-        else if (grossNum < 0) messages.push('Invalid monetary value in Gross Amount (negative)');
         if (!discAmtOk) messages.push('Invalid monetary value in Discount Amount');
-        else if (discAmtNum < 0) messages.push('Invalid monetary value in Discount Amount (negative)');
         if (!stAmtOk) messages.push('Invalid monetary value in Sales Tax Amount');
-        else if (stAmtNum < 0) messages.push('Invalid monetary value in Sales Tax Amount (negative)');
         if (!addTaxOk) messages.push('Invalid monetary value in Additional Tax');
-        else if (addTaxNum < 0) messages.push('Invalid monetary value in Additional Tax (negative)');
         if (!awhtAmtOk) messages.push('Invalid monetary value in AWHT Amt');
-        else if (awhtAmtNum < 0) messages.push('Invalid monetary value in AWHT Amt (negative)');
         if (!netOk) messages.push('Invalid monetary value in Net Amount');
-        else if (netNum < 0) messages.push('Invalid monetary value in Net Amount (negative)');
-        if (!rateEmp && rateOk && rateNum < 0) messages.push('Invalid monetary value in Rate (negative)');
         if (!discOk) messages.push('Invalid number in Discount');
-        else if (!discEmp && (discNum < 0 || discNum > 100)) messages.push('Invalid Discount % (must be 0–100)');
+        else if (!discEmp && (discNum < -100 || discNum > 100)) messages.push('Invalid Discount % (must be between -100 and 100)');
         if (!stOk) messages.push('Invalid number in Sales Tax');
-        else if (!stEmp && (stNum < 0 || stNum > 100)) messages.push('Invalid Sales Tax % (must be 0–100)');
+        else if (!stEmp && (stNum < -100 || stNum > 100)) messages.push('Invalid Sales Tax % (must be between -100 and 100)');
         if (!awhtpOk) messages.push('Invalid number in AWHTP');
-        else if (!awhtpEmp && (awhtpNum < 0 || awhtpNum > 100)) messages.push('Invalid AWHTP % (must be 0–100)');
+        else if (!awhtpEmp && (awhtpNum < -100 || awhtpNum > 100)) messages.push('Invalid AWHTP % (must be between -100 and 100)');
         let dateStr = String(cell(cells, MI.invoiceDate, len)).trim();
         if (dateStr.length >= 4 && dateStr.length <= 5) {
             const serial = +dateStr;
@@ -8242,6 +8233,41 @@ function resetProductSlicer() {
     updateProductCatalogFilters();
 }
 
+function formatCatalogBarValue(value, isUnits) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return String(value ?? '');
+    const abs = Math.abs(n);
+    const sign = n < 0 ? '-' : '';
+    if (abs >= 1000000) return `${sign}${isUnits ? '' : 'Rs '}${(abs / 1000000).toFixed(2).replace(/\.?0+$/, '')}M`;
+    if (abs >= 1000) return `${sign}${isUnits ? '' : 'Rs '}${(abs / 1000).toFixed(2).replace(/\.?0+$/, '')}K`;
+    return `${sign}${isUnits ? '' : 'Rs '}${abs.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+const catalogBarValueLabels = {
+    id: 'catalogBarValueLabels',
+    afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const isUnits = (typeof measureMode !== 'undefined' && measureMode === 'units');
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (meta.hidden || meta.type !== 'bar') return;
+            ctx.save();
+            ctx.font = '600 10px DM Sans, sans-serif';
+            ctx.fillStyle = '#f7dfa0';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.shadowColor = 'rgba(0,0,0,0.55)';
+            ctx.shadowBlur = 2;
+            meta.data.forEach((element, index) => {
+                const value = dataset.data[index];
+                if (value === null || value === undefined || !Number.isFinite(Number(value))) return;
+                const pos = element.tooltipPosition ? element.tooltipPosition() : { x: element.x, y: element.y };
+                ctx.fillText(formatCatalogBarValue(value, isUnits), pos.x, pos.y - 4);
+            });
+            ctx.restore();
+        });
+    }
+};
+
 function renderCustomerRegionChart(data) {
     const canvas = document.getElementById('chartCustRegion');
     if (!canvas) return;
@@ -8256,6 +8282,7 @@ function renderCustomerRegionChart(data) {
             labels: topRegions.map(r=>r[0]),
             datasets: [{ label:isUnits ? 'Units Sold' : 'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(188,140,255,0.7)', borderRadius: 6 }]
         },
+        plugins: [catalogBarValueLabels],
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
@@ -8281,6 +8308,7 @@ function renderProductRegionChart(data) {
             labels: topRegions.map(r=>r[0]),
             datasets: [{ label:isUnits ? 'Units Sold' : 'Net Revenue', data: topRegions.map(r=>r[1]), backgroundColor: 'rgba(255,166,87,0.7)', borderRadius: 6 }]
         },
+        plugins: [catalogBarValueLabels],
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
