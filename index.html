@@ -5850,15 +5850,34 @@ function measureAxisTicks() { return measureMode === 'units' ? { callback: v => 
 
 /* Base dataset after applying the global Company Group + Month/Quarter filters.
    All page renderers should read from this instead of rawData directly. */
+// PERF: memoize the common filtered dataset during a refresh. updateAll() and
+// many of its chart/table renderers ask for the same rows repeatedly; rebuilding
+// the same 50k–300k-row array for every call can stall clicks and uploads.
+// The cache key includes every UI filter plus dataset/file-state changes.
+let _ptBaseDataCache = { rawRef: null, rawLength: -1, fileMapRef: null, key: null, data: null };
 function getBaseData() {
-    let data = getGlobalData();
+    const region = document.getElementById('fRegion')?.value || '';
+    const man = document.getElementById('fBookingMan')?.value || '';
+    const month = document.getElementById('fMonth')?.value || '';
+    const search = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
+    const disabledIds = [];
+    uploadedFiles.forEach((info, id) => { if (info && info.disabled) disabledIds.push(String(id)); });
+    const key = JSON.stringify([
+        globalCompany || '', globalCompanyGroup || '', periodMode || '',
+        Array.isArray(periodValue) ? periodValue.join('|') : String(periodValue || ''),
+        region, man, month, search, uploadedFiles.size, disabledIds.join(',')
+    ]);
+    const cached = _ptBaseDataCache;
+    if (cached.data && cached.rawRef === rawData && cached.rawLength === rawData.length &&
+        cached.fileMapRef === fileRowMap && cached.key === key) {
+        return cached.data;
+    }
 
-    // Filter out data from disabled files - maintains index correspondence.
-    // PERF: membership via a Set (O(1)) instead of data.includes() inside the
-    // loop (O(n²) — ~27s per call at 300k rows, called ~15× per refresh).
-    // SameValueZero semantics are identical for object references.
+    let data = getGlobalData();
+    // Filter out data from disabled files while preserving row/index correspondence.
+    // Set membership avoids the previous O(n²) includes() behavior on large files.
     const inData = (data === rawData) ? null : new Set(data);
-    let filteredData = [];
+    const filteredData = [];
     for (let idx = 0; idx < rawData.length; idx++) {
         const fileId = fileRowMap.get(idx);
         const fileInfo = uploadedFiles.get(fileId);
@@ -5866,13 +5885,7 @@ function getBaseData() {
             filteredData.push(rawData[idx]);
         }
     }
-    data = filteredData;
-    
-    const region = document.getElementById('fRegion')?.value || '';
-    const man = document.getElementById('fBookingMan')?.value || '';
-    const month = document.getElementById('fMonth')?.value || '';
-    const search = document.getElementById('searchInput')?.value.toLowerCase().trim() || '';
-    return data.filter(d => {
+    data = filteredData.filter(d => {
         if (region && d.regionName !== region) return false;
         if (man && d.bookingMan !== man) return false;
         if (month && !d.invoiceDate.startsWith(month)) return false;
@@ -5882,6 +5895,8 @@ function getBaseData() {
         }
         return true;
     });
+    _ptBaseDataCache = { rawRef: rawData, rawLength: rawData.length, fileMapRef: fileRowMap, key, data };
+    return data;
 }
 
 function getGlobalData() {
@@ -9186,6 +9201,11 @@ document.querySelectorAll('.nav-item[data-page]').forEach(el => {
 /* ═══════════════════════════════════════════════
    SEARCH & PERFORMANCE OPTIMIZATION
 ═══════════════════════════════════════════════ */
+// Avoid chart animation work on large datasets; visual styling and chart values stay unchanged.
+if (typeof Chart !== 'undefined' && Chart.defaults) {
+    Chart.defaults.animation = false;
+    Chart.defaults.responsiveAnimationDuration = 0;
+}
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', () => {
     clearTimeout(searchTimeout);
