@@ -6946,7 +6946,7 @@ function saveDataToStorage() {
             // latest dataset once more rather than losing the newer state.
             if (_saveDataQueued) saveDataToStorage();
         });
-    }, 250);
+    }, 100);
 }
 
 async function loadDataFromStorage() {
@@ -7634,9 +7634,12 @@ function renderProducts() {
 /* ═══════════════════════════════════════════════
    CHARTS
 ═══════════════════════════════════════════════ */
-Chart.defaults.color = '#9a97a6';
+Chart.defaults.color = document.documentElement.getAttribute('data-theme') === 'light-clean' ? '#475467' : '#c4c8d4';
 Chart.defaults.font.family = 'DM Sans';
-Chart.defaults.borderColor = 'rgba(212,175,90,0.15)';
+Chart.defaults.borderColor = document.documentElement.getAttribute('data-theme') === 'light-clean' ? 'rgba(71,84,103,0.14)' : 'rgba(212,175,90,0.15)';
+// Avoid expensive chart animations when large datasets or filters are updated.
+Chart.defaults.animation = false;
+Chart.defaults.transitions.active.animation.duration = 0;
 
 function destroyChart(id) {
     const existing = Chart.getChart(id);
@@ -7667,7 +7670,7 @@ const goldValueLabels = {
             if (meta.hidden || (meta.type !== 'bar' && meta.type !== 'line')) return;
             ctx.save();
             ctx.font = '600 10px DM Sans, sans-serif';
-            ctx.fillStyle = '#f7dfa0';
+            ctx.fillStyle = document.documentElement.getAttribute('data-theme') === 'light-clean' ? '#344054' : '#f7dfa0';
             ctx.textAlign = 'center';
             ctx.shadowColor = 'rgba(0,0,0,0.6)';
             ctx.shadowBlur = 3;
@@ -8835,6 +8838,19 @@ function ytdRank(rows) {
     return direction === 'bottom' ? sorted.slice(-n).reverse() : sorted.slice(0, n);
 }
 const ytdSectionFilters = {};
+// Independent display ranking for the YTD Product-wise and Customer-wise tables.
+const ytdDisplayRanks = { itemName: { direction: 'top', limit: '10' }, customerName: { direction: 'top', limit: '10' } };
+function ytdOnDisplayRankChange(field, key, value) {
+    if (!ytdDisplayRanks[field]) return;
+    ytdDisplayRanks[field][key] = value;
+    renderYTDCatalogue();
+}
+function ytdDisplayRankMarkup(field) {
+    const state = ytdDisplayRanks[field] || { direction: 'top', limit: '10' };
+    const options = ['5','10','15','20','25','50','100','200','300','all','hide']
+        .map(value => `<option value="${value}"${state.limit === value ? ' selected' : ''}>${value === 'all' ? 'All' : value === 'hide' ? 'None / Hide All' : value}</option>`).join('');
+    return `<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><select class="filter-select" aria-label="Display direction" title="Display highest or lowest sales" onchange="ytdOnDisplayRankChange('${field}','direction',this.value)"><option value="top"${state.direction === 'top' ? ' selected' : ''}>Top</option><option value="bottom"${state.direction === 'bottom' ? ' selected' : ''}>Bottom</option></select><select class="filter-select" aria-label="Display count" title="Number of rows to display" onchange="ytdOnDisplayRankChange('${field}','limit',this.value)">${options}</select></div>`;
+}
 function ytdSectionId(field, monthWise) { return `ytd-section-${monthWise ? 'month' : field}`; }
 function ytdSectionEscape(value) {
     return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -8873,7 +8889,25 @@ function ytdTable(title, field, data, years, monthWise = false) {
     const sectionSelected = (ytdSectionFilters[sectionId] || []).filter(value => rows.some(row => row.key === value));
     ytdSectionFilters[sectionId] = sectionSelected;
     const sectionFiltered = growthFiltered.filter(row => !sectionSelected.length || sectionSelected.includes(row.key));
-    const displayed = monthWise ? sectionFiltered : ytdRank(sectionFiltered);
+    let displayed = monthWise ? sectionFiltered : ytdRank(sectionFiltered);
+    if (!monthWise && (field === 'itemName' || field === 'customerName')) {
+        const rank = ytdDisplayRanks[field] || { direction: 'top', limit: '10' };
+        if (rank.limit === 'hide') displayed = [];
+        else if (rank.limit !== 'all') {
+            const sorted = [...sectionFiltered].sort((a, b) =>
+                rank.direction === 'bottom'
+                    ? (a.latest - b.latest) || a.label.localeCompare(b.label)
+                    : (b.latest - a.latest) || a.label.localeCompare(b.label)
+            );
+            displayed = sorted.slice(0, Math.max(0, Number(rank.limit) || 0));
+        } else {
+            displayed = [...sectionFiltered].sort((a, b) =>
+                rank.direction === 'bottom'
+                    ? (a.latest - b.latest) || a.label.localeCompare(b.label)
+                    : (b.latest - a.latest) || a.label.localeCompare(b.label)
+            );
+        }
+    }
     const headings = years.flatMap((year, index) => index ? [`<th>${year}</th><th>Growth %</th>`] : [`<th>${year}</th>`]).join('');
     const body = displayed.length ? displayed.map(row => {
         let values = `<td style="font-weight:600">${row.label}</td>`;
@@ -8884,7 +8918,8 @@ function ytdTable(title, field, data, years, monthWise = false) {
         return `<tr>${values}</tr>`;
     }).join('') : `<tr><td colspan="${years.length * 2}" style="color:var(--muted)">No data for the selected filters and years.</td></tr>`;
     const filterLabel = monthWise ? 'Months' : title.replace('-wise Sales', 's');
-    return `<div class="card" style="margin:0"><div class="card-header"><div><div class="card-title">${title}</div><div class="card-sub">${ytdMeasureLabel()} Wise</div></div>${ytdSectionFilterMarkup(sectionId, filterLabel, rows)}</div><div class="table-wrap"><table><thead><tr><th>${monthWise ? 'Month' : title.replace(' Sales', '')}</th>${headings}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+    const displayRankControls = !monthWise && (field === 'itemName' || field === 'customerName') ? ytdDisplayRankMarkup(field) : '';
+    return `<div class="card" style="margin:0"><div class="card-header"><div><div class="card-title">${title}</div><div class="card-sub">${ytdMeasureLabel()} Wise</div></div><div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;flex-wrap:wrap">${displayRankControls}${ytdSectionFilterMarkup(sectionId, filterLabel, rows)}</div></div><div class="table-wrap"><table><thead><tr><th>${monthWise ? 'Month' : title.replace(' Sales', '')}</th>${headings}</tr></thead><tbody>${body}</tbody></table></div></div>`;
 }
 function renderYTDCatalogue() {
     const host = document.getElementById('ytd-catalogue');
@@ -12399,6 +12434,18 @@ window.__ptScheduleDataLoad(5000);
         if (VALID.indexOf(theme) === -1) theme = 'modern-dark';
         document.documentElement.setAttribute('data-theme', theme);
         if (document.body) document.body.setAttribute('data-theme', theme);
+        // Refresh chart contrast when switching themes, without animation.
+        if (window.Chart && Chart.defaults) {
+            Chart.defaults.color = theme === 'light-clean' ? '#475467' : '#c4c8d4';
+            Chart.defaults.borderColor = theme === 'light-clean' ? 'rgba(71,84,103,0.14)' : 'rgba(212,175,90,0.15)';
+            try {
+                Object.values(Chart.instances || {}).forEach(function (chart) {
+                    if (!chart || !chart.options) return;
+                    chart.options.animation = false;
+                    chart.update('none');
+                });
+            } catch (_) {}
+        }
         var label = document.getElementById('rtSwitcherLabel');
         if (label) label.textContent = LABELS[theme];
         var opts = document.querySelectorAll('.rt-option');
@@ -16093,6 +16140,10 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
 .vr-future{ background:rgba(124,140,255,.13); color:#9aa8ff; border:1px solid rgba(124,140,255,.35); }
 @media (max-width:1000px){ .vision-pillars, .vision-roadmap{ grid-template-columns:1fr 1fr; } }
 @media (max-width:640px){ .vision-pillars, .vision-roadmap{ grid-template-columns:1fr; } }
+
+   /* Light Clean: slightly stronger canvas contrast for chart labels and grid lines. */
+   html[data-theme="light-clean"] .card canvas,
+   html[data-theme="light-clean"] .stat-card canvas { color: #344054; }
 </style>
 <script id="pt-update3-script">
 /* ── UPDATE-3: intro nav as real pages ── */
