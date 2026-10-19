@@ -4661,6 +4661,9 @@ function changeSiteLanguage(language){
     { key:'achievementPct', label:'Target Achievement', numeric:true, pct:true }, { key:'remainingTarget', label:'Remaining Target', numeric:true, money:true },
     { key:'growthPct', label:'Sales Growth', numeric:true, pct:true }, { key:'invoices', label:'Invoices', numeric:true },
     { key:'customers', label:'Customers', numeric:true }, { key:'products', label:'Products', numeric:true },
+    { key:'avgSkusInvoice', label:'AVG SKUs / INV', numeric:true },
+    { key:'customerTarget', label:'TOTAL CUSTOMER TARGET', numeric:true },
+    { key:'customerCoveragePct', label:'CUSTOMER COVERAGE %', numeric:true, pct:true },
     { key:'avgOrder', label:'Avg Order Value', numeric:true, money:true }, { key:'grossAmount', label:'Gross Revenue', numeric:true, money:true },
     { key:'discountPct', label:'Discount %', numeric:true, pct:true }, { key:'sharePct', label:'Revenue Share', numeric:true, pct:true }
   ];
@@ -4668,7 +4671,7 @@ function changeSiteLanguage(language){
   let sortDir = 'desc';
   let chartInstance = null;
   let initialized = false;
-  let targetState = { version:1, periods:{} };
+  let targetState = { version:1, periods:{}, customerTargets:{} };
   let localTargetOwner = '';
   let cloudLoadedFor = '';
   let cloudLoading = false;
@@ -4685,12 +4688,14 @@ function changeSiteLanguage(language){
       clean[period] = {};
       Object.entries(reps).forEach(([rep, target]) => { clean[period][rep] = Math.max(0, amount(target)); });
     });
-    return { version:1, periods:clean };
+    const customerTargets = {};
+    Object.entries(value && typeof value.customerTargets === 'object' && value.customerTargets ? value.customerTargets : {}).forEach(([rep, target]) => { customerTargets[rep] = Math.max(0, amount(target)); });
+    return { version:1, periods:clean, customerTargets };
   }
   function loadLocalTargets(owner = currentUserEmail()) {
     localTargetOwner = owner;
     try { targetState = normaliseTargetState(JSON.parse(localStorage.getItem(targetStorageKey(owner)) || 'null')); }
-    catch (error) { targetState = { version:1, periods:{} }; }
+    catch (error) { targetState = { version:1, periods:{}, customerTargets:{} }; }
   }
   function saveLocalTargets() {
     try { localStorage.setItem(targetStorageKey(currentUserEmail()), JSON.stringify(targetState)); }
@@ -4748,6 +4753,13 @@ function changeSiteLanguage(language){
     return 'Target period: all active data';
   }
   function targetFor(rep) { return Math.max(0, amount(targetState.periods?.[targetPeriodKey()]?.[rep])); }
+  function customerTargetFor(rep) { return Math.max(0, amount(targetState.customerTargets?.[rep])); }
+  function setCustomerTarget(rep, value) {
+    targetState.customerTargets = targetState.customerTargets || {};
+    targetState.customerTargets[rep] = Math.max(0, amount(value));
+    saveLocalTargets(); void saveCloudTargets(); render();
+    if (typeof showToast === 'function') showToast(`Customer target saved for ${rep}.`, 'success');
+  }
   function canEditTargets() { return !(typeof currentUser !== 'undefined' && currentUser?.role === 'viewer'); }
   function setTarget(rep, value) {
     const period = targetPeriodKey();
@@ -4831,23 +4843,31 @@ function changeSiteLanguage(language){
     const groups = new Map();
     rows.forEach((row, index) => {
       const name = text(row.bookingMan) || 'Unassigned';
-      if (!groups.has(name)) groups.set(name, { name, netAmount:0, grossAmount:0, discountAmount:0, invoiceIds:new Set(), customers:new Set(), products:new Set() });
+      if (!groups.has(name)) groups.set(name, { name, netAmount:0, grossAmount:0, discountAmount:0, invoiceIds:new Set(), customers:new Set(), products:new Set(), productUnits:0 });
       const group = groups.get(name), gross = amount(row.grossAmount), net = amount(row.netAmount);
       group.netAmount += net;
       group.grossAmount += gross;
       group.discountAmount += amount(row.discountAmount) || Math.max(0, gross - net);
-      const invoice = text(row.invoiceId || row.invoiceNo || row.srno) || `line-${index}`;
-      group.invoiceIds.add(invoice);
       const customer = text(row.customerCode || row.customerName), product = text(row.itemName);
       if (customer) group.customers.add(typeof normKey === 'function' ? normKey(customer) : customer.toLowerCase());
       if (product) group.products.add(typeof normKey === 'function' ? normKey(product) : product.toLowerCase());
+      const quantityValue = row.stock ?? row.quantity ?? row.qty ?? row.salesQty ?? row.units ?? row.saleQuantity;
+      const quantity = amount(quantityValue);
+      const transactionType = text(row.transactionType || row.transaction_type || row.saleType).toLowerCase();
+      // Returns/credit notes are not customer purchase invoices. Negative-quantity rows are returns even if the type label is missing.
+      const isReturn = quantity < 0 || /return|sales?\s*return|credit\s*note|refund|returned/.test(transactionType);
+      if (!isReturn) {
+        const invoice = text(row.invoiceId || row.invoiceNo || row.srno) || `line-${index}`;
+        group.invoiceIds.add(invoice);
+        group.productUnits += Math.max(0, quantity);
+      }
     });
     const totalNet = Array.from(groups.values()).reduce((sum, group) => sum + group.netAmount, 0);
     const list = Array.from(groups.values()).map(group => {
-      const target = targetFor(group.name), previous = priorSales.get(group.name) || 0;
+      const target = targetFor(group.name), customerTarget = customerTargetFor(group.name), previous = priorSales.get(group.name) || 0;
       return {
         name:group.name, invoices:group.invoiceIds.size, netAmount:group.netAmount, grossAmount:group.grossAmount,
-        discountAmount:group.discountAmount, customers:group.customers.size, products:group.products.size, target,
+        discountAmount:group.discountAmount, customers:group.customers.size, products:group.products.size, avgSkusInvoice:group.invoiceIds.size ? group.productUnits / group.invoiceIds.size : 0, customerTarget, customerCoveragePct:customerTarget > 0 ? group.customers.size / customerTarget * 100 : null, target,
         achievementPct:target > 0 ? group.netAmount / target * 100 : null,
         remainingTarget:target > 0 ? Math.max(0, target - group.netAmount) : null,
         growthPct:previous > 0 ? (group.netAmount - previous) / previous * 100 : null,
@@ -4935,6 +4955,9 @@ function changeSiteLanguage(language){
     const cell = (column, row) => {
       if (column.key === 'rank') return rankCell(row);
       if (column.key === 'name') return esc(row.name);
+      if (column.key === 'customerTarget') return `<input class="rr-target-input" type="number" min="0" step="1" inputmode="numeric" placeholder="Not set" value="${row.customerTarget || ''}" data-rr-customer-target="${encodeURIComponent(row.name)}" aria-label="Total customer target for ${esc(row.name)}" ${editable ? '' : 'disabled'} title="Assigned customer base; independent of date filters">`;
+      if (column.key === 'customerCoveragePct') return row.customerCoveragePct == null ? '<span class="rr-muted">Not set</span>' : `<span class="rr-achievement ${achievementClass(row.customerCoveragePct)}">${row.customerCoveragePct.toFixed(1)}%</span>`;
+      if (column.key === 'avgSkusInvoice') return amount(row.avgSkusInvoice).toFixed(2);
       if (column.key === 'target') return `<input class="rr-target-input" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Set target" value="${row.target || ''}" data-rr-target="${encodeURIComponent(row.name)}" aria-label="Sales target for ${esc(row.name)}" ${editable ? '' : 'disabled'}>`;
       if (column.key === 'achievementPct') return row.achievementPct == null ? '<span class="rr-muted">Not set</span>' : `<span class="rr-achievement ${achievementClass(row.achievementPct)}">${row.achievementPct.toFixed(1)}%</span>`;
       if (column.key === 'remainingTarget') return row.remainingTarget == null ? '<span class="rr-muted">—</span>' : money(row.remainingTarget);
@@ -4947,6 +4970,7 @@ function changeSiteLanguage(language){
     host.innerHTML = `<table class="rr-table"><thead><tr>${header}</tr></thead><tbody>${list.map(row => `<tr>${COLUMNS.map(column => `<td class="${column.numeric ? 'rr-num' : ''}">${cell(column, row)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
     host.querySelectorAll('[data-rr-sort]').forEach(element => element.addEventListener('click', () => { const key = element.dataset.rrSort; if (sortKey === key) sortDir = sortDir === 'asc' ? 'desc' : 'asc'; else { sortKey = key; sortDir = 'desc'; } render(); }));
     host.querySelectorAll('[data-rr-target]').forEach(input => input.addEventListener('change', event => { const rep = decodeURIComponent(event.currentTarget.dataset.rrTarget || ''); if (rep) setTarget(rep, event.currentTarget.value); }));
+    host.querySelectorAll('[data-rr-customer-target]').forEach(input => input.addEventListener('change', event => { const rep = decodeURIComponent(event.currentTarget.dataset.rrCustomerTarget || ''); if (rep) setCustomerTarget(rep, event.currentTarget.value); }));
   }
   function renderChart(list) {
     const canvas = byId('rr-chart'); if (!canvas || typeof Chart === 'undefined') return;
