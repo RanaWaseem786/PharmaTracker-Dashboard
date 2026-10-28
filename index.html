@@ -10542,7 +10542,7 @@ async function deleteUserByEmail(email) {
 
 function getSession() { return localStorage.getItem(SESSION_KEY); }
 function saveSession(email) { localStorage.setItem(SESSION_KEY, email.toLowerCase()); }
-function clearSession() { localStorage.removeItem(SESSION_KEY); try { localStorage.removeItem('ptProfileCacheV1'); } catch (e) {} }
+function clearSession() { localStorage.removeItem(SESSION_KEY); try { localStorage.removeItem('ptProfileCacheV1'); } catch (e) {} window.__ptDatasetLoading = false; window.__ptDatasetReady = false; window.__ptDatasetLoadEmail = null; const n = document.getElementById('pt-dataset-loading-notice'); if (n) n.style.display = 'none'; }
 
 /* ═══════════════════════════════════════════════
    SUBSCRIPTION / RECHARGE SETTINGS — Admin-configurable payment details
@@ -10995,29 +10995,27 @@ async function ptEnsureUserDataset(user) {
 }
 
 async function loginSuccess(user, newLogin = true) {
+    const loginEmail = String(user && user.email || '').trim().toLowerCase();
+    const previousEmail = String(currentUser && currentUser.email || '').trim().toLowerCase();
+    const sameDatasetLoadInFlight = !!(window.__ptDatasetLoading && window.__ptDatasetLoadEmail === loginEmail);
     currentUser = user;
     if (newLogin) saveSession(user.email);
 
-    // IMPORTANT: hydrate the authenticated user's authoritative cloud dataset
-    // before exposing the dashboard. Previously this ran fire-and-forget, so a
-    // user could start importing while the cloud read was still in flight; the
-    // late cloud response could then replace the just-imported in-memory data.
-    // Keep the existing UI and data model, but serialize login -> data hydration.
-    const loginEmail = String(user && user.email || '').trim().toLowerCase();
-    try {
-        const successEl = document.getElementById('login-success');
-        if (successEl) {
-            successEl.textContent = 'Loading your saved data…';
-            successEl.classList.add('show');
-        }
-        await ptEnsureUserDataset(user);
-    } catch (e) {
-        console.error('Could not load the signed-in user dataset:', e);
+    // Keep accounts isolated in memory, including the unauthenticated startup
+    // cache path. Only retain data when it is already known to belong to this
+    // same signed-in account and its hydration is complete/in progress.
+    if (previousEmail !== loginEmail || (!window.__ptDatasetReady && !sameDatasetLoadInFlight)) {
+        rawData = [];
+        try { uploadedFiles.clear(); fileRowMap.clear(); nextFileId = 0; } catch (e) {}
     }
-    // If another account became active while the async load was in progress,
-    // never render the previous account's dashboard over the new session.
-    if (String(currentUser && currentUser.email || '').trim().toLowerCase() !== loginEmail) return;
+    window.__ptDatasetLoading = true;
+    window.__ptDatasetLoadEmail = loginEmail;
+    window.__ptDatasetReady = false;
 
+    // Authentication is complete: expose navigation and the dashboard shell
+    // immediately. The authoritative cloud/local dataset load runs after paint
+    // so a slow Firestore read does not hold the entire application behind the
+    // login overlay. Data-mutating upload controls remain disabled until load.
     document.getElementById('auth-overlay').classList.add('hidden');
     document.getElementById('marketing-root').classList.add('hidden');
     document.querySelector('.sidebar').classList.remove('hidden');
@@ -11061,6 +11059,66 @@ async function loginSuccess(user, newLogin = true) {
 
     renderSubscriptionBox();
     renderUsersTab();
+
+    // Non-blocking loading status: the app shell and navigation are usable while
+    // the data request runs. Avoid accepting an import while the cloud snapshot
+    // is in flight, because a late authoritative snapshot could replace it.
+    let loadNotice = document.getElementById('pt-dataset-loading-notice');
+    if (!loadNotice) {
+        loadNotice = document.createElement('div');
+        loadNotice.id = 'pt-dataset-loading-notice';
+        loadNotice.setAttribute('role', 'status');
+        loadNotice.setAttribute('aria-live', 'polite');
+        loadNotice.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100001;max-width:calc(100vw - 28px);padding:9px 14px;border:1px solid rgba(120,150,200,.3);border-radius:10px;background:var(--panel,#172033);color:var(--text,#fff);box-shadow:0 8px 24px rgba(0,0,0,.18);font:500 12px/1.4 system-ui,sans-serif;';
+        document.body.appendChild(loadNotice);
+    }
+    loadNotice.textContent = 'Dashboard ready — loading your saved data…';
+    loadNotice.style.display = 'block';
+    const uploadDuringLoad = document.getElementById('uploadZone');
+    if (uploadDuringLoad) {
+        uploadDuringLoad.style.pointerEvents = 'none';
+        uploadDuringLoad.setAttribute('aria-disabled', 'true');
+        uploadDuringLoad.title = 'Please wait until saved data finishes loading.';
+    }
+    try { if (performance && performance.mark) performance.mark('pt-dashboard-visible'); } catch (e) {}
+    const loadToken = loginEmail;
+    const startDataLoad = function () {
+        if (String(currentUser && currentUser.email || '').trim().toLowerCase() !== loadToken) return;
+        const dataStart = (performance && performance.now) ? performance.now() : Date.now();
+        Promise.resolve().then(function () { return ptEnsureUserDataset(user); }).catch(function (e) {
+            console.error('Could not load the signed-in user dataset:', e);
+        }).finally(function () {
+            // A late completion for an account that has since signed out/switched
+            // must not alter the current account's loading controls or notice.
+            if (String(currentUser && currentUser.email || '').trim().toLowerCase() !== loadToken) return;
+            window.__ptDatasetLoading = false;
+            window.__ptDatasetReady = true;
+            const notice = document.getElementById('pt-dataset-loading-notice');
+            if (notice) notice.style.display = 'none';
+            const upload = document.getElementById('uploadZone');
+            if (upload && currentUser && currentUser.role !== 'viewer') {
+                upload.style.pointerEvents = '';
+                upload.removeAttribute('aria-disabled');
+                upload.title = '';
+            }
+            try {
+                if (performance && performance.mark) {
+                    performance.mark('pt-essential-data-ready');
+                    performance.measure('pt-dashboard-to-data-ready', 'pt-dashboard-visible', 'pt-essential-data-ready');
+                    const measure = performance.getEntriesByName('pt-dashboard-to-data-ready').slice(-1)[0];
+                    if (measure) console.info('[PharmaTracker performance] dashboard-to-data-ready: ' + Math.round(measure.duration) + ' ms');
+                } else {
+                    console.info('[PharmaTracker performance] data load: ' + Math.round(((performance && performance.now) ? performance.now() : Date.now()) - dataStart) + ' ms');
+                }
+            } catch (e) {}
+        });
+    };
+    // Let the browser paint the dashboard before IndexedDB reads, Firestore
+    // decoding, demo-data generation, and full dashboard calculations begin.
+    if (!sameDatasetLoadInFlight) {
+        if (typeof requestAnimationFrame === 'function') requestAnimationFrame(function () { setTimeout(startDataLoad, 25); });
+        else setTimeout(startDataLoad, 50);
+    }
 
     // Be explicit when the current session is not connected to shared storage.
     // This does not change permissions or force local data into the cloud.
