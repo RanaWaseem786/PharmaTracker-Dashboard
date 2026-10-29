@@ -13912,7 +13912,7 @@ function prepareDataSummary(catalogue, data) {
             S.blocked = true;
             if (!S.warned) {
                 S.warned = true;
-                toast('Cloud sync blocked: allow the userData collection in your Firestore Rules (see notes). Data will be saved on this device only.', 'error');
+                toast('Cloud access denied by Firestore Rules. Check userData/{email}, its chunks subcollection, and the signed-in email. Local data remains on this device.', 'error');
             }
             return true;
         }
@@ -13954,9 +13954,12 @@ function prepareDataSummary(catalogue, data) {
     function uint8ToBase64(arr) {
         if (!arr || arr.length === 0) return '';
         if (typeof arr === 'string') return arr;  // already base64
+        // Convert in bounded blocks. Repeatedly appending one character at a
+        // time creates avoidable CPU and memory pressure on large uploads.
+        const BLOCK = 0x8000;
         let binary = '';
-        for (let i = 0; i < arr.length; i++) {
-            binary += String.fromCharCode(arr[i]);
+        for (let i = 0; i < arr.length; i += BLOCK) {
+            binary += String.fromCharCode.apply(null, arr.subarray(i, Math.min(i + BLOCK, arr.length)));
         }
         return btoa(binary);
     }
@@ -14065,7 +14068,10 @@ function prepareDataSummary(catalogue, data) {
         if (!cloudOn()) return;
         S.queued = reason || 'data-change';
         clearTimeout(S.timer);
-        S.timer = setTimeout(runCloudSave, PUSH_DEBOUNCE);
+        S.timer = setTimeout(function () {
+            S.timer = null;
+            runCloudSave();
+        }, PUSH_DEBOUNCE);
     }
 
     let _saveRunning = false;
@@ -14095,9 +14101,20 @@ function prepareDataSummary(catalogue, data) {
         } catch (e) {
             handleCloudError(e, 'save');
             setBadge('error', 'Cloud save failed — click');
+            // Do not silently lose a failed save request. Retry transient
+            // network/server failures automatically; permission failures are
+            // deliberately not retried until Firestore Rules are corrected.
+            if (!S.blocked && cloudOn()) {
+                S.queued = reason || 'retry-save';
+                clearTimeout(S.timer);
+                S.timer = setTimeout(function () {
+                    S.timer = null;
+                    if (S.queued && cloudOn()) runCloudSave();
+                }, 5000);
+            }
         } finally {
             _saveRunning = false; S.saving = false;
-            if (S.queued) runCloudSave();
+            if (S.queued && !S.timer) runCloudSave();
         }
     }
 
@@ -14106,10 +14123,19 @@ function prepareDataSummary(catalogue, data) {
         try {
             return await cloudLoadSnapshotOnce();
         } catch (e) {
-            if (isRetry) throw e;
-            console.warn('☁️ Cloud read failed, retrying once:' + ((e && e.message) || e));
-            await new Promise(function (r) { setTimeout(r, 2000); });
-            return await cloudLoadSnapshotOnce();
+            // A rules/permission failure cannot be repaired by waiting and
+            // repeating the same request. Retry only transient network/server
+            // errors so a denied read does not add an unnecessary 2-second delay.
+            const code = String((e && e.code) || '').toLowerCase();
+            const message = String((e && e.message) || e || '').toLowerCase();
+            const denied = code.indexOf('permission-denied') >= 0 ||
+                message.indexOf('missing or insufficient permissions') >= 0 ||
+                message.indexOf('permission-denied') >= 0;
+            const transient = /unavailable|deadline-exceeded|network|timed out|resource-exhausted|internal/.test(code + ' ' + message);
+            if (isRetry || denied || !transient) throw e;
+            console.warn('☁️ Temporary cloud read issue; retrying once:', e);
+            await new Promise(function (r) { setTimeout(r, 700); });
+            return await cloudLoadSnapshot(true);
         }
     }
     async function cloudLoadSnapshotOnce() {
@@ -14324,7 +14350,13 @@ function prepareDataSummary(catalogue, data) {
         console.log('☁️ Cloud sync status:', st);
         toast('☁️ Cloud ' + (st.enabled ? 'ON' : 'OFF') + ' · ' + st.rows.toLocaleString() + ' records · live: '
               + st.live + (st.blocked ? ' · RULES BLOCKED' : ''), st.blocked ? 'error' : 'success');
-        if (S.lastError) setTimeout(function () { toast('Aakhri error: ' + S.lastError, 'error'); }, 300);
+        if (S.lastError) setTimeout(function () {
+            toast('Cloud error: ' + S.lastError, 'error');
+            console.error('PharmaTracker cloud sync diagnostic:', {
+                user: emailKey(), enabled: cloudOn(), blocked: S.blocked,
+                error: S.lastError, at: S.lastErrorAt || null
+            });
+        }, 300);
         // Click = force a sync (useful for testing without uploading again)
         if (st.enabled && st.rows > 0 && !st.blocked) {
             toast('☁️ Retrying cloud sync…', 'success');
@@ -14337,6 +14369,8 @@ function prepareDataSummary(catalogue, data) {
     /* --------------------------- wiring -------------------------------- */
     const _baseSave = saveDataToStorage;
     saveDataToStorage = function () {
+        // Revision guard prevents a late cloud response overwriting a newer local edit.
+        S.localRevision = (S.localRevision || 0) + 1;
         _baseSave();                     // local IndexedDB copy (offline cache)
         scheduleCloudSave('data-change');
         scheduleSettingsPush();
@@ -14344,40 +14378,81 @@ function prepareDataSummary(catalogue, data) {
 
     const _baseLoad = loadDataFromStorage;
     loadDataFromStorage = async function () {
-        if (cloudOn()) {
-            try {
-                console.log('☁️ Cloud dataset read: ' + emailKey());
-                const result = await cloudLoadSnapshot();
+        if (!cloudOn()) return await _baseLoad();
+
+        const loadEmail = emailKey();
+        const revisionAtStart = S.localRevision || 0;
+        console.log('☁️ Fast dataset restore started: ' + loadEmail);
+
+        // Start both reads together. IndexedDB is normally much faster than
+        // downloading/decompressing every Firestore chunk, so use the local
+        // cache immediately and refresh it from cloud in the background.
+        const localPromise = Promise.resolve().then(function () { return _baseLoad(); });
+        const cloudPromise = Promise.resolve().then(function () { return cloudLoadSnapshot(); });
+        let local = false;
+        try { local = await localPromise; }
+        catch (localError) { console.warn('Local dataset cache read failed:', localError); }
+
+        if (local && rawData.length) {
+            setBadge('syncing', 'Showing saved data · checking cloud…');
+            attachMetaListener();
+            // Do not delay login/dashboard rendering for the cloud round trip.
+            cloudPromise.then(function (result) {
+                if (emailKey() !== loadEmail || (S.localRevision || 0) !== revisionAtStart || S.saving || _saveRunning || S.queued) return;
                 if (result && result.snapshot) {
                     applySnapshot(result.snapshot);
                     cacheLocally();
                     refreshDashboardUI();
-                    console.log('☁️ Loaded ' + rawData.length.toLocaleString() + ' records from the cloud');
+                    console.log('☁️ Background cloud refresh complete — ' + rawData.length.toLocaleString() + ' records');
                     setBadge('synced', 'Synced · ' + rawData.length.toLocaleString() + ' records');
-                    attachMetaListener();
-                    pullSettings();
-                    return true;
-                }
-                console.log('☁️ No data in the cloud yet — uploading local data');
-                // Nothing in the cloud yet: keep any local data and upload it once
-                // so this device's dataset becomes the shared one.
-                const local = await _baseLoad();
-                if (local && rawData.length) {
+                    S.lastError = null; S.lastErrorAt = null;
+                } else {
+                    console.log('☁️ Cloud has no saved dataset yet; uploading local cache');
                     setBadge('syncing', 'First cloud upload…');
                     scheduleCloudSave('first-upload');
-                    attachMetaListener();
-                } else {
-                    setBadge('off', 'Cloud empty — no data yet');
                 }
                 pullSettings();
-                return local;
-            } catch (e) {
+            }).catch(function (e) {
+                if (emailKey() !== loadEmail) return;
                 handleCloudError(e, 'load');
                 setBadge('error', 'Cloud read failed — click');
-                return await _baseLoad();
-            }
+                console.warn('Background cloud refresh failed; local cached data remains available.', e);
+            });
+            return true;
         }
-        return await _baseLoad();
+
+        // First login on this device (no local cache): cloud is the only source,
+        // so wait for it. If cloud is empty/unavailable, preserve the local result.
+        try {
+            const result = await cloudPromise;
+            if (emailKey() !== loadEmail) return false;
+            if (result && result.snapshot) {
+                applySnapshot(result.snapshot);
+                cacheLocally();
+                refreshDashboardUI();
+                console.log('☁️ Loaded ' + rawData.length.toLocaleString() + ' records from cloud');
+                setBadge('synced', 'Synced · ' + rawData.length.toLocaleString() + ' records');
+                attachMetaListener();
+                pullSettings();
+                return true;
+            }
+            if (local && rawData.length) {
+                setBadge('syncing', 'First cloud upload…');
+                scheduleCloudSave('first-upload');
+                attachMetaListener();
+            } else {
+                setBadge('off', 'Cloud empty — no data yet');
+            }
+            pullSettings();
+            return !!local;
+        } catch (e) {
+            if (emailKey() === loadEmail) {
+                handleCloudError(e, 'load');
+                setBadge('error', 'Cloud read failed — click');
+            }
+            console.warn('Cloud dataset read failed; retaining local cache if available.', e);
+            return !!local;
+        }
     };
 
     // Sign out: drop the live listener so another account's data is not picked up.
