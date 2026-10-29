@@ -12202,44 +12202,20 @@ window.__ptScheduleDataLoad(5000);
 <section id="ex-suite" aria-label="Executive Analytics Dashboard">
  <div class="ex-shell">
   <div class="ex-top"><div><div class="ex-brand">Pharma<b>Tracker</b> Executive Suite</div><div class="ex-sub">Sales intelligence, performance monitoring &amp; decision-ready reporting</div></div><div class="ex-actions"><button class="ex-btn" id="ex-theme">◐ Theme</button><div class="ex-relative"><button class="ex-btn" id="ex-alerts">🔔 Alerts <span id="ex-alert-count"></span></button><div id="ex-notices" class="ex-panel"></div></div><button class="ex-btn" id="ex-print">🖨 Print</button><button class="ex-btn" id="ex-csv">CSV</button><button class="ex-btn" id="ex-xlsx">Excel</button><button class="ex-btn ex-close" id="ex-close">×</button></div></div>
-  <div class="ex-filterbar"><input id="ex-search" class="ex-search" placeholder="Search customer, product, salesman…"><select id="ex-period" class="ex-select"><option value="all">All time</option><option value="month">Current month</option><option value="quarter">Current quarter</option><option value="year">Current year</option></select><select id="ex-region" class="ex-select"><option value="">All regions</option></select><select id="ex-profit-percent" class="ex-select" style="min-width:140px"><option value="">All Profit %</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option></select><label class="ex-btn">Target <input id="ex-target" type="number" min="1" value="1000000" style="width:88px;border:0;background:transparent;color:inherit;font-weight:700;outline:0"></label><button class="ex-btn" id="ex-refresh">↻ Refresh</button></div>
-  <div id="ex-kpis" class="ex-kpis"></div>
+  <div class="ex-filterbar"><input id="ex-search" class="ex-search" placeholder="Search customer, product, salesman…"><select id="ex-period" class="ex-select"><option value="all">All time</option><option value="month">Current month</option><option value="quarter">Current quarter</option><option value="year">Current year</option></select><select id="ex-region" class="ex-select"><option value="">All regions</option></select><select id="ex-profit-percent" class="ex-select" style="min-width:140px"><option value="">All Profit %</option><option value="1">1%</option><option value="2">2%</option><option value="3">3%</option><option value="4">4%</option><option value="5">5%</option><option value="6">6%</option><option value="7">7%</option><option value="8">8%</option><option value="9">9%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30">30%</option><option value="35">35%</option><option value="40">40%</option><option value="45">45%</option><option value="50">50%</option></select><label class="ex-btn">Target <input id="ex-target" type="number" min="1" placeholder="Optional" style="width:88px;border:0;background:transparent;color:inherit;font-weight:700;outline:0"></label><button class="ex-btn" id="ex-refresh">↻ Refresh</button></div>
+  <div class="ex-extra-filters"><label>From <input id="ex-date-from" class="ex-select" type="date"></label><label>To <input id="ex-date-to" class="ex-select" type="date"></label><label>Representative <select id="ex-rep" class="ex-select"><option value="">All representatives</option></select></label></div>
+  <div id="ex-kpis" class="ex-kpis"></div><div id="ex-insights" aria-live="polite"></div>
   <div class="ex-grid">
-   <article class="ex-panel ex-span-8"><h3>Revenue &amp; Forecast</h3><div class="ex-chart"><canvas id="ex-revenue"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Targets vs Achievement</h3><div id="ex-target-box"></div><div class="ex-chart"><canvas id="ex-gauge"></canvas></div></article>
+   <article class="ex-panel ex-span-8"><h3>Monthly Sales Trend</h3><div class="ex-chart"><canvas id="ex-revenue"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Targets vs Achievement</h3><div id="ex-target-box"></div><div class="ex-chart"><canvas id="ex-gauge"></canvas></div></article>
    <article class="ex-panel ex-span-4"><h3>Salesman Performance</h3><div class="ex-chart"><canvas id="ex-salesman"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Region-wise Analysis</h3><div class="ex-chart"><canvas id="ex-region-chart"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Product Performance</h3><div class="ex-chart"><canvas id="ex-products"></canvas></div></article>
-   <article class="ex-panel ex-span-5"><h3>Customer Analytics — Top Customers</h3><div class="ex-chart"><canvas id="ex-customers"></canvas></div></article><article class="ex-panel ex-span-3"><h3>Sales Funnel</h3><div id="ex-funnel" class="ex-funnel"></div></article><article class="ex-panel ex-span-4"><h3>Profit Analysis</h3><div class="ex-chart"><canvas id="ex-profit"></canvas></div></article>
+   <article class="ex-panel ex-span-5"><h3>Customer Analytics — Top Customers</h3><div class="ex-chart"><canvas id="ex-customers"></canvas></div></article><article class="ex-panel ex-span-3"><h3>Sales Activity</h3><div id="ex-funnel" class="ex-funnel"></div></article><article class="ex-panel ex-span-4"><h3>Profit Analysis</h3><div class="ex-chart"><canvas id="ex-profit"></canvas></div></article>
    <article class="ex-panel ex-span-4"><h3>Waterfall: Gross to Net</h3><div class="ex-chart"><canvas id="ex-waterfall"></canvas></div></article><article class="ex-panel ex-span-4"><h3>Monthly Heatmap</h3><div id="ex-heatmap" class="ex-heatmap"></div><p class="ex-note">Lower to higher monthly revenue intensity</p></article><article class="ex-panel ex-span-4"><h3>Quarterly Trend</h3><div class="ex-chart"><canvas id="ex-quarterly"></canvas></div></article>
    <article class="ex-panel ex-span-3"><h3>Top Products</h3><ul id="ex-top-products" class="ex-list"></ul></article><article class="ex-panel ex-span-3"><h3>Top Customers</h3><ul id="ex-top-customers" class="ex-list"></ul></article><article class="ex-panel ex-span-3"><h3>Activity Timeline</h3><div id="ex-timeline" class="ex-timeline"></div></article><article class="ex-panel ex-span-3"><h3>Smart Alerts</h3><ul id="ex-smart-alerts" class="ex-list"></ul></article>
    <article class="ex-panel ex-span-6"><h3>Growth &amp; KPI Trend</h3><div class="ex-chart"><canvas id="ex-growth"></canvas></div></article><article class="ex-panel ex-span-6"><h3>Sales Mix</h3><div class="ex-chart"><canvas id="ex-mix"></canvas></div></article>
   </div>
  </div>
 </section>
-<script id="executive-upgrade-script">
-(() => {
- const $=id=>document.getElementById(id), money=n=>{try{return (typeof fmt==='function'?fmt(n):'PKR '+Number(n||0).toLocaleString())}catch(e){return 'PKR '+Number(n||0).toLocaleString()}};
- const charts={}; let suiteRows=[];
- function num(v){return Number(String(v??0).replace(/[^0-9.-]/g,''))||0} function amount(r){return num(r.netAmount??r.grossAmount??r.amount)}
- function profitRate(){let v=parseFloat($('ex-profit-percent')?.value);return (!v||isNaN(v)||v<=0)?.16:v/100}
- function key(r,n){return String(r[n]??r[n.replace('Name','')]??'Unassigned').trim()||'Unassigned'} function group(rows,field){return rows.reduce((a,r)=>{let k=key(r,field);a[k]=(a[k]||0)+amount(r);return a},{})}
- function dateOf(r){let d=new Date(r.invoiceDate||r.date);return isNaN(d)?null:d} function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
- function rows(){let data=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let q=$('ex-search').value.trim().toLowerCase(), region=$('ex-region').value, p=$('ex-period').value, now=new Date();return data.filter(r=>{let d=dateOf(r); if(region&&key(r,'regionName')!==region)return false;if(q&&!Object.values(r).join(' ').toLowerCase().includes(q))return false;if(!d||p==='all')return true;if(p==='month')return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();if(p==='quarter')return d.getFullYear()===now.getFullYear()&&Math.floor(d.getMonth()/3)===Math.floor(now.getMonth()/3);return d.getFullYear()===now.getFullYear()})}
- function setChart(id,type,labels,data,color,extra={}){if(!window.Chart)return;if(charts[id])charts[id].destroy();let el=$(id);if(!el)return;charts[id]=new Chart(el,{type,data:{labels,datasets:[{label:extra.label||'Revenue',data,backgroundColor:extra.background||color+'66',borderColor:color,borderWidth:2,fill:extra.fill??type==='line',tension:.35,stack:extra.stack}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:extra.legend??false,labels:{color:'#9eadd0'}},tooltip:{callbacks:{label:c=>money(c.raw)}}},scales:type==='doughnut'||type==='pie'?{}:{x:{ticks:{color:'#9eadd0',maxRotation:0},grid:{display:false}},y:{ticks:{color:'#9eadd0',callback:v=>Number(v).toLocaleString()},grid:{color:'rgba(148,180,255,.1)'}}}}})}
- function sorted(g,n=6){return Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,n)} function list(id,g){$(id).innerHTML=sorted(g,5).map(([n,v])=>`<li><span>${escapeHtml(n)}</span><b>${money(v)}</b></li>`).join('')||'<li>No data imported yet.</li>'} function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
- function refresh(){let allRows=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[],oldRegion=$('ex-region').value,oldProfitPct=$('ex-profit-percent').value,regionOptions=[...new Set(allRows.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').innerHTML='<option value="">All regions</option>'+regionOptions.map(x=>`<option>${escapeHtml(x)}</option>`).join('');$('ex-region').value=regionOptions.includes(oldRegion)?oldRegion:'';$('ex-profit-percent').value=oldProfitPct;suiteRows=rows();let total=suiteRows.reduce((s,r)=>s+amount(r),0), gross=suiteRows.reduce((s,r)=>s+num(r.grossAmount),0), disc=Math.max(0,gross-total), invoices=new Set(suiteRows.map(r=>r.invoiceId||r.srno||JSON.stringify(r))).size, customers=Object.keys(group(suiteRows,'customerName')).length, products=Object.keys(group(suiteRows,'itemName')).length, avg=invoices?total/invoices:0;
- $('ex-kpis').innerHTML=[['Total Revenue',money(total),'#6d7cff'],['Total Profit',money(total*profitRate()),'#2ee6a6'],['Invoices',invoices.toLocaleString(),'#ffb65d'],['Customers',customers.toLocaleString(),'#a979ff'],['Products',products.toLocaleString(),'#51c8ff'],['Avg. Order',money(avg),'#ff718c']].map((x,i)=>`<div class="ex-card" style="--card-color:${x[2]}"><div class="ex-label">${x[0]}</div><div class="ex-value">${x[1]}</div><div class="ex-delta">${i<2?'▲ '+(8+i*3)+'% vs prior period':'Live from imported data'}</div></div>`).join('');
- let monthly={};suiteRows.forEach(r=>{let d=dateOf(r);if(d){let k=monthKey(d);monthly[k]=(monthly[k]||0)+amount(r)}});let ms=Object.keys(monthly).sort(), vals=ms.map(k=>monthly[k]);let forecast=vals.length>1?vals[vals.length-1]+(vals[vals.length-1]-vals[vals.length-2]):total;setChart('ex-revenue','line',[...ms,'Forecast'],[...vals,forecast],'#6d7cff',{label:'Revenue & Forecast'});
- let target=num($('ex-target').value)||1, pct=Math.min(100,Math.round(total/target*100));$('ex-target-box').innerHTML=`<div class="ex-value">${pct}% <span class="ex-note">achieved</span></div><div class="ex-meter"><i style="width:${pct}%"></i></div><div class="ex-note">${money(total)} of ${money(target)} target</div>`;setChart('ex-gauge','doughnut',['Achieved','Remaining'],[Math.min(total,target),Math.max(0,target-total)],'#2ee6a6',{background:['#2ee6a6','#243451'],legend:false,label:'Target'});
- let salesman=group(suiteRows,'bookingMan'), region=group(suiteRows,'regionName'), product=group(suiteRows,'itemName'), customer=group(suiteRows,'customerName');let gr=sorted(salesman), rg=sorted(region), pg=sorted(product), cg=sorted(customer);setChart('ex-salesman','bar',gr.map(x=>x[0]),gr.map(x=>x[1]),'#ae68ff');setChart('ex-region-chart','doughnut',rg.map(x=>x[0]),rg.map(x=>x[1]),'#51c8ff',{legend:true});setChart('ex-products','bar',pg.map(x=>x[0]),pg.map(x=>x[1]),'#ffb65d');setChart('ex-customers','bar',cg.map(x=>x[0]),cg.map(x=>x[1]),'#2ee6a6');
- setChart('ex-profit','line',ms,vals.map(v=>v*profitRate()),'#2ee6a6',{label:'Estimated Profit'});setChart('ex-waterfall','bar',['Gross Sales','Discount','Net Sales'],[gross,-disc,total],'#ffb65d',{label:'Waterfall'});let quarters={};suiteRows.forEach(r=>{let d=dateOf(r);if(d){let k=d.getFullYear()+' Q'+(Math.floor(d.getMonth()/3)+1);quarters[k]=(quarters[k]||0)+amount(r)}});let qs=Object.entries(quarters).sort();setChart('ex-quarterly','line',qs.map(x=>x[0]),qs.map(x=>x[1]),'#a979ff');setChart('ex-growth','line',ms,vals.map((v,i)=>i?Math.round((v/(vals[i-1]||1)-1)*100):0),'#51c8ff',{label:'Growth %'});setChart('ex-mix','doughnut',pg.map(x=>x[0]),pg.map(x=>x[1]),'#ff718c',{legend:true});
- $('ex-funnel').innerHTML=[['Leads',total*1.35,100],['Quotes',total*1.17,84],['Orders',total,68],['Delivered',total*.91,52]].map(x=>`<div style="width:${x[2]}%">${x[0]} · ${money(x[1])}</div>`).join('');let max=Math.max(...vals,1);$('ex-heatmap').innerHTML=Array.from({length:12},(_,i)=>{let v=vals[i]||0,l=Math.min(3,Math.floor(v/max*4));return `<i data-l="${l}" title="${ms[i]||'Month'}: ${money(v)}"></i>`}).join('');list('ex-top-products',product);list('ex-top-customers',customer);
- let latest=ms.slice(-4).reverse();$('ex-timeline').innerHTML=latest.map(m=>`<div><b>${m}</b><br><span class="ex-note">${money(monthly[m])} recorded revenue</span></div>`).join('')||'<div class="ex-note">Upload data to populate activity.</div>';let alerts=[];if(!suiteRows.length)alerts.push('Import an Excel or CSV file to activate analytics.');if(total<target)alerts.push(`Target gap: ${money(target-total)} remaining.`);if(products<3&&suiteRows.length)alerts.push('Low product diversity detected.');if(!alerts.length)alerts.push('Performance is on track.');$('ex-smart-alerts').innerHTML=alerts.map(x=>`<li><span>${x}</span></li>`).join('');$('ex-notices').innerHTML='<h3>Notifications</h3>'+alerts.map(x=>`<p class="ex-note">• ${x}</p>`).join('');$('ex-alert-count').textContent=alerts.length;
- }
- function exportRows(kind){let rowsOut=suiteRows.map(r=>({Invoice:r.invoiceId||'',Date:r.invoiceDate||'',Customer:r.customerName||'',Product:r.itemName||'',Region:r.regionName||'',Salesman:r.bookingMan||'',Amount:amount(r)}));if(kind==='xlsx'&&typeof XLSX!=='undefined'){let ws=XLSX.utils.json_to_sheet(rowsOut),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Executive Report');XLSX.writeFile(wb,'PharmaTracker_Executive_Report.xlsx');return}let keys=Object.keys(rowsOut[0]||{Message:'No data'}),csv=[keys.join(','),...rowsOut.map(r=>keys.map(k=>'"'+String(r[k]??'').replace(/"/g,'""')+'"').join(','))].join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='PharmaTracker_Executive_Report.csv';a.click();URL.revokeObjectURL(a.href)}
- function open(){ $('ex-suite').style.display='block'; $('ex-launch').style.display='none';refresh() } function close(){ $('ex-suite').style.display='none'; $('ex-launch').style.display='block' }
- $('ex-launch').onclick=open;$('ex-close').onclick=close;$('ex-refresh').onclick=refresh;$('ex-theme').onclick=()=>{document.body.classList.toggle('ex-light');refresh()};$('ex-alerts').onclick=()=>{$('ex-notices').style.display=$('ex-notices').style.display==='block'?'none':'block'};$('ex-print').onclick=()=>window.print();$('ex-csv').onclick=()=>exportRows('csv');$('ex-xlsx').onclick=()=>exportRows('xlsx');['ex-search','ex-period','ex-region','ex-profit-percent','ex-target'].forEach(id=>$(id).addEventListener(id==='ex-search'?'input':'change',refresh));
- let existing=(typeof rawData!=='undefined'&&Array.isArray(rawData))?rawData:[];let regions=[...new Set(existing.map(r=>key(r,'regionName')).filter(x=>x!=='Unassigned'))].sort();$('ex-region').insertAdjacentHTML('beforeend',regions.map(x=>`<option>${escapeHtml(x)}</option>`).join(''));
-})();
-</script>
+<script id="executive-upgrade-script">/* Superseded duplicate executive implementation; executive-filter-sync is active. */</script>
 <style id="executive-filter-sync-styles">
   .ex-delta.negative{color:var(--ex-red)}
   .ex-delta.neutral{color:var(--ex-muted)}
@@ -12304,6 +12280,10 @@ window.__ptScheduleDataLoad(5000);
             if (group && valueFor(row, 'companyGroup') !== group) return false;
             if (region && valueFor(row, 'regionName') !== region) return false;
             if (query && !Object.values(row).join(' ').toLowerCase().includes(query)) return false;
+            const dateText = String(row.invoiceDate || row.date || '').slice(0,10);
+            const from = byId('ex-date-from')?.value || ''; const to = byId('ex-date-to')?.value || '';
+            if ((from || to) && (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || (from && dateText < from) || (to && dateText > to))) return false;
+            const rep = byId('ex-rep')?.value || ''; if (rep && valueFor(row, 'bookingMan') !== rep) return false;
             const date = new Date(row.invoiceDate || row.date);
             if (period === 'all' || Number.isNaN(date.getTime())) return period === 'all';
             if (period === 'month') return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
@@ -12355,7 +12335,7 @@ window.__ptScheduleDataLoad(5000);
             data: { labels, datasets: [{ label: options.label || 'Revenue', data, backgroundColor: options.background || `${color}66`, borderColor: color, borderWidth: 2, fill: options.fill ?? type === 'line', tension: .35 }] },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: options.legend ?? false, labels: { color: '#9eadd0' } }, tooltip: { callbacks: { label: context => display(context.raw) } } },
+                plugins: { legend: { display: options.legend ?? false, labels: { color: '#9eadd0' } }, tooltip: { callbacks: { label: context => context.raw == null ? 'Not available' : (options.label === 'Growth %' ? context.raw + '%' : display(context.raw)) } } },
                 scales: type === 'doughnut' || type === 'pie' ? {} : { x: { ticks: { color: '#9eadd0', maxRotation: 0 }, grid: { display: false } }, y: { ticks: { color: '#9eadd0', callback: value => Number(value).toLocaleString() }, grid: { color: 'rgba(148,180,255,.1)' } } }
             }
         });
@@ -12367,7 +12347,7 @@ window.__ptScheduleDataLoad(5000);
         };
         list('ex-top-products', product);
         list('ex-top-customers', customer);
-        byId('ex-funnel').innerHTML = [['Leads', total * 1.35, 100], ['Quotes', total * 1.17, 84], ['Orders', total, 68], ['Delivered', total * .91, 52]].map(([label, value, width]) => `<div style="width:${width}%">${label} · ${display(value)}</div>`).join('');
+        byId('ex-funnel').innerHTML = `<p class="ex-note">${executiveRows.length.toLocaleString()} sales line items in the selected period.</p>`;
         const maximum = Math.max(...monthly.map(entry => entry[1]), 1);
         byId('ex-heatmap').innerHTML = Array.from({ length: 12 }, (_, index) => {
             const [month, value] = monthly[index] || ['Month', 0];
@@ -12377,7 +12357,7 @@ window.__ptScheduleDataLoad(5000);
         byId('ex-timeline').innerHTML = latest.map(([month, value]) => `<div><b>${escape(month)}</b><br><span class="ex-note">${display(value)} recorded ${isUnitsMeasure() ? 'units' : 'revenue'}</span></div>`).join('') || '<div class="ex-note">Upload data to populate activity.</div>';
         const alerts = [];
         if (!executiveRows.length) alerts.push('No records match the selected filters.');
-        if (total < target) alerts.push(`Target gap: ${display(target - total)} remaining.`);
+        if (target > 0 && total < target) alerts.push(`Target gap: ${display(target - total)} remaining.`);
         if (products < 3 && executiveRows.length) alerts.push('Low product diversity detected.');
         if (!alerts.length) alerts.push('Performance is on track.');
         byId('ex-smart-alerts').innerHTML = alerts.map(alert => `<li><span>${escape(alert)}</span></li>`).join('');
@@ -12393,7 +12373,7 @@ window.__ptScheduleDataLoad(5000);
         const total = executiveRows.reduce((sum, row) => sum + amount(row), 0);
         const gross = executiveRows.reduce((sum, row) => sum + (Number(row.grossAmount) || 0), 0);
         const discount = Math.max(0, gross - total);
-        const invoices = executiveRows.length;
+        const invoices = new Set(executiveRows.map(row => String(row.invoiceId || '').trim()).filter(Boolean)).size;
         const customers = new Set(executiveRows.map(row => normKey(row.customerCode || row.customerName))).size;
         const products = new Set(executiveRows.map(row => normKey(row.itemName))).size;
         const average = invoices ? total / invoices : 0;
@@ -12402,11 +12382,11 @@ window.__ptScheduleDataLoad(5000);
         const unitsMode = isUnitsMeasure();
         const kpis = [
             [unitsMode ? 'Total Units' : 'Total Revenue', display(total), kpiDelta(executiveRows, rows => rows.reduce((sum, row) => sum + amount(row), 0)), '#6d7cff'],
-            ['Total Profit', unitsMode ? '—' : money(total * profitRate), selectedProfitPercent && !unitsMode ? kpiDelta(executiveRows, rows => rows.reduce((sum, row) => sum + amount(row) * profitRate, 0)) : { text: unitsMode ? 'Switch to Value-wise' : 'Select a profit %', tone: 'neutral' }, '#2ee6a6'],
-            ['Invoices', invoices.toLocaleString(), kpiDelta(executiveRows, rows => rows.length), '#ffb65d'],
+            ['Estimated Profit', unitsMode || !selectedProfitPercent ? '—' : money(total * profitRate), selectedProfitPercent && !unitsMode ? kpiDelta(executiveRows, rows => rows.reduce((sum, row) => sum + amount(row) * profitRate, 0)) : { text: unitsMode ? 'Switch to Value-wise' : 'Select a profit %', tone: 'neutral' }, '#2ee6a6'],
+            ['Invoices', invoices.toLocaleString(), kpiDelta(executiveRows, rows => new Set(rows.map(r => String(r.invoiceId || '').trim()).filter(Boolean)).size), '#ffb65d'],
             ['Customers', customers.toLocaleString(), kpiDelta(executiveRows, rows => new Set(rows.map(row => normKey(row.customerCode || row.customerName))).size), '#a979ff'],
             ['Products', products.toLocaleString(), kpiDelta(executiveRows, rows => new Set(rows.map(row => normKey(row.itemName))).size), '#51c8ff'],
-            [unitsMode ? 'Avg. Units/Order' : 'Avg. Order', display(average), kpiDelta(executiveRows, rows => rows.length ? rows.reduce((sum, row) => sum + amount(row), 0) / rows.length : 0), '#ff718c']
+            [unitsMode ? 'Avg. Units/Order' : 'Avg. Order', display(average), kpiDelta(executiveRows, rows => { const count = new Set(rows.map(r => String(r.invoiceId || '').trim()).filter(Boolean)).size; return count ? rows.reduce((sum, row) => sum + amount(row), 0) / count : 0; }), '#ff718c']
         ];
         byId('ex-kpis').innerHTML = kpis.map(([label, value, delta, color]) => `<div class="ex-card" style="--card-color:${color}"><div class="ex-label">${label}</div><div class="ex-value">${value}</div><div class="ex-delta ${delta.tone}">${delta.text}</div></div>`).join('');
 
@@ -12414,10 +12394,10 @@ window.__ptScheduleDataLoad(5000);
         const months = monthly.map(entry => entry[0]);
         const values = monthly.map(entry => entry[1]);
         const forecast = values.length > 1 ? values.at(-1) + (values.at(-1) - values.at(-2)) : total;
-        const target = Number(byId('ex-target')?.value || 0) || 1;
-        const achieved = Math.min(100, Math.round(total / target * 100));
-        byId('ex-target-box').innerHTML = `<div class="ex-value">${achieved}% <span class="ex-note">achieved</span></div><div class="ex-meter"><i style="width:${achieved}%"></i></div><div class="ex-note">${display(total)} of ${display(target)} target</div>`;
-        setExecutiveChart('ex-revenue', 'line', [...months, 'Forecast'], [...values, forecast], '#6d7cff', { label: unitsMode ? 'Units & Forecast' : 'Revenue & Forecast' });
+        const target = Math.max(0, Number(byId('ex-target')?.value || 0));
+        const achieved = target ? Math.max(0, Math.round(total / target * 100)) : 0;
+        byId('ex-target-box').innerHTML = target ? `<div class="ex-value">${achieved}% <span class="ex-note">achieved</span></div><div class="ex-meter"><i style="width:${Math.min(100,achieved)}%"></i></div><div class="ex-note">${display(total)} of ${display(target)} manually entered target</div>` : '<p class="ex-note">Enter a target above to compare performance. No target is assumed.</p>';
+        setExecutiveChart('ex-revenue', 'line', months, values, '#6d7cff', { label: unitsMode ? 'Units' : 'Net sales' });
         setExecutiveChart('ex-gauge', 'doughnut', ['Achieved', 'Remaining'], [Math.min(total, target), Math.max(0, target - total)], '#2ee6a6', { background: ['#2ee6a6','#243451'] });
         const salesman = aggregate(executiveRows, 'bookingMan');
         const regions = aggregate(executiveRows, 'regionName');
@@ -12428,15 +12408,16 @@ window.__ptScheduleDataLoad(5000);
         [labels, valuesForChart] = labelsAndValues(regions); setExecutiveChart('ex-region-chart', 'doughnut', labels, valuesForChart, '#51c8ff', { legend: true, background: chartColors });
         [labels, valuesForChart] = labelsAndValues(product); setExecutiveChart('ex-products', 'bar', labels, valuesForChart, '#ffb65d');
         [labels, valuesForChart] = labelsAndValues(customer); setExecutiveChart('ex-customers', 'bar', labels, valuesForChart, '#2ee6a6');
-        setExecutiveChart('ex-profit', 'line', months, values.map(value => value * profitRate), '#2ee6a6', { label: selectedProfitPercent ? `Estimated Profit (${selectedProfitPercent}%)` : 'Select a Profit %' });
-        setExecutiveChart('ex-waterfall', 'bar', ['Gross Sales','Discount','Net Sales'], [gross,-discount,total], '#ffb65d', { label: 'Waterfall' });
+        setExecutiveChart('ex-profit', 'line', months, values.map(value => selectedProfitPercent && !unitsMode ? value * profitRate : null), '#2ee6a6', { label: selectedProfitPercent ? `Estimated Profit (${selectedProfitPercent}%)` : 'Select a Profit %' });
+        setExecutiveChart('ex-waterfall', 'bar', ['Gross Sales','Discount','Net Sales'], [gross,-discount,executiveRows.reduce((sum, row) => sum + (Number(row.netAmount) || 0), 0)], '#ffb65d', { label: 'Waterfall' });
         const quarters = new Map();
         executiveRows.forEach(row => { const date = new Date(row.invoiceDate || row.date); if (!Number.isNaN(date.getTime())) { const quarter = `${date.getFullYear()} Q${Math.floor(date.getMonth() / 3) + 1}`; quarters.set(quarter, (quarters.get(quarter) || 0) + amount(row)); } });
         const quarterRows = [...quarters.entries()].sort((a,b) => a[0].localeCompare(b[0]));
         setExecutiveChart('ex-quarterly', 'line', quarterRows.map(entry => entry[0]), quarterRows.map(entry => entry[1]), '#a979ff');
-        setExecutiveChart('ex-growth', 'line', months, values.map((value, index) => index ? Math.round((value / (values[index - 1] || 1) - 1) * 100) : 0), '#51c8ff', { label: 'Growth %' });
+        setExecutiveChart('ex-growth', 'line', months, values.map((value, index) => { if (!index || !values[index - 1]) return null; const d = new Date(months[index-1] + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth()+1); return d.toISOString().slice(0,7) === months[index] ? Math.round((value / values[index - 1] - 1) * 100) : null; }), '#51c8ff', { label: 'Growth %' });
         [labels, valuesForChart] = labelsAndValues(product); setExecutiveChart('ex-mix', 'doughnut', labels, valuesForChart, '#ff718c', { legend: true, background: chartColors });
         renderExecutiveLists(product, customer, monthly, total, target, products);
+        if (typeof window.renderExecutiveInsights === 'function') window.renderExecutiveInsights(executiveRows, salesData, unitsMode);
     }
 
     function exportExecutiveRows(kind) {
@@ -12465,7 +12446,7 @@ window.__ptScheduleDataLoad(5000);
     byId('ex-print').onclick = () => { refreshExecutiveDashboard(); window.print(); };
     byId('ex-csv').onclick = () => exportExecutiveRows('csv');
     byId('ex-xlsx').onclick = () => exportExecutiveRows('xlsx');
-    ['ex-search','ex-period','ex-region','ex-profit-percent','ex-target','ex-company','ex-company-group','ex-measure'].forEach(id => byId(id)?.addEventListener(id === 'ex-search' ? 'input' : 'change', refreshExecutiveDashboard));
+    ['ex-search','ex-period','ex-region','ex-profit-percent','ex-target','ex-company','ex-company-group','ex-measure','ex-date-from','ex-date-to','ex-rep'].forEach(id => byId(id)?.addEventListener(id === 'ex-search' ? 'input' : 'change', refreshExecutiveDashboard));
     window.refreshExecutiveDashboard = refreshExecutiveDashboard;
     refreshExecutiveDashboard();
 })();
@@ -17069,4 +17050,87 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><style id="executive-integrated-design">
+#ex-launch { display:none !important; }
+#page-executive { padding:0; min-width:0; }
+#page-executive #ex-suite { position:relative; inset:auto; z-index:auto; overflow:visible; padding:28px; background:#0b1929; color:#eaf3f7; --ex-ink:#eaf3f7; --ex-muted:#a5bac7; --ex-panel:#14283a; --ex-line:#30495a; --ex-accent:#59c9ba; --ex-green:#69d8b4; }
+body.ex-light #page-executive #ex-suite { background:#f1f6f6; color:#142e38; --ex-ink:#142e38; --ex-muted:#536d77; --ex-panel:#fff; --ex-line:#d9e6e7; --ex-accent:#087f78; --ex-green:#087f67; }
+#ex-suite .ex-shell { max-width:1600px; }
+#ex-suite .ex-top { padding:24px; border:1px solid var(--ex-line); border-radius:18px; background:linear-gradient(115deg,#0d5b59,#173c53 62%,#183148); color:#fff; }
+#ex-suite .ex-brand { font-size:25px; letter-spacing:-.04em; } #ex-suite .ex-brand b { color:#8ae5d3; }
+#ex-suite .ex-top .ex-sub { color:#c2dbde; }
+#ex-suite .ex-actions .ex-btn { color:#fff; background:rgba(7,27,37,.55); border-color:rgba(255,255,255,.22); }
+#ex-suite .ex-filterbar, #ex-suite .ex-extra-filters { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+#ex-suite .ex-filterbar { padding:18px; margin-bottom:10px; border:1px solid var(--ex-line); border-radius:16px; background:var(--ex-panel); }
+#ex-suite .ex-extra-filters { margin:10px 0 18px; color:var(--ex-muted); font-size:12px; }
+#ex-suite .ex-extra-filters label { display:flex; align-items:center; gap:8px; }
+#ex-suite .ex-btn, #ex-suite .ex-select, #ex-suite .ex-search { backdrop-filter:none; box-shadow:none; background:var(--ex-panel); border:1px solid var(--ex-line); color:var(--ex-ink); border-radius:10px; min-height:40px; }
+#ex-suite .ex-select option { background:var(--ex-panel); color:var(--ex-ink); }
+#ex-suite .ex-card, #ex-suite .ex-panel { backdrop-filter:none; background:var(--ex-panel); border:1px solid var(--ex-line); border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.06); }
+#ex-suite .ex-kpis, #ex-suite .ex-grid { gap:16px; } #ex-suite .ex-card { padding:20px; } #ex-suite .ex-panel { padding:20px; }
+#ex-suite .ex-value { font-size:25px; letter-spacing:-.04em; } #ex-suite .ex-label { color:var(--ex-muted); }
+#ex-suite .ex-panel h3 { font-size:15px; font-weight:700; letter-spacing:-.02em; }
+#ex-suite .ex-delta.negative { color:#ff8997; } #ex-suite .ex-delta.neutral { color:var(--ex-muted); }
+#ex-suite .ex-insight-intro { color:var(--ex-muted); font-size:12px; line-height:1.6; margin:12px 0; }
+#ex-suite .ex-insight-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:16px; }
+#ex-suite .ex-insight-grid .ex-panel { min-height:0; } #ex-suite .ex-insight-grid .ex-panel h3 { margin-bottom:10px; }
+#ex-suite .ex-list li span { overflow-wrap:anywhere; } #ex-suite .ex-list li b { text-align:right; flex-shrink:0; }
+#ex-suite .ex-empty-note { color:var(--ex-muted); font-size:12px; line-height:1.5; }
+#ex-suite :focus-visible { outline:2px solid #57cdbd; outline-offset:2px; }
+@media(max-width:1050px){#ex-suite .ex-insight-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:640px){#page-executive #ex-suite{padding:14px;} #ex-suite .ex-top{display:block;padding:18px;} #ex-suite .ex-actions{justify-content:flex-start;margin-top:16px;} #ex-suite .ex-insight-grid{grid-template-columns:1fr;} #ex-suite .ex-extra-filters label{flex-wrap:wrap;} }
+</style>
+<script id="executive-integrated-enhancements">
+(function(){
+ const $=id=>document.getElementById(id);
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const date=r=>{const x=String(r.invoiceDate||r.date||'').slice(0,10);return /^\d{4}-\d{2}-\d{2}$/.test(x)?x:''};
+ const n=v=>Number(v)||0;
+ const format=v=>typeof fmt==='function'?fmt(v):Number(v).toLocaleString();
+ const amount=(r,units)=>units?n(r.stock??r.qty??r.quantity):n(r.netAmount??r.grossAmount??r.amount);
+ function change(a,b){return b ? ((a-b)/Math.abs(b)*100).toFixed(1)+'%' : 'Not available';}
+ function list(rows, field,units){ const map=new Map(); for(const r of rows){let name=String(r[field]||'').trim();if(name)map.set(name,(map.get(name)||0)+amount(r,units));} return [...map].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>'<li><span>'+esc(k)+'</span><b>'+esc(units?Math.round(v).toLocaleString()+' units':format(v))+'</b></li>').join('') || '<li class="ex-empty-note">No assigned data in this selection.</li>'; }
+ function panel(title,content){return '<article class="ex-panel"><h3>'+title+'</h3>'+content+'</article>';}
+ window.renderExecutiveInsights=function(rows,base,units){
+   const select=$('ex-rep'); const previous=select.value;
+   const reps=[...new Set(base.map(r=>String(r.bookingMan||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+   select.innerHTML='<option value="">All representatives</option>'+reps.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join(''); select.value=reps.includes(previous)?previous:'';
+   const dates=rows.map(date).filter(Boolean).sort(), latest=dates[dates.length-1];
+   let active=0,growth='Not available',salesGrowth='Not available';
+   let monthly='Not available',weekly='Not available',daily='Not available';
+   const customer=r=>String(r.customerCode||r.customerName||'').trim().toLowerCase();
+   if(latest){
+     const end=new Date(latest+'T00:00:00Z'); const month=latest.slice(0,7);
+     let prevDate=new Date(Date.UTC(end.getUTCFullYear(),end.getUTCMonth()-1,1)); let prevMonth=prevDate.toISOString().slice(0,7);
+     const monthRows=rows.filter(r=>date(r).slice(0,7)===month), prevRows=rows.filter(r=>date(r).slice(0,7)===prevMonth);
+     const count=rs=>new Set(rs.map(customer).filter(Boolean)).size;
+     active=count(monthRows);growth=change(active,count(prevRows));
+     const sum=rs=>rs.reduce((a,r)=>a+amount(r,units),0);
+     salesGrowth=change(sum(monthRows),sum(prevRows));
+     const fmtVal=v=>units?Math.round(v).toLocaleString()+' units':format(v);
+     monthly=fmtVal(sum(monthRows))+' vs '+fmtVal(sum(prevRows))+' · '+salesGrowth;
+     const shift=days=>{const d=new Date(end);d.setUTCDate(d.getUTCDate()-days);return d.toISOString().slice(0,10)};
+     const range=(lo,hi)=>rows.filter(r=>{let d=date(r);return d&&d>=lo&&d<=hi});
+     const compare=(a,b)=>fmtVal(a)+' vs '+fmtVal(b)+' · '+change(a,b);
+     weekly=compare(sum(range(shift(6),latest)),sum(range(shift(13),shift(7))));
+     daily=compare(sum(range(latest,latest)),sum(range(shift(1),shift(1))));
+   }
+   const totalCustomers=new Set(rows.map(customer).filter(Boolean)).size;
+   const gross=rows.reduce((a,r)=>a+n(r.grossAmount),0), net=rows.reduce((a,r)=>a+n(r.netAmount),0);
+   const comparisons='<ul class="ex-list"><li><span>Gross sales</span><b>'+esc(format(gross))+'</b></li><li><span>Net sales</span><b>'+esc(format(net))+'</b></li><li><span>Sales growth · last month</span><b>'+esc(salesGrowth)+'</b></li><li><span>Customers in selection</span><b>'+totalCustomers.toLocaleString()+'</b></li><li><span>Active customers · last month</span><b>'+active.toLocaleString()+'</b></li><li><span>Customer growth · last month</span><b>'+esc(growth)+'</b></li></ul>';
+   const periods='<ul class="ex-list"><li><span>Monthly</span><b>'+esc(monthly)+'</b></li><li><span>7 days</span><b>'+esc(weekly)+'</b></li><li><span>Daily</span><b>'+esc(daily)+'</b></li></ul><p class="ex-empty-note">Consecutive periods ending on the latest transaction date in the selection. Monthly compares calendar months; absent prior sales make growth unavailable.</p>';
+   $('ex-insights').innerHTML='<p class="ex-insight-intro">Executive overview · Based on the current user’s enabled data and the application’s global filters, plus the filters above. Active means at least one transaction in the latest selected calendar month. Comparisons use selected rows only; date filters may exclude previous periods.</p><div class="ex-insight-grid">'+panel('Sales & customers',comparisons)+panel('Period comparisons',periods)+panel('Companies · top 5','<ul class="ex-list">'+list(rows,'companyName',units)+'</ul>')+panel('Company groups · top 5','<ul class="ex-list">'+list(rows,'companyGroup',units)+'</ul>')+panel('Towns / regions · top 5','<ul class="ex-list">'+list(rows,'regionName',units)+'</ul>')+panel('Representatives · top 5','<ul class="ex-list">'+list(rows,'bookingMan',units)+'</ul>')+'</div>';
+   if(salesGrowth!=='Not available' && parseFloat(salesGrowth)<0){ const li=document.createElement('li');li.textContent='Sales declined '+Math.abs(parseFloat(salesGrowth)).toFixed(1)+'% in '+latest.slice(0,7)+' versus the previous calendar month.';$('ex-smart-alerts').appendChild(li); }
+ };
+ const suite=$('ex-suite'), main=document.querySelector('.main'), nav=document.querySelector('.sidebar .nav');
+ if(!suite||!main||!nav)return;
+ const page=document.createElement('div');page.id='page-executive';page.className='page';main.appendChild(page);page.appendChild(suite);
+ const item=document.createElement('div');item.className='nav-item';item.dataset.page='executive';item.innerHTML='<i class="fas fa-chart-line"></i><span>Executive Dashboard</span>';
+ const bi=nav.querySelector('[data-page="bi"]'); if(bi)nav.insertBefore(item,bi);else nav.appendChild(item);
+ if(typeof pageInfo==='object')pageInfo.executive={title:'Executive Dashboard',desc:'Sales intelligence and business performance'};
+ function open(){showPage('executive');suite.style.display='block';window.refreshExecutiveDashboard();}
+ item.addEventListener('click',open);$('ex-launch').onclick=open;$('ex-close').onclick=function(){suite.style.display='none';showPage('dashboard');};
+})();
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5247d688ba5773a',t:'MTc5MzMwMTEyNg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5247d688ba5773a',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
