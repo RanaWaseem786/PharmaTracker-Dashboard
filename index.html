@@ -5530,39 +5530,157 @@ function changeSiteLanguage(language){
   const $ = id => document.getElementById(id);
   const esc = v => String(v==null?'':v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const n = v => Number(v)||0;
-  const txt = v => String(v==null?'':v).trim();
-  const key = v => txt(v).toLowerCase().replace(/\s+/g,' ');
-  const dateObj = r => { const d=new Date(r?.invoiceDate||r?.date); return isNaN(d)?null:d; };
-  const dateKey = r => { const d=dateObj(r); return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:''; };
+  /* Pure helpers below are memoized: identical results, computed once per
+     distinct input instead of once per row per render. */
+  const _p3txt = new Map();
+  const txt = v => {
+    const raw = String(v==null?'':v);
+    let out = _p3txt.get(raw);
+    if (out === undefined) { out = raw.trim(); if (_p3txt.size > 50000) _p3txt.clear(); _p3txt.set(raw, out); }
+    return out;
+  };
+  const _p3key = new Map();
+  const key = v => {
+    const raw = txt(v);
+    let out = _p3key.get(raw);
+    if (out === undefined) { out = raw.toLowerCase().replace(/\s+/g,' '); if (_p3key.size > 50000) _p3key.clear(); _p3key.set(raw, out); }
+    return out;
+  };
+  /* Cache the parsed timestamp (not the Date object) so every caller still gets
+     a private Date instance and no caller can observe shared mutable state. */
+  const _p3date = new Map();
+  const dateObj = r => {
+    const raw = r?.invoiceDate || r?.date;
+    const k = raw == null ? '' : String(raw);
+    let ts = _p3date.get(k);
+    if (ts === undefined) {
+      const d = new Date(raw);
+      ts = isNaN(d) ? null : d.getTime();
+      if (_p3date.size > 20000) _p3date.clear();
+      _p3date.set(k, ts);
+    }
+    return ts === null ? null : new Date(ts);
+  };
+  /* "YYYY-MM" derived from the (memoized) date key, itself memoized. */
+  const _p3monthKey = new Map();
+  const monthKey = r => {
+    const dk = dateKey(r);
+    if (!dk) return '';
+    let out = _p3monthKey.get(dk);
+    if (out === undefined) {
+      out = dk.slice(0, 7);
+      if (_p3monthKey.size > 20000) _p3monthKey.clear();
+      _p3monthKey.set(dk, out);
+    }
+    return out;
+  };
+  const _p3dateKey = new Map();
+  const dateKey = r => {
+    const raw = r?.invoiceDate || r?.date;
+    const k = raw == null ? '' : String(raw);
+    let out = _p3dateKey.get(k);
+    if (out === undefined) {
+      const d = dateObj(r);
+      out = d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';
+      if (_p3dateKey.size > 20000) _p3dateKey.clear();
+      _p3dateKey.set(k, out);
+    }
+    return out;
+  };
   const money = v => typeof fmt==='function' ? fmt(v) : Number(v||0).toLocaleString();
   const revenue = r => n(r?.netAmount ?? r?.grossAmount ?? r?.amount);
   const units = r => n(r?.stock);
   const rows = () => {
     try { return typeof getBaseData==='function' ? (getBaseData()||[]) : []; } catch(e){ return Array.isArray(rawData)?rawData:[]; }
   };
-  const filtered = () => rows().filter(r =>
-    (!$('pt3-region')?.value || key(r.regionName)==key($('pt3-region').value)) &&
-    (!$('pt3-product')?.value || key(r.itemName)==key($('pt3-product').value)) &&
-    (!$('pt3-rep')?.value || key(r.bookingMan)==key($('pt3-rep').value)) &&
-    (!$('pt3-customer')?.value || key(r.customerName)==key($('pt3-customer').value)) &&
-    (!state.geoDrill.field || key(r[state.geoDrill.field])===key(state.geoDrill.value))
-  );
+  /* Returns [firstRow] for the given field/entity — exactly what
+     `rs.filter(pred).slice(0,1)` produced, but memoized per (rows, field,
+     entity) and with early exit instead of a full scan per anomaly. */
+  const __p3firstCache = new WeakMap();
+  function __p3FirstMatch(rs, field, entity) {
+    let per = __p3firstCache.get(rs);
+    if (!per) { per = new Map(); __p3firstCache.set(rs, per); }
+    const ck = field + '\u0001' + txt(entity);
+    if (per.has(ck)) { const r = per.get(ck); return r ? [r] : []; }
+    const target = key(entity);
+    let found;
+    for (let i = 0; i < rs.length; i++) {
+      if (key(rs[i][field]) === target) { found = rs[i]; break; }
+    }
+    per.set(ck, found);
+    return found ? [found] : [];
+  }
+  /* Stable identity for the (cached) base rows array, so the filter result can
+     be reused until the inputs actually change. */
+  const __p3RowIds = new WeakMap();
+  let __p3RowIdSeq = 0;
+  const __p3IdOf = o => {
+    if (!o || typeof o !== 'object') return 0;
+    let id = __p3RowIds.get(o);
+    if (id === undefined) { id = ++__p3RowIdSeq; __p3RowIds.set(o, id); }
+    return id;
+  };
+  let __p3FilterKey = null, __p3FilterOut = null;
+  const filtered = () => {
+    /* Resolve each filter value once per call instead of once per row. */
+    const fRegion = $('pt3-region')?.value || '';
+    const fProduct = $('pt3-product')?.value || '';
+    const fRep = $('pt3-rep')?.value || '';
+    const fCustomer = $('pt3-customer')?.value || '';
+    const kRegion = fRegion ? key(fRegion) : null;
+    const kProduct = fProduct ? key(fProduct) : null;
+    const kRep = fRep ? key(fRep) : null;
+    const kCustomer = fCustomer ? key(fCustomer) : null;
+    const drillField = state.geoDrill.field;
+    const kDrill = drillField ? key(state.geoDrill.value) : null;
+    const src = rows();
+    const ck = __p3IdOf(src) + '\u0001' + kRegion + '\u0001' + kProduct + '\u0001' + kRep + '\u0001' + kCustomer + '\u0001' + drillField + '\u0001' + kDrill;
+    if (__p3FilterOut !== null && __p3FilterKey === ck) return __p3FilterOut;
+    const out = src.filter(r =>
+      (!kRegion || key(r.regionName)==kRegion) &&
+      (!kProduct || key(r.itemName)==kProduct) &&
+      (!kRep || key(r.bookingMan)==kRep) &&
+      (!kCustomer || key(r.customerName)==kCustomer) &&
+      (!drillField || key(r[drillField])===kDrill)
+    );
+    __p3FilterKey = ck; __p3FilterOut = out;
+    return out;
+  };
   const uniq = (rs, fn) => [...new Map(rs.map(r=>[key(fn(r)),txt(fn(r))||'Unassigned']).filter(x=>x[0])).entries()].map(x=>x[1]).sort((a,b)=>a.localeCompare(b));
   const sum = (rs, fn) => rs.reduce((a,r)=>a+n(fn(r)),0);
   const avg = a => a.length ? a.reduce((x,y)=>x+y,0)/a.length : 0;
   const stdev = a => { if(a.length<2) return 0; const m=avg(a); return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1)); };
   const daysAgo = d => Math.floor((Date.now()-d.getTime())/86400000);
-  const recentDays = (rs, days) => rs.filter(r=>{const d=dateObj(r);return d && daysAgo(d)>=0 && daysAgo(d)<=days;});
+  const recentDays = (rs, days) => rs.filter(r=>{const d=dateObj(r);if(!d)return false;const ago=daysAgo(d);return ago>=0 && ago<=days;});
   const lastNMonths = (rs, count=12) => {
-    const map={}; rs.forEach(r=>{const d=dateObj(r);if(d) {const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;map[k]=(map[k]||0)+revenue(r);}});
+    const map={}; rs.forEach(r=>{const k=monthKey(r);if(k) {map[k]=(map[k]||0)+revenue(r);}});
     return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0])).slice(-count);
   };
-  function options(id, vals, label){ const el=$(id); if(!el)return; const old=el.value; el.innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); if(vals.includes(old))el.value=old; }
+  function options(id, vals, label){
+    const el=$(id); if(!el)return;
+    /* Skip rebuilding an identical option list (see renderPlainSlicerOptions). */
+    const sig = label + '\u0001' + vals.join('\u0001');
+    if (el.__ptOptSig === sig && el.options.length === vals.length + 1) return;
+    el.__ptOptSig = sig;
+    const old=el.value;
+    el.innerHTML=`<option value="">${label}</option>`+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    if(vals.includes(old))el.value=old;
+  }
   function populateFilters(){
     const rs=rows(); options('pt3-region',uniq(rs,r=>r.regionName),'All regions'); options('pt3-product',uniq(rs,r=>r.itemName),'All products'); options('pt3-rep',uniq(rs,r=>r.bookingMan),'All reps'); options('pt3-customer',uniq(rs,r=>r.customerName),'All customers');
   }
+  /* Memoized per (rows-array, field). A copy is returned on every call so
+     callers that sort the array in place keep their own ordering. */
+  const _p3groupCache = new WeakMap();
   function groupMap(rs, field){
-    const m={}; rs.forEach(r=>{const label=txt(r[field])||'Unassigned', k=key(label); if(!m[k])m[k]={label,rows:[],revenue:0,units:0};m[k].rows.push(r);m[k].revenue+=revenue(r);m[k].units+=units(r);}); return Object.values(m);
+    let per = _p3groupCache.get(rs);
+    if (!per) { per = new Map(); _p3groupCache.set(rs, per); }
+    const cached = per.get(field);
+    if (cached) return cached.slice();
+    const m={}; rs.forEach(r=>{const label=txt(r[field])||'Unassigned', k=key(label); if(!m[k])m[k]={label,rows:[],revenue:0,units:0};m[k].rows.push(r);m[k].revenue+=revenue(r);m[k].units+=units(r);});
+    const out = Object.values(m);
+    per.set(field, out);
+    return out.slice();
   }
   function entityStats(rs){
     const customers=new Set(rs.map(r=>key(r.customerCode||r.customerName)).filter(Boolean)).size;
@@ -5600,14 +5718,28 @@ function changeSiteLanguage(language){
     if(typeof showToast==='function')showToast(`Territory drill-down: ${label}`,'info');
   };
 
+  /* Memoized per rows-array: renderInventory() and makeAlerts() both need it. */
+  const _p3invCache = new WeakMap();
   function inventory(rs){
+    const memo = _p3invCache.get(rs);
+    if (memo) return memo;
     const today=new Date();
     const recent=recentDays(rs,30), recent90=recentDays(rs,90);
     const avgDaily={}; recent.forEach(r=>{const k=key(r.itemName);avgDaily[k]=(avgDaily[k]||0)+units(r)/30;});
+    /* Single pass over the 90-day slice: per-product sales total and last sale
+       timestamp. Previously each group re-scanned this array twice. */
+    const sales90ByKey={}, lastSaleTsByKey={};
+    recent90.forEach(r=>{
+      const k=key(r.itemName);
+      sales90ByKey[k]=(sales90ByKey[k]||0)+units(r);
+      const d=dateObj(r);
+      if(d){ const t=d.getTime(); if(lastSaleTsByKey[k]===undefined || t>lastSaleTsByKey[k]) lastSaleTsByKey[k]=t; }
+    });
     const groups=groupMap(rs,'itemName').map(g=>{
       const k=key(g.label), daily=Math.max(avgDaily[k]||0,0), coverage=daily>0?g.units/daily:null;
-      const sales90=recent90.filter(r=>key(r.itemName)===k).reduce((a,r)=>a+units(r),0);
-      const lastSale=recent90.filter(r=>key(r.itemName)===k).map(dateObj).filter(Boolean).sort((a,b)=>b-a)[0];
+      const sales90=sales90ByKey[k]||0;
+      const lastSaleTs=lastSaleTsByKey[k];
+      const lastSale=lastSaleTs===undefined?undefined:new Date(lastSaleTs);
       let risk='Normal', cls='pt3-ok', signal='Balanced';
       if(g.units<=0){risk='High';cls='pt3-danger';signal='No stock';}
       else if(coverage!==null && coverage<=7){risk='High';cls='pt3-danger';signal='Stock-out risk';}
@@ -5618,6 +5750,7 @@ function changeSiteLanguage(language){
       const daysExpiry=expiry?Math.ceil((expiry-today)/86400000):null;
       return {...g,daily,coverage,sales90,lastSale,cost,value,expiry,daysExpiry,risk,cls,signal};
     }).sort((a,b)=>(b.risk==='High')-(a.risk==='High') || (b.units-a.units));
+    _p3invCache.set(rs, groups);
     return groups;
   }
   function renderInventory(rs){
@@ -5647,7 +5780,7 @@ function changeSiteLanguage(language){
   }
 
   function forecastSeries(rs){
-    const byDay={}; rs.forEach(r=>{const d=dateObj(r);if(d){const k=dateKey(r);byDay[k]=(byDay[k]||0)+revenue(r);}});
+    const byDay={}; rs.forEach(r=>{const k=dateKey(r);if(k){byDay[k]=(byDay[k]||0)+revenue(r);}});
     const days=Object.entries(byDay).sort((a,b)=>a[0].localeCompare(b[0]));
     if(days.length>=4){
       const recent=days.slice(-90).map(x=>x[1]); const daily=avg(recent); const sd=stdev(recent);
@@ -5687,7 +5820,7 @@ function changeSiteLanguage(language){
   function buildAnomalies(rs){
     const threshold=n($('pt3-z')?.value)||2, out=[];
     const dimensions=[['Product','itemName'],['Customer','customerName'],['Rep','bookingMan'],['Region','regionName']];
-    const monthly={}; rs.forEach(r=>{const d=dateObj(r);if(!d)return;const mk=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;dimensions.forEach(([name,field])=>{const ent=txt(r[field])||'Unassigned';const k=name+'|'+key(ent)+'|'+mk;(monthly[k] ||= {name,field,entity:ent,month:mk,value:0});monthly[k].value+=revenue(r);});});
+    const monthly={}; rs.forEach(r=>{const mk=monthKey(r);if(!mk)return;dimensions.forEach(([name,field])=>{const ent=txt(r[field])||'Unassigned';const k=name+'|'+key(ent)+'|'+mk;(monthly[k] ||= {name,field,entity:ent,month:mk,value:0});monthly[k].value+=revenue(r);});});
     const byEntity={}; Object.values(monthly).forEach(x=>{const k=x.name+'|'+key(x.entity);(byEntity[k] ||= []).push(x);});
     Object.values(byEntity).forEach(series=>{
       const vals=series.map(x=>x.value), m=avg(vals), sd=stdev(vals), latest=series.slice().sort((a,b)=>a.month.localeCompare(b.month)).slice(-1)[0];
@@ -5714,7 +5847,7 @@ function changeSiteLanguage(language){
     const f=forecast(rs,state.days);
     let target=0; try{const now=new Date(),p=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;target=Object.values((targetState?.periods||{})[p]||{}).reduce((x,y)=>x+n(y),0)}catch(e){}
     if(target&&f.value<target)push({category:'Forecast',severity:'Medium',date:new Date().toISOString().slice(0,10),metric:'Projected gap',entity:'Current target',explanation:`${money(f.value)} forecast versus ${money(target)} configured target.`,action:'Review run-rate, target assumptions and planned activity.'},rs);
-    state.anomalies.forEach(x=>push({category:'Anomaly',severity:Math.abs(x.z||2)>=3?'High':'Medium',date:x.month,metric:x.metric,entity:x.entity,explanation:x.explanation,action:'Review the underlying transactions and context.'},rs.filter(r=>key(r[x.field||'itemName'])===key(x.entity)).slice(0,1)));
+    state.anomalies.forEach(x=>push({category:'Anomaly',severity:Math.abs(x.z||2)>=3?'High':'Medium',date:x.month,metric:x.metric,entity:x.entity,explanation:x.explanation,action:'Review the underlying transactions and context.'},__p3FirstMatch(rs,x.field||'itemName',x.entity)));
     const seen=new Set(), dedup=[];
     a.forEach(x=>{const id=key([x.category,x.severity,x.date,x.metric,x.entity].join('|'));if(!seen.has(id)){seen.add(id);dedup.push(x);}});
     return dedup;
@@ -5742,6 +5875,16 @@ function changeSiteLanguage(language){
   window.pt3Dismiss=function(id){const x=JSON.parse(localStorage.getItem('pt3_dismissed_alerts')||'{}');x[id]=true;localStorage.setItem('pt3_dismissed_alerts',JSON.stringify(x));pt3RenderAlerts();};
   window.pt3Details=function(id){const a=state.alerts.find(x=>key([x.category,x.date,x.metric,x.entity].join('|'))===id);if(a&&typeof showToast==='function')showToast(`${a.category}: ${a.explanation}`,'info');};
   window.pt3ForecastDays=function(days,btn){state.days=days;document.querySelectorAll('#pt-part3 .pt3-tab').forEach(x=>x.classList.remove('active'));btn?.classList.add('active');pt3Refresh();};
+  /* Memoize the (pure) forecast-series computation per rows-array. */
+  const _p3fsCache = new WeakMap();
+  const _p3fsOriginal = forecastSeries;
+  forecastSeries = function(rs){
+    const memo = _p3fsCache.get(rs);
+    if (memo) return memo;
+    const out = _p3fsOriginal(rs);
+    _p3fsCache.set(rs, out);
+    return out;
+  };
   window.pt3Refresh=function(){
     const rs=filtered(); renderTerritory(rs); renderInventory(rs); renderForecast(rs,state.days); renderAnomalies(rs); renderAlertsBase(rs);
   };
@@ -5988,9 +6131,31 @@ const FIELDS = {
 
 let currency = 'PKR';
 const CURRENCY_SYMBOLS = { PKR: '₨', USD: '$', AED: 'د.إ' };
-function fmt(n) { return CURRENCY_SYMBOLS[currency] + Number(n||0).toLocaleString('en-PK', {minimumFractionDigits:2, maximumFractionDigits:2}); }
-function normKey(v) { return (v==null ? '' : String(v)).trim().toLowerCase().replace(/\s+/g, ' '); }
-function fmtN(n) { return Number(n||0).toLocaleString(); }
+const _ptAmountFormatter = new Intl.NumberFormat('en-PK', {minimumFractionDigits:2, maximumFractionDigits:2});
+const _ptFmtCache = new Map();
+function fmt(n) {
+    const num = Number(n||0);
+    let body = _ptFmtCache.get(num);
+    if (body === undefined) {
+        body = _ptAmountFormatter.format(num);
+        if (_ptFmtCache.size > 30000) _ptFmtCache.clear();
+        _ptFmtCache.set(num, body);
+    }
+    return CURRENCY_SYMBOLS[currency] + body;
+}
+const _ptNormKeyCache = new Map();
+function normKey(v) {
+    const raw = (v==null ? '' : String(v));
+    let out = _ptNormKeyCache.get(raw);
+    if (out === undefined) {
+        out = raw.trim().toLowerCase().replace(/\s+/g, ' ');
+        if (_ptNormKeyCache.size > 50000) _ptNormKeyCache.clear();
+        _ptNormKeyCache.set(raw, out);
+    }
+    return out;
+}
+const _ptPlainFormatter = new Intl.NumberFormat();
+function fmtN(n) { return _ptPlainFormatter.format(Number(n||0)); }
 
 /* ═══════════════════════════════════════════════
    GLOBAL FILTERS — Company / Month-Quarter / Top N
@@ -7796,7 +7961,13 @@ function updateCustomerPageStats(data = getCustomerCatalogData()) {
     document.getElementById('c-top').textContent = topCustomer ? topCustomer[0] : '—';
 }
 
+const _ptTopByValueCache = new WeakMap();
 function topByValue(data, keyField, valField) {
+    let per = _ptTopByValueCache.get(data);
+    if (!per) { per = new Map(); _ptTopByValueCache.set(data, per); }
+    const cacheKey = keyField + '\u0001' + valField;
+    const hit = per.get(cacheKey);
+    if (hit) return hit.slice();
     const map = {}; // normKey -> { label, total }
     data.forEach(r => {
         const raw = r[keyField];
@@ -7804,7 +7975,9 @@ function topByValue(data, keyField, valField) {
         if (!map[key]) map[key] = { label: (raw==null||String(raw).trim()==='') ? '—' : String(raw).trim(), total: 0 };
         map[key].total += r[valField];
     });
-    return Object.values(map).sort((a,b) => b.total - a.total).map(o => [o.label, o.total]);
+    const out = Object.values(map).sort((a,b) => b.total - a.total).map(o => [o.label, o.total]);
+    per.set(cacheKey, out);
+    return out.slice();
 }
 
 /* ═══════════════════════════════════════════════
@@ -8487,13 +8660,17 @@ function populateSlicers() {
     if (prodSelect) renderSlicerOptions(prodSelect, slicerOptions.products, productSearch ? productSearch.value : '', '\u{1F4CA} View All Products');
 }
 
+/* One collator reused for every comparison instead of one per call. */
+const __ptBaseCollator = new Intl.Collator(undefined, { sensitivity: 'base' });
 function getUniqueSlicerValues(data, field) {
     const uniqueValues = new Map();
     data.forEach(record => {
         const value = String(record[field] ?? '').trim();
-        if (value && !uniqueValues.has(normKey(value))) uniqueValues.set(normKey(value), value);
+        if (!value) return;
+        const k = normKey(value);          /* was computed twice per record */
+        if (!uniqueValues.has(k)) uniqueValues.set(k, value);
     });
-    return [...uniqueValues.values()].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+    return [...uniqueValues.values()].sort((a, b) => __ptBaseCollator.compare(a, b));
 }
 
 function renderSlicerOptions(select, values, searchText, emptyLabel) {
@@ -8503,6 +8680,11 @@ function renderSlicerOptions(select, values, searchText, emptyLabel) {
     const visibleValues = selectedValue && values.includes(selectedValue) && !matchedValues.includes(selectedValue)
         ? [selectedValue, ...matchedValues]
         : matchedValues;
+    /* Skip an identical rebuild; the status line is derived from the same inputs
+       that form this signature, so it cannot need updating either. */
+    const __sig = emptyLabel + '\u0001' + (searchText || '') + '\u0001' + values.join('\u0001');
+    if (select.__ptOptSig === __sig && select.options.length === visibleValues.length + 1) return;
+    select.__ptOptSig = __sig;
     const fragment = document.createDocumentFragment();
     const emptyOption = document.createElement('option');
     emptyOption.value = '';
@@ -8529,6 +8711,11 @@ function renderSlicerOptions(select, values, searchText, emptyLabel) {
 
 function renderPlainSlicerOptions(select, values, emptyLabel) {
     if (!select) return;
+    /* Skip an identical rebuild: this function preserves the current value when
+       it is still valid, so re-rendering the same list produces the same DOM. */
+    const __sig = emptyLabel + '\u0001' + values.join('\u0001');
+    if (select.__ptOptSig === __sig && select.options.length === values.length + 1) return;
+    select.__ptOptSig = __sig;
     const selectedValue = select.value;
     const fragment = document.createDocumentFragment();
     const emptyOption = document.createElement('option');
@@ -12301,15 +12488,48 @@ window.__ptScheduleDataLoad(5000);
         return [...totals.entries()].sort((a, b) => b[1] - a[1]);
     }
 
+    /* Memoized: the calendar-month key only depends on the date string, so it
+       is computed once per distinct date instead of once per row. */
+    const __exMonthCache = new Map();
+    function monthKeyOf(raw) {
+        const k = raw == null ? '' : String(raw);
+        let out = __exMonthCache.get(k);
+        if (out === undefined) {
+            const date = new Date(k);
+            if (Number.isNaN(date.getTime())) out = null;
+            else out = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            if (__exMonthCache.size > 20000) __exMonthCache.clear();
+            __exMonthCache.set(k, out);
+        }
+        return out;
+    }
+    const __exMonthlyCache = new WeakMap();
     function monthlyTotals(rows) {
+        const hit = __exMonthlyCache.get(rows);
+        if (hit) return hit;
         const totals = new Map();
         rows.forEach(row => {
-            const date = new Date(row.invoiceDate || row.date);
-            if (Number.isNaN(date.getTime())) return;
-            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const key = monthKeyOf(row.invoiceDate || row.date);
+            if (key === null) return;
             totals.set(key, (totals.get(key) || 0) + amount(row));
         });
-        return [...totals.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+        const out = [...totals.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+        __exMonthlyCache.set(rows, out);
+        return out;
+    }
+    /* Month slices are recomputed by every kpiDelta() call, although all calls
+       in one render use the same two months. Memoized per (rows, month prefix);
+       consumers only reduce/map the returned array. */
+    const __exMonthRowsCache = new WeakMap();
+    function monthRows(rows, prefix) {
+        let per = __exMonthRowsCache.get(rows);
+        if (!per) { per = new Map(); __exMonthRowsCache.set(rows, per); }
+        let slice = per.get(prefix);
+        if (!slice) {
+            slice = rows.filter(row => String(row.invoiceDate || '').startsWith(prefix));
+            per.set(prefix, slice);
+        }
+        return slice;
     }
 
     function kpiDelta(rows, metric) {
@@ -12317,8 +12537,8 @@ window.__ptScheduleDataLoad(5000);
         if (months.length < 2) return { text: 'No prior period', tone: 'neutral' };
         const previous = months[months.length - 2];
         const current = months[months.length - 1];
-        const previousRows = rows.filter(row => String(row.invoiceDate || '').startsWith(previous));
-        const currentRows = rows.filter(row => String(row.invoiceDate || '').startsWith(current));
+        const previousRows = monthRows(rows, previous);
+        const currentRows = monthRows(rows, current);
         const prior = metric(previousRows);
         const now = metric(currentRows);
         if (!prior) return { text: now ? `▲ New vs ${previous}` : 'No prior period', tone: now ? 'positive' : 'neutral' };
@@ -13657,10 +13877,16 @@ function prepareDataSummary(catalogue, data) {
       return !!source && !source.disabled;
     });
   }
+  let __lineageOkRef = null, __lineageOkLen = -1;
   function ensureLineage() {
+    /* verified for this exact array at this exact length -> nothing to do */
+    if (__lineageOkRef === rawData && __lineageOkLen === rawData.length) return;
     const unmapped = [];
     rawData.forEach((_, index) => { if (!fileRowMap.has(index)) unmapped.push(index); });
-    if (!unmapped.length) return;
+    if (!unmapped.length) {
+      __lineageOkRef = rawData; __lineageOkLen = rawData.length;
+      return;
+    }
     const isSample = rawData.some(row => /^INV-\d{4}-\d{6}$/.test(String(row.invoiceId || '')));
     const id = isSample ? SAMPLE_SOURCE_ID : nextFileId++;
     if (!uploadedFiles.has(id)) {
@@ -13682,13 +13908,30 @@ function prepareDataSummary(catalogue, data) {
     if (typeof updateAll === 'function') updateAll();
   }
 
+  /* Cheap signature of everything that can change the source-membership
+     invariant. Only the uploaded-file list varies in length here (normally a
+     handful of entries), so this is far cheaper than rescanning every row. */
+  function __ptSourceSig() {
+    let sig = rawData.length + '|' + fileRowMap.size + '|' + uploadedFiles.size;
+    for (const info of uploadedFiles.values()) sig += (info && info.disabled) ? '0' : '1';
+    return sig;
+  }
+  let __ptBaseRef = null, __ptBaseSig = '', __ptBaseOut = null;
   const originalGetBaseData = getBaseData;
   getBaseData = function () {
     ensureLineage();
+    /* The inner getBaseData() already caches on the filter state, so calling it
+       first is cheap and gives us a stable reference that changes exactly when
+       the filters change. */
+    const inner = originalGetBaseData();
+    const sig = __ptSourceSig();
+    if (__ptBaseOut !== null && __ptBaseRef === inner && __ptBaseSig === sig) return __ptBaseOut;
     const enabled = new Set(activeRows());
     /* Reuse the established company, period, region, salesman, month and search
        rules, then enforce enabled source membership as the final invariant. */
-    return originalGetBaseData().filter(row => enabled.has(row));
+    const out = inner.filter(row => enabled.has(row));
+    __ptBaseRef = inner; __ptBaseSig = sig; __ptBaseOut = out;
+    return out;
   };
 
   const originalSaveData = saveDataToStorage;
@@ -17042,7 +17285,12 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
             hookAuthFlows();
             updateWidgets();
             // Safety net: session restores / async auth flows also hide/show correctly.
-            setInterval(updateWidgets, 2000);
+            /* Same 2s refresh, but no background work while the tab is
+               hidden and an immediate refresh when it comes back. */
+            setInterval(function () { if (!document.hidden) updateWidgets(); }, 2000);
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) updateWidgets();
+            });
         } catch (e) { console.error('Update-2 boot error', e); }
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
@@ -17050,7 +17298,7 @@ body:has(#auth-overlay:not(.hidden)) #ex-launch { display: none !important; }
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3e77747794fc5bc',t:'MTc4OTk3Njg4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3fbc1d41d269095',t:'MTc5MDE4OTY1OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><style id="executive-integrated-design">
+<style id="executive-integrated-design">
 #ex-launch { display:none !important; }
 #page-executive { padding:0; min-width:0; }
 #page-executive #ex-suite { position:relative; inset:auto; z-index:auto; overflow:visible; padding:28px; background:#0b1929; color:#eaf3f7; --ex-ink:#eaf3f7; --ex-muted:#a5bac7; --ex-panel:#14283a; --ex-line:#30495a; --ex-accent:#59c9ba; --ex-green:#69d8b4; }
@@ -17133,4 +17381,4 @@ body.ex-light #page-executive #ex-suite { background:#f1f6f6; color:#142e38; --e
 })();
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5247d688ba5773a',t:'MTc5MzMwMTEyNg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5247d688ba5773a',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5348ef35d48c53c',t:'MTc5MzQ2OTYxNw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5348ef35d48c53c',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body></html>
