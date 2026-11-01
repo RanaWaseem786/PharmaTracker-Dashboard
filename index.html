@@ -6672,15 +6672,18 @@ function ptParse(msg) {
             return;
         }
         var headers = raw[0].map(function (h) { return String(h).trim(); });
-        var rows = [];
+        // Compact non-empty rows in-place. This avoids allocating a second
+        // large outer array (and reduces peak memory on 100k+ row workbooks).
+        var write = 0;
         for (var j = 1; j < raw.length; j++) {
-            var r = raw[j];
-            for (var k = 0; k < r.length; k++) { if (r[k] !== '') { rows.push(r); break; } }
+            var r = raw[j], nonEmpty = false;
+            for (var k = 0; k < r.length; k++) { if (r[k] !== '') { nonEmpty = true; break; } }
+            if (nonEmpty) raw[write++] = r;
         }
-        raw = null;
-        _ptRows = rows;
+        raw.length = write;
+        _ptRows = raw;
         self.postMessage({ type: 'progress', pct: 90, label: 'Columns detected…' });
-        self.postMessage({ type: 'headers', headers: headers, totalRows: rows.length });
+        self.postMessage({ type: 'headers', headers: headers, totalRows: raw.length });
     } catch (err) {
         _ptRows = null;
         self.postMessage({ type: 'error', phase: 'parse', message: err && err.message ? err.message : String(err) });
@@ -6705,7 +6708,7 @@ function ptProcess(msg) {
     var seenKeys = new Set();
     var errBox = { errors: [], cap: 60, rejected: 0 };
     var total = rows.length;
-    var BATCH = 20000;
+    var BATCH = 8000;
     var i = 0, accepted = 0;
     self.postMessage({ type: 'processStart', totalRows: total });
     function slice() {
@@ -7032,16 +7035,19 @@ function ptUploadOnMainThread(fileData, ext, file, fileId) {
         return;
     }
     const headers = raw[0].map(h => String(h).trim());
-    const rows = [];
+    // Reuse the parsed sheet array and compact it in-place to avoid a second
+    // large row-reference array on browsers where Web Workers are unavailable.
+    let write = 0;
     for (let j = 1; j < raw.length; j++) {
         const r = raw[j];
+        let nonEmpty = false;
         for (let k = 0; k < r.length; k++) {
-            if (r[k] !== '') {
-                rows.push(r);
-                break;
-            }
+            if (r[k] !== '') { nonEmpty = true; break; }
         }
+        if (nonEmpty) raw[write++] = r;
     }
+    raw.length = write;
+    const rows = raw;
     pendingHeaders = headers;
     pendingRows = rows;
     pendingFileName = file.name;
@@ -7153,9 +7159,9 @@ function ptFinishImport(data, total, rejectedCount, rowErrors) {
     const dataStartIndex = rawData.length;
 
     // Track which file each row came from
-    data.forEach((row, idx) => {
+    for (let idx = 0, count = data.length; idx < count; idx++) {
         fileRowMap.set(dataStartIndex + idx, currentFileId);
-    });
+    }
 
     // Append new data to existing data (don't replace).
     // A push loop avoids building a second full copy of the dataset.
@@ -10248,8 +10254,9 @@ function downloadOperationalIntelligenceSample() {
 }
 
 function downloadSample() {
-    /* Exact 33-column pharmaceutical distribution template. Gross/Discount/
-       Sales-Tax/Net values are internally consistent so the file imports cleanly. */
+    /* Main sales-import template: preserve the exact existing 33-column order
+       and sample values. Use an explicit Blob + anchor download so the action
+       works consistently on GitHub Pages and modern desktop/mobile browsers. */
     const hdrs = ["SRNO", "Booking Manid", "Booking Man", "Delivery Man Id", "Delivery Man", "Region Id", "Region Name", "Customer Id", "Customer Name", "Company Id", "Company Name", "Group Id", "Group Name", "Item Name", "Item Id", "Pack Size", "Rate", "Expiry Date", "Batch Number", "Transaction Type", "Invoice Id", "Invoice Date", "Stock", "Bonus", "Gross Amount", "Discount", "Discount Amount", "Sales Tax", "Sales Tax Amount", "Additional Tax", "AWHTP", "AWHT Amt", "Net Amount"];
     const rows = [
         [1, "BM-101", "Ahmed Khan", "DM-201", "Bilal Hussain", "R-01", "Lahore North", "C-1001", "Pak Pharma Store", "CO-01", "GSK Pakistan", "G-01", "Antibiotics", "Augmentin 625mg Tablets", "IT-001", "30s Blister", 1850.0, "2027-06-30", "B-25-101", "Sale", "INV-2026-1001", "2026-06-05", 50, 5, 92500.0, 5.0, 4625.0, 17.0, 14938.75, 120.0, 1.0, 1029.34, 101904.41],
@@ -10267,11 +10274,48 @@ function downloadSample() {
         [13, "BM-106", "Hassan Javed", "DM-206", "Nadeem Abbas", "R-07", "Rawalpindi", "C-1012", "LifeLine Pharmacy", "CO-03", "Sanofi Pakistan", "G-05", "Cardiac", "Cardilor 5mg Tablets", "IT-013", "30s Pack", 760.6, "2028-06-30", "B-25-113", "Sale", "INV-2026-1013", "2026-09-10", 140, 14, 106484.0, 5.5, 5856.62, 17.0, 17106.65, 165.0, 1.0, 1178.99, 116720.04],
         [14, "BM-102", "Fatima Ali", "DM-202", "Usman Tariq", "R-02", "Karachi South", "C-1013", "Green Crescent Store", "CO-06", "Sami Pharmaceuticals", "G-06", "Antidiabetic", "Insulin Glargine 100IU", "IT-014", "5x3ml Pens", 4250.0, "2027-04-30", "B-25-114", "Sale", "INV-2026-1014", "2026-09-18", 25, 0, 106250.0, 2.0, 2125.0, 17.0, 17701.25, 90.0, 0.5, 609.58, 121306.67]
     ];
-    const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sales');
-    XLSX.writeFile(wb, 'pharma_sales_sample.xlsx');
-    showToast('Sample file downloaded — 33 required columns, ready to fill and upload.', 'success');
+    try {
+        if (typeof XLSX !== 'undefined' && XLSX.utils && typeof XLSX.write === 'function') {
+            const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows]);
+            ws['!cols'] = hdrs.map(h => ({ wch: Math.max(12, Math.min(24, String(h).length + 3)) }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Sales');
+            const bytes = XLSX.write(wb, { bookType: 'xlsx', type: 'array', compression: true });
+            const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pharma_sales_sample.xlsx';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+            showToast('Sample file downloaded — 33 required columns, ready to fill and upload.', 'success');
+            return;
+        }
+
+        // CSV fallback keeps the sample available if the Excel library is blocked.
+        const csvCell = value => {
+            const text = String(value == null ? '' : value);
+            return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+        };
+        const csv = '\uFEFF' + [hdrs, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pharma_sales_sample.csv';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        showToast('Sample CSV downloaded — 33 required columns, ready to fill and upload.', 'success');
+    } catch (err) {
+        console.error('Sample file download failed:', err);
+        showToast('Sample download failed. Please try again or check browser download permissions.', 'error');
+    }
 }
 
 function clearData() {
@@ -14367,8 +14411,10 @@ function prepareDataSummary(catalogue, data) {
         const metaDoc = await withTimeout(rootRef().get(), CLOUD_TIMEOUT, 'Cloud meta read');
         if (!metaDoc || !metaDoc.exists) return null;
         const meta = metaDoc.data() || {};
-        const count = Number(meta.chunkCount) || 0;
-        if (!count) return null;
+        const count = Number(meta.chunkCount);
+        if (!Number.isInteger(count) || count < 1) {
+            throw new Error('Cloud dataset metadata is incomplete for ' + emailKey() + '. Local data will not be uploaded over it.');
+        }
 
         const snap = await withTimeout(chunksCol().get(), CLOUD_TIMEOUT * 3, 'Cloud data read');
         const parts = new Array(count).fill(null);
@@ -14605,77 +14651,68 @@ function prepareDataSummary(catalogue, data) {
         if (!cloudOn()) return await _baseLoad();
 
         const loadEmail = emailKey();
-        const revisionAtStart = S.localRevision || 0;
-        console.log('☁️ Fast dataset restore started: ' + loadEmail);
+        console.log('☁️ Authoritative cloud-first restore started: ' + loadEmail);
 
-        // Start both reads together. IndexedDB is normally much faster than
-        // downloading/decompressing every Firestore chunk, so use the local
-        // cache immediately and refresh it from cloud in the background.
-        const localPromise = Promise.resolve().then(function () { return _baseLoad(); });
-        const cloudPromise = Promise.resolve().then(function () { return cloudLoadSnapshot(); });
-        let local = false;
-        try { local = await localPromise; }
-        catch (localError) { console.warn('Local dataset cache read failed:', localError); }
+        // Read the device cache in parallel, but NEVER display it as the
+        // authoritative dataset until Firestore has answered successfully.
+        const localPromise = Promise.resolve().then(function () {
+            return _baseLoad();
+        }).catch(function (e) {
+            console.warn('Local dataset cache read failed:', e);
+            return false;
+        });
 
-        if (local && rawData.length) {
-            setBadge('syncing', 'Showing saved data · checking cloud…');
-            attachMetaListener();
-            // Do not delay login/dashboard rendering for the cloud round trip.
-            cloudPromise.then(function (result) {
-                if (emailKey() !== loadEmail || (S.localRevision || 0) !== revisionAtStart || S.saving || _saveRunning || S.queued) return;
-                if (result && result.snapshot) {
-                    applySnapshot(result.snapshot);
-                    cacheLocally();
-                    refreshDashboardUI();
-                    console.log('☁️ Background cloud refresh complete — ' + rawData.length.toLocaleString() + ' records');
-                    setBadge('synced', 'Synced · ' + rawData.length.toLocaleString() + ' records');
-                    S.lastError = null; S.lastErrorAt = null;
-                } else {
-                    console.log('☁️ Cloud has no saved dataset yet; uploading local cache');
-                    setBadge('syncing', 'First cloud upload…');
-                    scheduleCloudSave('first-upload');
-                }
-                pullSettings();
-            }).catch(function (e) {
-                if (emailKey() !== loadEmail) return;
-                handleCloudError(e, 'load');
-                setBadge('error', 'Cloud read failed — click');
-                console.warn('Background cloud refresh failed; local cached data remains available.', e);
-            });
-            return true;
-        }
-
-        // First login on this device (no local cache): cloud is the only source,
-        // so wait for it. If cloud is empty/unavailable, preserve the local result.
         try {
-            const result = await cloudPromise;
+            const result = await cloudLoadSnapshot();
             if (emailKey() !== loadEmail) return false;
+
             if (result && result.snapshot) {
+                // The signed-in email's Firestore dataset always wins over
+                // anything cached on this particular browser/device.
                 applySnapshot(result.snapshot);
                 cacheLocally();
                 refreshDashboardUI();
-                console.log('☁️ Loaded ' + rawData.length.toLocaleString() + ' records from cloud');
+                S.lastError = null;
+                S.lastErrorAt = null;
+                S.blocked = false;
                 setBadge('synced', 'Synced · ' + rawData.length.toLocaleString() + ' records');
                 attachMetaListener();
                 pullSettings();
+                console.log('☁️ Loaded authoritative dataset for ' + loadEmail + ': ' + rawData.length.toLocaleString() + ' records');
                 return true;
             }
+
+            // Firestore successfully confirmed that this email has no cloud
+            // dataset yet. Only now may an existing local cache be migrated.
+            const local = await localPromise;
+            if (emailKey() !== loadEmail) return false;
             if (local && rawData.length) {
                 setBadge('syncing', 'First cloud upload…');
-                scheduleCloudSave('first-upload');
                 attachMetaListener();
-            } else {
-                setBadge('off', 'Cloud empty — no data yet');
+                scheduleCloudSave('first-upload');
+                pullSettings();
+                return true;
             }
+
+            setBadge('off', 'Cloud empty — no data yet');
             pullSettings();
-            return !!local;
+            return false;
         } catch (e) {
-            if (emailKey() === loadEmail) {
-                handleCloudError(e, 'load');
-                setBadge('error', 'Cloud read failed — click');
+            if (emailKey() !== loadEmail) return false;
+
+            // A failed/denied/timed-out cloud read is NOT the same as an empty
+            // cloud account. Freeze cloud writes for this session so a stale
+            // local cache or demo seed can never overwrite the real cloud data.
+            S.blocked = true;
+            handleCloudError(e, 'load');
+            setBadge('error', 'Cloud read failed — reload after connection is fixed');
+            const local = await localPromise;
+            if (emailKey() !== loadEmail) return false;
+            if (local && rawData.length) {
+                console.warn("Cloud unavailable; showing this email local cache read-only until cloud access is restored.");
+                return true;
             }
-            console.warn('Cloud dataset read failed; retaining local cache if available.', e);
-            return !!local;
+            throw e;
         }
     };
 
