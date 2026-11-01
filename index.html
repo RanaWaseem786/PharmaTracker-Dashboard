@@ -14173,6 +14173,7 @@ function prepareDataSummary(catalogue, data) {
         S.lastError = (code ? '[' + code + '] ' : '') + msg;
         S.lastErrorAt = new Date().toISOString();
         const denied = code.indexOf('permission-denied') > -1 ||
+                       code.indexOf('unauthenticated') > -1 ||
                        msg.toLowerCase().indexOf('permission-denied') > -1 ||
                        msg.toLowerCase().indexOf('missing or insufficient permissions') > -1;
         console.error('PharmaTracker cloud sync (' + (context || '') + ') failed:', e);
@@ -14180,7 +14181,7 @@ function prepareDataSummary(catalogue, data) {
             S.blocked = true;
             if (!S.warned) {
                 S.warned = true;
-                toast('Cloud access denied by Firestore Rules. Check userData/{email}, its chunks subcollection, and the signed-in email. Local data remains on this device.', 'error');
+                toast('Cloud access denied by Firestore Rules or Firebase Authentication. Check the signed-in email and userData/{email} permissions. Local data remains on this device.', 'error');
             }
             return true;
         }
@@ -14399,7 +14400,10 @@ function prepareDataSummary(catalogue, data) {
             const denied = code.indexOf('permission-denied') >= 0 ||
                 message.indexOf('missing or insufficient permissions') >= 0 ||
                 message.indexOf('permission-denied') >= 0;
-            const transient = /unavailable|deadline-exceeded|network|timed out|resource-exhausted|internal/.test(code + ' ' + message);
+            // Browsers often surface blocked/interrupted Firestore requests as
+            // TypeError: Failed to fetch (with no Firebase error code). Treat
+            // that as a temporary transport failure, not a permanent Rules error.
+            const transient = /unavailable|deadline-exceeded|network|failed to fetch|fetch failed|timed out|timeout|resource-exhausted|internal|err_network|err_aborted|webchannel|transport|offline/.test(code + ' ' + message);
             if (isRetry || denied || !transient) throw e;
             console.warn('☁️ Temporary cloud read issue; retrying once:', e);
             await new Promise(function (r) { setTimeout(r, 700); });
@@ -14700,12 +14704,23 @@ function prepareDataSummary(catalogue, data) {
         } catch (e) {
             if (emailKey() !== loadEmail) return false;
 
-            // A failed/denied/timed-out cloud read is NOT the same as an empty
-            // cloud account. Freeze cloud writes for this session so a stale
-            // local cache or demo seed can never overwrite the real cloud data.
-            S.blocked = true;
+            // A failed cloud read is never treated as an empty account. Keep
+            // writes frozen for permission/integrity/auth failures, but do NOT
+            // permanently disable cloud sync for temporary fetch/network errors.
+            // This distinction is important: browsers may report a transient
+            // Firestore transport problem only as TypeError: Failed to fetch.
+            const readCode = String((e && e.code) || '').toLowerCase();
+            const readMessage = String((e && e.message) || e || '').toLowerCase();
+            const readDenied = readCode.indexOf('permission-denied') >= 0 ||
+                readCode.indexOf('unauthenticated') >= 0 ||
+                readMessage.indexOf('missing or insufficient permissions') >= 0 ||
+                readMessage.indexOf('permission-denied') >= 0;
+            const readTransient = /unavailable|deadline-exceeded|network|failed to fetch|fetch failed|timed out|timeout|resource-exhausted|internal|err_network|err_aborted|webchannel|transport|offline/.test(readCode + ' ' + readMessage);
+            S.blocked = readDenied || !readTransient;
             handleCloudError(e, 'load');
-            setBadge('error', 'Cloud read failed — reload after connection is fixed');
+            setBadge('error', readTransient
+                ? 'Cloud temporarily unavailable — retry after connection'
+                : 'Cloud read failed — check access or cloud data');
             const local = await localPromise;
             if (emailKey() !== loadEmail) return false;
             if (local && rawData.length) {
